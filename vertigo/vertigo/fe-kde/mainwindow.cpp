@@ -190,10 +190,10 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
 
     XChatMainWindowLayout = new QVBoxLayout(this, 12, 6, "XChatMainWindowLayout");
 
-    tabWidget2 = new XChatTabWidget(this, "tabWidget2");
-    tabWidget2->setTabPosition(QTabWidget::Top);
+    m_tabWidget = new XChatTabWidget(this, "m_tabWidget");
+    m_tabWidget->setTabPosition(QTabWidget::Top);
 
-    QPushButton *tabRemove = new QPushButton(tabWidget2);
+    QPushButton *tabRemove = new QPushButton(m_tabWidget);
 
     tabRemove->setIconSet(loader->loadIconSet("tab_remove", KIcon::Small));
     int s = tabRemove->sizeHint().height();
@@ -201,7 +201,7 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     tabRemove->setFixedSize(s, s);
     connect(tabRemove, SIGNAL(clicked()), this, SLOT(slotCloseTab()));
 
-    QPushButton *tabNew = new QPushButton(tabWidget2);
+    QPushButton *tabNew = new QPushButton(m_tabWidget);
 
     tabNew->setIconSet(loader->loadIconSet("tab_new", KIcon::Small));
     connect(tabNew, SIGNAL(clicked()), this, SLOT(slotNewChannelTab()));
@@ -209,18 +209,18 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     s = tabNew->sizeHint().height();
     tabNew->setFixedSize(s, s);
 
-    tabWidget2->setCornerWidget(tabRemove, Qt::TopRight);
-    tabWidget2->setCornerWidget(tabNew, Qt::TopLeft);
+    m_tabWidget->setCornerWidget(tabRemove, Qt::TopRight);
+    m_tabWidget->setCornerWidget(tabNew, Qt::TopLeft);
     tabRemove->hide();
     tabNew->hide();
-    connect(tabWidget2, SIGNAL(currentChanged(QWidget *)), this, SLOT(slotTabChanged(QWidget *)));
+    connect(m_tabWidget, SIGNAL(currentChanged(QWidget *)), this, SLOT(slotTabChanged(QWidget *)));
 
 /*    XChatMainView *view = new XChatMainView(this);
 
-    tabWidget2->insertTab(view, "<none>");
+    m_tabWidget->insertTab(view, "<none>");
 */
-    XChatMainWindowLayout->addWidget(tabWidget2);
-    setCentralWidget(tabWidget2);
+    XChatMainWindowLayout->addWidget(m_tabWidget);
+    setCentralWidget(m_tabWidget);
 
     m_mainViewList = new QPtrList < XChatMainView > ();
 
@@ -232,7 +232,7 @@ XChatMainView *XChatMainWindow::getMainView(session * sess)
 {
     XChatMainView *v;
 
-    /*  QWidget *t = tabWidget2->currentPage();
+    /*  QWidget *t = m_tabWidget->currentPage();
 
        if (t->isA("XChatMainView")) {
        v = (XChatMainView *) t;
@@ -253,13 +253,13 @@ XChatMainView *XChatMainWindow::getMainView(session * sess)
     for(v = m_mainViewList->first(); v; v = m_mainViewList->next()) {
 	s = v->getSession();
 	if(s && (s->server == sess->server)) {
-	    lastTab = QMAX(tabWidget2->indexOf(v) + 1, lastTab);
+	    lastTab = QMAX(m_tabWidget->indexOf(v) + 1, lastTab);
 	}
     }
 
     v = new XChatMainView(this, sess);
     m_mainViewList->append(v);
-    tabWidget2->insertTab(v, "(none)", lastTab);
+    m_tabWidget->insertTab(v, "(none)", lastTab);
     kdDebug() << "added view" << endl;
     return v;
 }
@@ -310,7 +310,7 @@ void XChatMainWindow::slotTabChanged(QWidget * t)
 	    current_sess->nick_said = 0;
 	    current_sess->msg_said = 0;
 	    current_sess->new_data = 0;
-	    tabWidget2->setTabColor(t, Qt::black);
+	    m_tabWidget->setTabColor(t, Qt::black);
 	}
 	v->giveInputFocus();
     }
@@ -403,8 +403,8 @@ void XChatMainWindow::slotDetachTab()
 {
     /*if (m_detached) {
        // xxx: widget may not be xchatmainview
-       XChatMainView *v = (XChatMainView *) tabWidget2->currentPage();
-       QString label = tabWidget2->tabLabel(v);
+       XChatMainView *v = (XChatMainView *) m_tabWidget->currentPage();
+       QString label = m_tabWidget->tabLabel(v);
 
        v->reparent(v->getSession()->gui->win, QPoint(0, 0), false);
        v->getSession()->gui->win->tabWidget()->insertTab(v, label);
@@ -412,11 +412,11 @@ void XChatMainWindow::slotDetachTab()
        }
        else { */
 
-    QWidget *t = tabWidget2->currentPage();
+    QWidget *t = m_tabWidget->currentPage();
 
     if(viewCount() != 1) {
 	XChatMainWindow *w = xchatapp->createNewWindow();
-	QWidget *t = tabWidget2->currentPage();
+	QWidget *t = m_tabWidget->currentPage();
 
 if(t->isA("XChatMainView")) {
 XChatMainView *v = (XChatMainView *) t;
@@ -438,7 +438,7 @@ else{
 	    v->setWindow(w);
 	}*/
 
-	QString label = tabWidget2->tabLabel(t);
+	QString label = m_tabWidget->tabLabel(t);
 
 	t->reparent(w, QPoint(0, 0), false);
 	w->tabWidget()->insertTab(t, label, -1);
@@ -448,7 +448,7 @@ else{
 
 void XChatMainWindow::slotCloseTab()
 {
-    QWidget *t = tabWidget2->currentPage();
+    QWidget *t = m_tabWidget->currentPage();
 
     if(t->isA("XChatMainView")) {
 	XChatMainView *m = (XChatMainView *) t;
@@ -460,7 +460,7 @@ void XChatMainWindow::slotCloseTab()
 
 	m->getServer()->gui->rawlog = 0;
 	t->close(true);
-	if(!tabWidget2->count()) {
+	if(!m_tabWidget->count()) {
 	    close(true);
 	}
     }
@@ -480,7 +480,7 @@ XChatMainView *v;
 for(v = m_mainViewList->first(); v; v = m_mainViewList->next()) {
 s = v->getSession();
 if(s && (s->server == current_sess->server)) {
-lastTab = QMAX(tabWidget2->indexOf(v) + 1, lastTab);
+lastTab = QMAX(m_tabWidget->indexOf(v) + 1, lastTab);
    }
         }
 return lastTab;
@@ -495,7 +495,7 @@ if(!current_sess->server->gui->chanlist) {
         XChatChanlistView *l = new XChatChanlistView(this, this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;
-        tabWidget2->insertTab(l, "channels", lastSameServerTabIndex());
+        m_tabWidget->insertTab(l, "channels", lastSameServerTabIndex());
     } else {
         current_sess->server->gui->chanlist->showSelf();
     }
@@ -506,7 +506,7 @@ void XChatMainWindow::slotURLGrabber()
 if(!xchatapp->urlGrabber()) {
         XChatURLGrabberView *l = new XChatURLGrabberView(this, this);
         xchatapp->setUrlGrabber(l);
-        tabWidget2->insertTab(l, "urls", -1);
+        m_tabWidget->insertTab(l, "urls", -1);
     } else {
         xchatapp->urlGrabber()->showSelf();
     }
@@ -517,7 +517,7 @@ void XChatMainWindow::slotChatList()
 if(!xchatapp->chatList()) {
         XChatChatListView *l = new XChatChatListView(this, this);
         xchatapp->setChatList(l);
-        tabWidget2->insertTab(l, "chats", -1);
+        m_tabWidget->insertTab(l, "chats", -1);
     } else {
         xchatapp->chatList()->showSelf();
     }
@@ -528,7 +528,7 @@ void XChatMainWindow::slotTransfers()
 if(!xchatapp->transfers()) {
         XChatXferView *l = new XChatXferView(this, this);
         xchatapp->setTransfers(l);
-        tabWidget2->insertTab(l, "transfers", -1);
+        m_tabWidget->insertTab(l, "transfers", -1);
     } else {
         xchatapp->transfers()->showSelf();
     }
@@ -539,7 +539,7 @@ void XChatMainWindow::slotNotifyList()
 if(!xchatapp->notifyList()) {
         XChatNotifyListView *l = new XChatNotifyListView(this, this);
         xchatapp->setNotifyList(l);
-        tabWidget2->insertTab(l, "notify", -1);
+        m_tabWidget->insertTab(l, "notify", -1);
     } else {
         xchatapp->notifyList()->showSelf();
     }
@@ -551,7 +551,7 @@ void XChatMainWindow::slotIgnoreList()
 if(!xchatapp->ignoreList()) {
         XChatIgnoreListView *l = new XChatIgnoreListView(this, this);
         xchatapp->setIgnoreList(l);
-        tabWidget2->insertTab(l, "ignores", -1);
+        m_tabWidget->insertTab(l, "ignores", -1);
     } else {
         xchatapp->ignoreList()->showSelf();
     }*/
@@ -562,7 +562,7 @@ void XChatMainWindow::slotBanlist()
 if(!xchatapp->banList()) {
         XChatBanListView *l = new XChatBanListView(this, this);
         xchatapp->setBanList(l);
-        tabWidget2->insertTab(l, "bans", -1);
+        m_tabWidget->insertTab(l, "bans", -1);
     } else {
         xchatapp->banList()->showSelf();
     }
@@ -587,7 +587,7 @@ void XChatMainWindow::slotRawlog()
 	XChatRawlogView *l = new XChatRawlogView(this, this, current_sess->server);
 
 	current_sess->server->gui->rawlog = l;
-	tabWidget2->insertTab(l, "rawlog", lastSameServerTabIndex());
+	m_tabWidget->insertTab(l, "rawlog", lastSameServerTabIndex());
     } else {
 	current_sess->server->gui->rawlog->window()->tabWidget()->showPage(current_sess->server->gui->rawlog);
     }
@@ -658,44 +658,44 @@ void XChatMainWindow::slotPreferences()
 
 void XChatMainWindow::slotNextTab()
 {
-	int i=tabWidget2->currentPageIndex()+1;
-	if (i== tabWidget2->count())
+	int i=m_tabWidget->currentPageIndex()+1;
+	if (i== m_tabWidget->count())
 		i=0;
-	tabWidget2->setCurrentPage(i);
+	m_tabWidget->setCurrentPage(i);
 }
 
 
 void XChatMainWindow::slotPreviousTab()
 {
-	int i=tabWidget2->currentPageIndex()-1;
+	int i=m_tabWidget->currentPageIndex()-1;
 	if (i==-1)
-		i=tabWidget2->count()-1;
-	tabWidget2->setCurrentPage(i);
+		i=m_tabWidget->count()-1;
+	m_tabWidget->setCurrentPage(i);
 }
 
 
 
 void XChatMainWindow::raiseView(XChatMainView *v)
 {
-	tabWidget2->showPage(v);
+	m_tabWidget->showPage(v);
 }
 
 int XChatMainWindow::viewCount()
 {
-    return tabWidget2->count();
+    return m_tabWidget->count();
 }
 
 void XChatMainWindow::focusInEvent(QFocusEvent *)
 {
     kdDebug() << "focusinwindow" << endl;
-    slotTabChanged(tabWidget2->currentPage());
+    slotTabChanged(m_tabWidget->currentPage());
 }
 
 void XChatMainWindow::windowActivationChange(bool oldActive)
 {
     kdDebug() << caption() << "::windowActivationChange :: " << oldActive << endl;
     if(!oldActive) {
-	slotTabChanged(tabWidget2->currentPage());
+	slotTabChanged(m_tabWidget->currentPage());
     }
 }
 
@@ -742,34 +742,4 @@ void XChatMainWindow::closeEvent(QCloseEvent * e)
     KMainWindow::closeEvent(e);
 }
 
-/*
-XChatStatusBarWidget::XChatStatusBarWidget( QWidget* parent, const char* name )
-    : QWidget( parent, name)
-{
-    if ( !name )
-	setName( "XChatStatusBarWidget" );
-    XChatStatusBarWidgetLayout = new QHBoxLayout( this, 2, 12, "XChatStatusBarWidgetLayout"); 
 
-    messageLabel = new QLabel( this, "messageLabel" );
-    XChatStatusBarWidgetLayout->addWidget( messageLabel );
-    QSpacerItem* spacer = new QSpacerItem( 161, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-    XChatStatusBarWidgetLayout->addItem( spacer );
-
-    lagLabel = new QLabel( this, "lagLabel" );
-    XChatStatusBarWidgetLayout->addWidget( lagLabel );
-
-    nameFrame = new QFrame( this, "nameFrame" );
-    nameFrame->setFrameShape( QFrame::StyledPanel );
-    nameFrame->setFrameShadow( QFrame::Sunken );
-    nameFrameLayout = new QHBoxLayout( nameFrame, 2, 4, "nameFrameLayout"); 
-
-    nameLabel = new QLabel( nameFrame, "nameLabel" );
-    nameFrameLayout->addWidget( nameLabel );
-    XChatStatusBarWidgetLayout->addWidget( nameFrame );
-}
-
-XChatStatusBarWidget::~XChatStatusBarWidget()
-{
-   
-}
-*/

@@ -15,7 +15,7 @@ class XChatMainWindow:public KMainWindow {
     ~XChatMainWindow();
 
 XChatMainView *getMainView(session * sess);
-    XChatTabWidget *tabWidget2;
+    XChatTabWidget *m_tabWidget;
 
 
     
@@ -38,7 +38,7 @@ int lastSameServerTabIndex();
 
 	
     XChatTabWidget *tabWidget() {
-	return tabWidget2;
+	return m_tabWidget;
     }
     public slots:void slotTabChanged(QWidget *);
     void slotNewServerWindow();
