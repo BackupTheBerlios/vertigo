@@ -35,6 +35,9 @@ XChatApp::XChatApp():KApplication()
     m_socketList = new QPtrList < SocketData > ();
     m_socketList->setAutoDelete(true);
 
+
+m_nextSocketID=0;
+
     m_mainWindowCount = 0;
     m_otherWindowCount = 0;
     m_serverList = 0;
@@ -347,7 +350,7 @@ void XChatApp::execTimeoutFunction()
             TimerFunc fn = dat->func;
 	    ret=(*fn) (dat->args);
 	    if (!ret)
-	    removeInputFunction(t->timerId());
+	    removeTimeoutFunction(t->timerId());
         }
     }
 }
@@ -364,21 +367,23 @@ void XChatApp::execIdleFunction()
 	kdDebug() << "!!!!!whoops!!" << endl;
 	return;
     }
+
+	
     TimerData *dat = m_idleList->first();
 
-    if(dat) {
-	TimerFunc fn = dat->func;
-
-	(*fn) (dat->args);
-	delete dat->timer;
-
-	m_idleList->removeFirst();
+    for(; dat; dat = m_idleList->next()) {
+        TimerFunc fn = dat->func;
+		(*fn) (dat->args);
+		delete dat->timer;
+        m_idleList->remove(dat);
     }
 }
 
 int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
 {
     SocketData *dat = new SocketData;
+
+	kdDebug() << "=== adding input function: fd="<< fd << " flags="<<flags<<endl;
 
     dat->func = (SocketFunc) func;
     dat->args = data;
@@ -387,6 +392,7 @@ int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
     dat->excen = 0;
 
     if(flags & FIA_READ) {
+	kdDebug() << "      adding read socket notifier: fd="<< fd << " flags="<<flags<<endl;
 	QSocketNotifier *readn = new QSocketNotifier(fd, QSocketNotifier::Read, this);
 	QObject::connect(readn, SIGNAL(activated(int)), this, SLOT(socketReady(int)));
 
@@ -394,6 +400,7 @@ int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
     }
 
     if(flags & FIA_WRITE) {
+	kdDebug() << "      adding write socket notifier: fd="<< fd << " flags="<<flags<<endl;
 	QSocketNotifier *writen = new QSocketNotifier(fd, QSocketNotifier::Write, this);
 	QObject::connect(writen, SIGNAL(activated(int)), this, SLOT(socketReady(int)));
 
@@ -401,12 +408,13 @@ int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
     }
     if(flags & FIA_EX) {
 	QSocketNotifier *excen = new QSocketNotifier(fd, QSocketNotifier::Exception, this);
+	kdDebug() << "      adding excep socket notifier: fd="<< fd << " flags="<<flags<<endl;
 	QObject::connect(excen, SIGNAL(activated(int)), this, SLOT(socketReady(int)));
 
-	dat->excen = excen;
+dat->excen = excen;
     }
 
-    dat->id = m_socketList->count() + 1;
+    dat->id = m_nextSocketID++;
     kdDebug() << "new id=" << dat->id << endl;
     m_socketList->append(dat);
     return (dat->id);
@@ -415,17 +423,21 @@ int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
 void XChatApp::removeInputFunction(int id)
 {
     SocketData *dat;
-
+kdDebug() << "   ===  remove socket notifier: id="<< id <<endl;
     for(dat = m_socketList->first(); dat; dat = m_socketList->next()) {
 	if(dat->id == id) {
+		kdDebug() << "  found dat!"<<endl;
 	    if(dat->readn)
-		delete dat->readn;
+			dat->readn->setEnabled(false);
+		//delete dat->readn;
 
 	    if(dat->writen)
-		delete dat->writen;
+			dat->writen->setEnabled(false);
+		//delete dat->writen;
 
 	    if(dat->excen)
-		delete dat->excen;
+			dat->excen->setEnabled(false);
+		//delete dat->excen;
 
 	    m_socketList->remove(dat);
 	}
@@ -436,7 +448,7 @@ void XChatApp::socketReady(int fd)
 {
     QSocketNotifier *sn = (QSocketNotifier *) sender();
     int cond = 0;
-
+	kdDebug() << "--- socketReady fd="<<fd<<endl;
     if(!sn)
 	return;
 
@@ -455,10 +467,10 @@ void XChatApp::socketReady(int fd)
 	if(cond != 0) {
 	    kdDebug() << "readReady found" << endl;
 	    SocketFunc fn = dat->func;
-
-	    (*fn) (NULL, cond, dat->args);
-
-	    //kdDebug() << "return from func==" << n << endl;
+		int n;
+	    n=(*fn) (NULL, cond, dat->args);
+		
+	    kdDebug() << "return from func==" << n << endl;
 	    break;
 
 	}

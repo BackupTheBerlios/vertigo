@@ -128,6 +128,8 @@ void setBanList(XChatBanListView* v);
     int m_mainWindowCount;
     int m_otherWindowCount;
 
+int m_nextSocketID;
+
     QPixmap *m_opPix;
     QPixmap *m_hopPix;
     QPixmap *m_voicePix;
