@@ -199,7 +199,7 @@ void MainView::entryDown()
 
 void MainView::entryUp()
 {
-    char *c = history_up(&m_session->history);
+    char *c = history_up(&m_session->history, (char*)m_inputEdit->text().ascii());
 
     if(c)
 	m_inputEdit->setText(c);

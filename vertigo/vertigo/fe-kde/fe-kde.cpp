@@ -191,7 +191,7 @@ extern "C"
         if (!dir.isEmpty()) {
             if (dir[dir.length() - 1] == '/')
                 dir.truncate(dir.length() - 1);
-            xdir = dir.data();
+            xdir_fs = dir.data(); 
         }
         // XXX: xchat doesn't support multiple args fix this
 	
@@ -463,9 +463,8 @@ extern "C"
     {
         kdDebug() << "fe:fe_dlgbuttons_update" << endl;
     }
-    void fe_dcc_send_filereq(struct session *sess, char *nick, int maxcps)
+    void fe_dcc_send_filereq (struct session *sess, char *nick, int maxcps, int passive)
     {
-        kdDebug() << "fe:fe_dcc_send_filereq" << endl;
     }
     void fe_set_channel(struct session *sess)
     {

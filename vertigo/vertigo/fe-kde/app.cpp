@@ -231,7 +231,7 @@ void App::loadPalette()
     char *cfg;
     unsigned long red, green, blue;
 
-    snprintf(prefname, sizeof(prefname), "%s/palette.conf", get_xdir());
+    snprintf(prefname, sizeof(prefname), "%s/palette.conf", get_xdir_fs());
     fh = open(prefname, O_RDONLY | OFLAGS);
     if(fh != -1) {
 	fstat(fh, &st);
