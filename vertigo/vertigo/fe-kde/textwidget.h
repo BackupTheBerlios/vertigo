@@ -36,8 +36,8 @@ class TextEntry {
 	void addRightRegion(const QRegion & region);
 	QRegion rightRegion();
 	void clearRightRegion();
-	uint linesTaken();
-	void setLinesTaken(uint a);
+	int linesTaken();
+	void setLinesTaken(int a);
 	void addRightWrap(const QString &string);
 	void clearRightWrap();
 	QStringList rightWrapList();
@@ -49,17 +49,17 @@ class TextEntry {
 	QStringList m_textWrap;
 	QRegion m_leftRegion;
 	QRegion m_rightRegion;
-	uint m_linesTaken;
+	int m_linesTaken;
 };
 
 typedef struct TextBuffer {
     QFont *font;
     QFontMetrics *fm;
-    uint sepValue;
+    int sepValue;
     bool sepActive;
     ulong textHeight;
-    uint lineHeight;
-    uint lineDescent;
+    int lineHeight;
+    int lineDescent;
 
     bool layoutEnabled;
 	int layoutTimerId;
@@ -120,19 +120,20 @@ void contentsMouseReleaseEvent(QMouseEvent * e);
   private:
   	QPtrList<TextEntry> m_entryList;
 	TextBuffer *m_buffer;
-	uint m_sepWidth;
-	uint m_margin;
-	uint m_maxSubLines;
-    	uint m_minWrapWidth;
-	uint m_scrollType;
+	int m_sepWidth;
+	int m_margin;
+	int m_maxSubLines;
+    	int m_minWrapWidth;
+	int m_scrollType;
 	bool m_showTimeStamp;
-	uint m_wrapBoundary;
+	int m_wrapBoundary;
 	bool m_reversedLayout;
 	bool m_doubleBuffer;
 	bool m_autoResizeColumns;
 	    QCursor *m_cursorSplit;
     QCursor *m_cursorIbeam;
-
+	QCursor *m_currentCursor;
+	bool m_relayoutBeforePaint;
 };
 
 #endif

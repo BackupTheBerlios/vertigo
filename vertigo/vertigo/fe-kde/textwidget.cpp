@@ -34,9 +34,10 @@ QRegion TextEntry::leftRegion()
 
 
 void
-  TextEntry::addRightRegion(const QRegion & region)
+  TextEntry::addRightRegion(const QRegion & r)
 {
-    m_rightRegion = m_rightRegion.unite(region);
+	//qWarning("addRightRegion: y=%d h=%d",r.boundingRect().y(), r.boundingRect().height());
+    m_rightRegion = m_rightRegion.unite(r);
 }
 
 void
@@ -55,6 +56,7 @@ QRegion TextEntry::rightRegion()
 void
   TextEntry::addRightWrap(const QString &string)
 {
+	//qWarning("addRightWrap %s",string.latin1());
 	m_textWrap.append(string);
 }
 
@@ -72,7 +74,7 @@ void
  }
 
 
-uint TextEntry::linesTaken()
+int TextEntry::linesTaken()
 {
 	return m_linesTaken;
 }
@@ -90,7 +92,7 @@ QString TextEntry::text (const int col)
 }
 
 void
-  TextEntry::setLinesTaken(uint a)
+  TextEntry::setLinesTaken(int a)
  {
 	m_linesTaken=a;
  }
@@ -99,9 +101,9 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
 	   WStaticContents |WResizeNoErase |
 	   WRepaintNoErase)
 {
-
- viewport()->setMouseTracking(true);
-    m_sepWidth = 2;
+	m_relayoutBeforePaint=false;
+	viewport()->setMouseTracking(true);
+    m_sepWidth = 1;
     m_margin = 1;
     m_maxSubLines = 6;
     m_minWrapWidth = 30;
@@ -109,10 +111,12 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
 
     m_cursorSplit = new QCursor(Qt::SplitHCursor);
     m_cursorIbeam = new QCursor(Qt::IbeamCursor);
+	m_currentCursor=m_cursorIbeam;
+	
 
 m_scrollType=AlwaysScroll;
     m_autoResizeColumns=false;
-    m_doubleBuffer= true;
+    m_doubleBuffer=true;
     m_reversedLayout=false;//QApplication::reverseLayout();
 
     m_buffer = new TextBuffer;
@@ -212,7 +216,7 @@ void TextView::resizeView(int h)
 }
 
 
-void TextView::viewportResizeEvent(QResizeEvent * pe)
+void TextView::viewportResizeEvent(QResizeEvent * /*pe*/)
 {
    qWarning("viewport resize");
   //  QScrollView::resizeEvenEnvironmentst(pe);
@@ -381,7 +385,8 @@ QString TextView::wrapText(QString & text, int wrapLen, int &curLen,  bool clear
 	text = QString::null;
     }
 
-    else if (lastSpace == -1 || (lastSpace < (i - m_wrapBoundary))) {
+    else if (lastSpace == -1 
+			|| (lastSpace < (i - m_wrapBoundary))) {
 	ret = text.left(i);	// no wrap
 	text = text.mid(i);
     }
@@ -518,9 +523,11 @@ int TextView::recalcEntryLayout(TextEntry * ent, bool resizeCols)
 	w = visibleWidth() - rightX;
     }
 
-
     if (w < m_minWrapWidth) {
 	ent->setLinesTaken(1);
+	qWarning("--");
+	ent->addRightWrap(ent->text(1));
+	//qWarning("addRightRegion rightX=%d h=%d", rightX, m_buffer->textHeight );
 	ent->addRightRegion(QRegion(rightX, m_buffer->textHeight, textWidth(ent->text(1)),  m_buffer->lineHeight));
 	return m_buffer->lineHeight;
     } else {
@@ -529,10 +536,13 @@ int TextView::recalcEntryLayout(TextEntry * ent, bool resizeCols)
 	int subLines = 0;
 	int curTextWidth=0;
 
-	while ((subLines < m_maxSubLines) and(r.isEmpty() == 0)) {
-	    ent->addRightWrap(wrapText(r, w, curTextWidth));
+	while ((subLines < m_maxSubLines) && (r.isEmpty() == 0)) {
+qWarning("--");	    
+ent->addRightWrap(wrapText(r, w, curTextWidth));
 	    ret = ret + m_buffer->lineHeight;
 	    subLines = subLines + 1;
+		//qWarning("addRightRegion rightX=%d h=%d", rightX, ret-m_buffer->lineHeight);
+		//ent->addRightRegion(QRegion(rightX, ret, curTextWidth,  m_buffer->lineHeight));
 	    ent->addRightRegion(QRegion(rightX, m_buffer->textHeight, curTextWidth,  ret));
 	    if (m_reversedLayout) {
 		w = m_buffer->sepValue - m_margin;
@@ -701,7 +711,7 @@ void TextView::paintText(int x, int y, int w, int h, QString text,
     if (text.isEmpty())
 	return;
 //qWarning("painting text x=%d y=%d w=%d h=%d",x,y,w,h);
-    p->setFont(*(m_buffer->font));	// TODO: only set if curfont != font
+    //p->setFont(*(m_buffer->font));	// TODO: only set if curfont != font
  p->setPen(convColor(m_buffer->renderState->fg));
 if (m_buffer->renderState->underline)
 {
@@ -778,8 +788,16 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     TextEntry *ent;
 	QRect lr;
 	QRegion reg,o;
+	int h;
 
 	QPainter p(viewport());
+	p.setFont(*(m_buffer->font));
+
+	if (m_relayoutBeforePaint)
+	{
+		recalcLayout();
+		m_relayoutBeforePaint=false;
+	}
 
     if (m_buffer->sepRegion.isNull()) {
 		m_buffer->sepRegion = QRegion(m_buffer->sepValue, 0, m_sepWidth, visibleHeight());
@@ -793,12 +811,17 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		
 		if (( lr.y() < ur.y()-20) || (lr.y()+lr.height()> ur.y()+ur.height()+20))
 			continue;
+		
+		h=lr.y();
 		if (m_doubleBuffer)
 			{
 				m_buffer->pixmap->resize(QMAX(m_buffer->pixmap->width(), lr.width()),
 						QMAX(m_buffer->pixmap->height(), lr.height()));
+				// if bkg==color
+				m_buffer->pixmap->fill(Qt::white);
 				m_buffer->painter->begin(m_buffer->pixmap, false);
-				m_buffer->painter->fillRect(0,0, lr.width(), lr.height(), QBrush(Qt::white));
+				m_buffer->painter->setFont(*(m_buffer->font));
+				//m_buffer->painter->fillRect(0,0, lr.width(), lr.height(), QBrush(Qt::white));
 				paintTextChunk(ent->text(0), 0, m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
 				m_buffer->painter->end();
 				p.setClipRegion(reg);
@@ -820,16 +843,23 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     	{
     		m_buffer->pixmap->resize(QMAX(m_buffer->pixmap->width(), lr.width()),
 					QMAX(m_buffer->pixmap->height(), lr.height()));
+			m_buffer->pixmap->fill(Qt::white);
 			m_buffer->painter->begin(m_buffer->pixmap, false);
+			m_buffer->painter->setFont(*(m_buffer->font));
 			o=reg;
 			o.translate(-lr.x(), -lr.y());
 			m_buffer->painter->setClipRegion(o);
-			m_buffer->painter->fillRect(0,0,lr.width(),lr.height(), QBrush(Qt::white));
-			QMemArray<QRect> rects = o.rects();
+			//m_buffer->painter->fillRect(0,0,lr.width(),lr.height(), QBrush(Qt::white));
 			QStringList strings=ent->rightWrapList();
-			for ( int i = 0; i < rects.size(); i++ )
+			h=0;
+			for ( int i = 0; i < strings.size(); i++ )
 			{
-				paintTextChunk(strings[i], 0, rects[i].y()+m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
+				//qWarning("paint string %d rightX=%d h=%d = %s ",i,rects[i].x(),rects[i].y(),strings[i].latin1());
+				//qWarning("paint string h=%d = %s",h,strings[i].latin1());
+				//m_buffer->painter->setBrush(QBrush(Qt::black));
+				//m_buffer->painter->drawRect(rects[i]);
+				paintTextChunk(strings[i], 0, h+m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
+				h=h+m_buffer->lineHeight;
 			}
 			m_buffer->painter->end();
 			p.setClipRegion(reg);
@@ -837,11 +867,16 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     	}
 		else{
 			p.fillRect(lr, QBrush(Qt::white));
-			QMemArray<QRect> rects = reg.rects();
 			QStringList strings=ent->rightWrapList();
-			for ( int i = 0; i < rects.size(); i++ )
+			//h=lr.y();
+			for ( int i = 0; i < strings.size(); i++ )
 			{
-				paintTextChunk(strings[i], rects[i].x(), rects[i].y()+m_buffer->lineHeight-m_buffer->lineDescent,&p);
+				//qWarning("paint string h=%d = %s",h, strings[i].latin1());
+//qWarning("paint string %d rightX=%d h=%d = %s ",i,rects[i].x(),rects[i].y(),strings[i].latin1());			
+	//p.setBrush(QBrush(Qt::black));
+                //p.drawRect(lr.x(), h, visibleWidth()-lr.x(),m_buffer->lineHeight);
+				paintTextChunk(strings[i], lr.x(), h+m_buffer->lineHeight-m_buffer->lineDescent,&p);
+				h=h+m_buffer->lineHeight;
 			}	
 
 		}
@@ -851,7 +886,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 	QRegion sep=m_buffer->sepRegion;
     sep.translate(0,-contentsY());
 	p.setClipRegion(sep);
-    p.fillRect(sep.boundingRect(), QBrush(Qt::green));
+    p.fillRect(sep.boundingRect(), QBrush(Qt::gray));
 	unpainted -= m_buffer->sepRegion;
     p.setClipRegion(unpainted);
 	p.fillRect(unpainted.boundingRect(), QBrush(Qt::white));
@@ -885,15 +920,16 @@ void TextView::contentsMouseMoveEvent(QMouseEvent * e)
 	if (m_buffer->sepActive) {
 	    if ((x > 10) && ((width() / 2) > x)) {
 		int d = myabs(m_buffer->sepValue - x);
-		if (d > 5) {
+		if (d > 1) {
 		 m_buffer->sepValue = x;
 			m_buffer->sepRegion =
 	    QRegion(m_buffer->sepValue, 0, m_sepWidth, contentsHeight());
-
-		    recalcLayout();
-		    updateContents(contentsX(),
+		    //recalcLayout();
+		    m_relayoutBeforePaint=true;
+			updateContents(contentsX(),
 				   contentsY(),
 				   visibleWidth(), contentsHeight());
+			
 		}
 	    }
 	}
@@ -902,14 +938,21 @@ void TextView::contentsMouseMoveEvent(QMouseEvent * e)
     else {
 	if ((x >
 	     (m_buffer->sepValue -
-	      m_sepWidth)) && (x < (m_buffer->sepValue + m_sepWidth))) {
-	    //TODO: only setCursor on change.. need to cache
-	    viewport()->setCursor(*m_cursorSplit);
+	      m_sepWidth-2)) && (x < (m_buffer->sepValue + m_sepWidth+2))) {
+		if (m_currentCursor != m_cursorSplit )	
+		{
+			viewport()->setCursor(*m_cursorSplit);
+			m_currentCursor=m_cursorSplit;
+		}
 	}
 	else {
-	 viewport()->setCursor(*m_cursorIbeam);
-	}
+        if (m_currentCursor != m_cursorIbeam )
+        {
+			 viewport()->setCursor(*m_cursorIbeam);
+			m_currentCursor=m_cursorIbeam;
+		}
     }
+	}
 
 }
 
