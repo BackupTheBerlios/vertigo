@@ -351,7 +351,8 @@ extern
 	kdDebug() << "fe:fe_progressbar_start" << endl;
 	sess->gui->showbar = true;
 	if (current_sess == sess) {
-	    sess->gui->win->showProgressBar();
+	    if (sess->gui->win->isCurrent(sess))
+		sess->gui->win->showProgressBar();
 	}
     }
     void
@@ -364,8 +365,11 @@ extern
 	    sess = (session*)list->data;
 	    if (sess->server == serv) {
 		sess->gui->showbar = false;
-
+		    if (current_sess == sess) {
+			        if (sess->gui->win->isCurrent(sess))
+					
 		sess->gui->win->hideProgressBar();
+		}
 	    }
 	    list = list->next;
 	}
@@ -397,7 +401,11 @@ extern
      fe_userlist_numbers(struct session *sess) {
 	kdDebug() << "fe:fe_userlist_numbers" << endl;
                 if (current_sess == sess)
-                    sess->gui->win->setNumbers(sess->ops, sess->total);
+				{
+					kdDebug() << "is_current_sess" << endl;
+                    if (sess->gui->win->isCurrent(sess))
+						sess->gui->win->setNumbers(sess->ops, sess->total);
+			}
 	}
 
     void
@@ -566,9 +574,11 @@ fe_dcc_update (struct DCC *dcc)
 	while (list) {
 	    sess = (session*)list->data;
 	    if (sess->server == serv) {
-		sess->gui->lag = lag;
-		if (current_sess == sess)
-		    sess->gui->win->setLag(lag);
+		sess->gui->lag = lag*10;
+		if (current_sess == sess){
+			if (sess->gui->win->isCurrent(sess))
+		    sess->gui->win->setLag(lag*10);
+			}
 	    }
 	    list = list->next;
 	}

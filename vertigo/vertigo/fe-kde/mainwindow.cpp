@@ -51,6 +51,8 @@ XChatMainWindow::XChatMainWindow(QWidget * parent)
 
 //m_statusBarWidget= new XChatStatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
+	m_progressBar=new QProgressBar(this,"progressBar");
+	//statusBar()->addWidget(m_progressBar, 0, false);
 //m_progressBar->hide();
 
 
@@ -320,7 +322,9 @@ void XChatMainWindow::showProgressBar()
 {
     kdDebug() << "showProgressBar" << endl;
     if(!statusBar()->isHidden()) {
-	statusBar()->message("Connecting...");
+	//m_progressBar->show();
+statusBar()->addWidget(m_progressBar, 0, false);
+	//statusBar()->message("Connecting...");
 	//m_statusBarWidget->messageLabel->setText("Connected...");
 	//m_progressBar->reset();
     }
@@ -330,8 +334,8 @@ void XChatMainWindow::hideProgressBar()
 {
     kdDebug() << "hideProgressBar" << endl;
     if(!statusBar()->isHidden()) {
-	statusBar()->clear();
-
+	//statusBar()->clear();
+statusBar()->removeWidget(m_progressBar);
 //      m_statusBarWidget->messageLabel->setText(QString::null);
 	//m_progressBar->hide();
     }
@@ -697,6 +701,20 @@ void XChatMainWindow::windowActivationChange(bool oldActive)
     if(!oldActive) {
 	slotTabChanged(m_tabWidget->currentPage());
     }
+}
+
+bool XChatMainWindow::isCurrent(session *sess)
+{
+	    QWidget *t = m_tabWidget->currentPage();
+
+		    if(t->isA("XChatMainView")) {
+			    XChatMainView *m = (XChatMainView *) t;
+				if (m->getSession()==sess)
+				{
+					return true;
+				}
+				}
+				return false;
 }
 
 void XChatMainWindow::closeEvent(QCloseEvent * e)

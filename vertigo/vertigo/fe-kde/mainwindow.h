@@ -4,8 +4,10 @@
 #include <kmainwindow.h>
 #include "mainview.h"
 
+
 #include "../common/xchat.h"
 
+class QProgressBar;
 class XChatTabWidget;
 class XChatStatusBarWidget;
 
@@ -21,6 +23,8 @@ XChatMainView *getMainView(session * sess);
     
     void showProgressBar();
     void hideProgressBar();
+
+bool isCurrent(session *sess);
 
 
     void focusInEvent(QFocusEvent *);
@@ -78,11 +82,13 @@ void slotPreviousTab();
     QVBoxLayout * XChatMainWindowLayout;
     QPtrList < XChatMainView > *m_mainViewList;
     XChatStatusBarWidget *m_statusBarWidget;
+	QProgressBar *m_progressBar;
 
     // bool m_detached;
     QLabel *lagLabel;
     QLabel *numbersLabel;
     QLabel *nameLabel;
+
 };
 
 /*
