@@ -14,11 +14,11 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
     :  ChanlistViewBase(parent, "ChanList")
 {
 	setServer(s);
-
-    connect( m_applyButton, SIGNAL( clicked() ), this, SLOT( slotApplyButtonClicked() ) );
+	enableItems(true);
+  /*  connect( m_applyButton, SIGNAL( clicked() ), this, SLOT( slotApplyButtonClicked() ) );
     connect( m_joinButton, SIGNAL( clicked() ), this, SLOT( slotJoinButtonClicked() ) );
-    connect( m_refreshButton, SIGNAL( clicked() ), this, SLOT( slotRefreshButtonClicked() ) );
-    m_chanlistView->setAllColumnsShowFocus(true);
+    connect( m_refreshButton, SIGNAL( clicked() ), this, SLOT( slotRefreshButtonClicked() ) );*/
+   // m_chanlistView->setAllColumnsShowFocus(true);
 
 	KConfig *c=new KConfig("vertigorc");
 	m_minSpin->setValue(c->readNumEntry("minUsers",0));
@@ -37,11 +37,15 @@ ChanlistView::~ChanlistView()
 void ChanlistView::enableItems(bool yes){
 	if (yes)
 	{
-		setEnabled(true);
-		m_chanlistView->scrollBy(0,1);
+		m_stopButton->setEnabled(false);
+		m_refreshButton->setEnabled(true);
+		//setEnabled(true);
+		//m_chanlistView->scrollBy(0,1);
 	}
 	else{
-	setEnabled(false);
+		m_stopButton->setEnabled(true);
+		m_refreshButton->setEnabled(false);
+	//setEnabled(false);
 	}
 
 }

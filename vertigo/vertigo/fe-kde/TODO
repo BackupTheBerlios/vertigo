@@ -1,3 +1,35 @@
+Channel List:
++ buddy check
+- focus on text line on switch
+- implement filtering
++ on reload don't disable whole widget, just reload button
++ disable stop by default
++ join on double click
+- s/m_refreshButton/m_reloadButton
+- sane selection
+
+Character chart:
+- designerize
+- detect font of textview
+- use a container widget
+- add a insert button
+- react on double click
+
+URL Grabber:
+- designerize
+- full width listview
+- implement save
+- implement clear
+- update URLs
+- maintain internal URLList
+
+
+
+
+
+
+
+// old stuff
 if nomenubar, put it in first of popupmenu then seperator
 set sess->gui->win to new detached window renable that shit by setting sess->gui->win.
 textwidget: if doublebuffer, don't resize if smaller than current size 
