@@ -1,0 +1,2060 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2003-07-17 03:13-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cfgfiles.c:319
+msgid "Cannot create ~/.xchat2"
+msgstr ""
+
+#: cfgfiles.c:592
+msgid "I'm busy"
+msgstr ""
+
+#: cfgfiles.c:593
+msgid "Client exiting"
+msgstr ""
+
+#: cfgfiles.c:636
+msgid ""
+"* Running IRC as root is stupid! You should\n"
+"  create a User Account and use that to login.\n"
+msgstr ""
+
+#: dcc.c:59
+msgid "Waiting"
+msgstr ""
+
+#: dcc.c:60
+msgid "Active"
+msgstr ""
+
+#: dcc.c:61
+msgid "Failed"
+msgstr ""
+
+#: dcc.c:62
+msgid "Done"
+msgstr ""
+
+#: dcc.c:63
+msgid "Connect"
+msgstr ""
+
+#: dcc.c:64
+msgid "Aborted"
+msgstr ""
+
+#: dcc.c:1253
+#, c-format
+msgid "Cannot access %s\n"
+msgstr ""
+
+#: dcc.c:1689
+msgid "No active DCCs\n"
+msgstr ""
+
+#: ignore.c:118 ignore.c:122 ignore.c:126 ignore.c:130 ignore.c:134
+#: ignore.c:138
+msgid "YES  "
+msgstr ""
+
+#: ignore.c:120 ignore.c:124 ignore.c:128 ignore.c:132 ignore.c:136
+#: ignore.c:140
+msgid "NO   "
+msgstr ""
+
+#: notify.c:400
+#, c-format
+msgid "  %-20s online\n"
+msgstr ""
+
+#: notify.c:402
+#, c-format
+msgid "  %-20s offline\n"
+msgstr ""
+
+#: outbound.c:72
+msgid "No channel joined. Try /join #<channel>\n"
+msgstr ""
+
+#: outbound.c:78
+msgid "Not connected. Try /server <host> [<port>]\n"
+msgstr ""
+
+#: outbound.c:1334
+msgid "I need /bin/sh to run!\n"
+msgstr ""
+
+#: outbound.c:1546
+msgid ""
+"\n"
+"Commands Available:\n"
+"\n"
+"  "
+msgstr ""
+
+#: outbound.c:1581
+msgid ""
+"\n"
+"\n"
+"Type /HELP <command> for more information, or /HELP -l\n"
+"\n"
+msgstr ""
+
+#: outbound.c:1582
+msgid ""
+"User defined commands:\n"
+"\n"
+"  "
+msgstr ""
+
+#: outbound.c:1672
+#, c-format
+msgid "Unknown arg '%s' ignored."
+msgstr ""
+
+#: outbound.c:2346
+msgid "No such plugin found.\n"
+msgstr ""
+
+#: outbound.c:2351
+msgid "That plugin is refusing to unload.\n"
+msgstr ""
+
+#: outbound.c:2485
+msgid "ADDBUTTON <name> <action>, adds a button under the user-list"
+msgstr ""
+
+#: outbound.c:2487
+msgid "ALLCHAN <cmd>, sends a command to all channels you're in"
+msgstr ""
+
+#: outbound.c:2489
+msgid "ALLSERV <cmd>, sends a command to all servers you're in"
+msgstr ""
+
+#: outbound.c:2490
+msgid "AWAY [<reason>], sets you away"
+msgstr ""
+
+#: outbound.c:2492
+msgid ""
+"BAN <mask> [<bantype>], bans everyone matching the mask from the current "
+"channel. If they are already on the channel this doesn't kick them (needs "
+"chanop)"
+msgstr ""
+
+#: outbound.c:2494
+msgid "UNBAN <mask> [<mask>...], unbans the specified masks."
+msgstr ""
+
+#: outbound.c:2496
+msgid "CLEAR, Clears the current text window"
+msgstr ""
+
+#: outbound.c:2497
+msgid "CLOSE, Closes the current window/tab"
+msgstr ""
+
+#: outbound.c:2500
+msgid ""
+"CTCP <nick> <message>, send the CTCP message to nick, common messages are "
+"VERSION and USERINFO"
+msgstr ""
+
+#: outbound.c:2502
+msgid "COUNTRY <code>, finds a country code, eg: au = australia"
+msgstr ""
+
+#: outbound.c:2504
+msgid "CYCLE, parts current channel and immediately rejoins"
+msgstr ""
+
+#: outbound.c:2506
+msgid ""
+"\n"
+"DCC GET <nick>                     - accept an offered file\n"
+"DCC SEND [-maxcps=#] <nick> [file] - send a file to someone\n"
+"DCC LIST                           - show DCC list\n"
+"DCC CHAT <nick>                    - offer DCC CHAT to someone\n"
+"DCC CLOSE <type> <nick> <file>         example:\n"
+"         /dcc close send johnsmith file.tar.gz"
+msgstr ""
+
+#: outbound.c:2516
+msgid "DELBUTTON <name>, deletes a button from under the user-list"
+msgstr ""
+
+#: outbound.c:2518
+msgid ""
+"DEHOP <nick>, removes chanhalf-op status from the nick on the current "
+"channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2520
+msgid ""
+"DEOP <nick>, removes chanop status from the nick on the current channel "
+"(needs chanop)"
+msgstr ""
+
+#: outbound.c:2522
+msgid ""
+"DEVOICE <nick>, removes voice status from the nick on the current channel "
+"(needs chanop)"
+msgstr ""
+
+#: outbound.c:2523
+msgid "DISCON, Disconnects from server"
+msgstr ""
+
+#: outbound.c:2524
+msgid "DNS <nick|host|ip>, Finds a users IP number"
+msgstr ""
+
+#: outbound.c:2525
+msgid "ECHO <text>, Prints text locally"
+msgstr ""
+
+#: outbound.c:2528
+msgid ""
+"EXEC [-o] <command>, runs the command. If -o flag is used then output is "
+"sent to current channel, else is printed to current text box"
+msgstr ""
+
+#: outbound.c:2530
+msgid ""
+"EXECKILL [-9], kills a running exec in the current session. If -9 is given "
+"the process is SIGKILL'ed"
+msgstr ""
+
+#: outbound.c:2532
+msgid "EXECSTOP, sends the process SIGSTOP"
+msgstr ""
+
+#: outbound.c:2533
+msgid "EXECCONT, sends the process SIGCONT"
+msgstr ""
+
+#: outbound.c:2534
+msgid "EXECWRITE, sends data to the processes stdin"
+msgstr ""
+
+#: outbound.c:2538
+msgid "FLUSHQ, flushes the current server's send queue"
+msgstr ""
+
+#: outbound.c:2540
+msgid "GATE <host> [<port>], proxies through a host, port defaults to 23"
+msgstr ""
+
+#: outbound.c:2545
+msgid "HOP <nick>, gives chanhalf-op status to the nick (needs chanop)"
+msgstr ""
+
+#: outbound.c:2547
+msgid ""
+"IGNORE <mask> <types..> <options..>\n"
+"    mask - host mask to ignore, eg: *!*@*.aol.com\n"
+"    types - types of data to ignore, one or all of:\n"
+"            PRIV, CHAN, NOTI, CTCP, INVI, ALL\n"
+"    options - NOSAVE, QUIET"
+msgstr ""
+
+#: outbound.c:2554
+msgid ""
+"INVITE <nick> [<channel>], invites someone to a channel, by default the "
+"current channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2555
+msgid "JOIN <channel>, joins the channel"
+msgstr ""
+
+#: outbound.c:2557
+msgid "KICK <nick>, kicks the nick from the current channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2559
+msgid ""
+"KICKBAN <nick>, bans then kicks the nick from the current channel (needs "
+"chanop)"
+msgstr ""
+
+#: outbound.c:2561
+msgid "LAGCHECK, forces a new lag check"
+msgstr ""
+
+#: outbound.c:2563
+msgid "LASTLOG <string>, searches for a string in the buffer"
+msgstr ""
+
+#: outbound.c:2565
+msgid "LOAD <file>, loads a plugin or script"
+msgstr ""
+
+#: outbound.c:2568
+msgid ""
+"MDEHOP, Mass deop's all chanhalf-ops in the current channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2570
+msgid "MDEOP, Mass deop's all chanops in the current channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2572
+msgid ""
+"MKICK, Mass kicks everyone except you in the current channel (needs chanop)"
+msgstr ""
+
+#: outbound.c:2574
+msgid ""
+"ME <action>, sends the action to the current channel (actions are written in "
+"the 3rd person, like /me jumps)"
+msgstr ""
+
+#: outbound.c:2575
+msgid "MSG <nick> <message>, sends a private message"
+msgstr ""
+
+#: outbound.c:2578
+msgid "NAMES, Lists the nicks on the current channel"
+msgstr ""
+
+#: outbound.c:2580
+msgid "NCTCP <nick> <message>, Sends a CTCP notice"
+msgstr ""
+
+#: outbound.c:2581
+msgid "NEWSERVER <hostname> [<port>]"
+msgstr ""
+
+#: outbound.c:2582
+msgid "NICK <nickname>, sets your nick"
+msgstr ""
+
+#: outbound.c:2585
+msgid ""
+"NOTICE <nick/channel> <message>, sends a notice. Notices are a type of "
+"message that should be auto reacted to"
+msgstr ""
+
+#: outbound.c:2587
+msgid "NOTIFY [<nick>], lists your notify list or adds someone to it"
+msgstr ""
+
+#: outbound.c:2589
+msgid "OP <nick>, gives chanop status to the nick (needs chanop)"
+msgstr ""
+
+#: outbound.c:2591
+msgid ""
+"PART [<channel>] [<reason>], leaves the channel, by default the current one"
+msgstr ""
+
+#: outbound.c:2593
+msgid "PING <nick | channel>, CTCP pings nick or channel"
+msgstr ""
+
+#: outbound.c:2595
+msgid "QUERY <nick>, opens up a new privmsg window to someone"
+msgstr ""
+
+#: outbound.c:2597
+msgid "QUIT [<reason>], disconnects from the current server"
+msgstr ""
+
+#: outbound.c:2599
+msgid "QUOTE <text>, sends the text in raw form to the server"
+msgstr ""
+
+#: outbound.c:2602
+msgid ""
+"RECONNECT [-ssl] [<host>] [<port>] [<password>], Can be called just as /"
+"RECONNECT to reconnect to the current server or with /RECONNECT ALL to "
+"reconnect to all the open servers"
+msgstr ""
+
+#: outbound.c:2605
+msgid ""
+"RECONNECT [<host>] [<port>] [<password>], Can be called just as /RECONNECT "
+"to reconnect to the current server or with /RECONNECT ALL to reconnect to "
+"all the open servers"
+msgstr ""
+
+#: outbound.c:2607
+msgid ""
+"RECV <text>, send raw data to xchat, as if it was received from the irc "
+"server"
+msgstr ""
+
+#: outbound.c:2610
+msgid "SAY <text>, sends the text to the object in the current window"
+msgstr ""
+
+#: outbound.c:2611
+msgid "SET <variable> [<value>]"
+msgstr ""
+
+#: outbound.c:2615
+msgid "SERVCHAN [-ssl] <host> <port> <channel>, connects and joins a channel"
+msgstr ""
+
+#: outbound.c:2618
+msgid "SERVCHAN <host> <port> <channel>, connects and joins a channel"
+msgstr ""
+
+#: outbound.c:2622
+msgid ""
+"SERVER [-ssl] <host> [<port>] [<password>], connects to a server, the "
+"default port is 6667 for normal connections, and 9999 for ssl connections"
+msgstr ""
+
+#: outbound.c:2625
+msgid ""
+"SERVER <host> [<port>] [<password>], connects to a server, the default port "
+"is 6667"
+msgstr ""
+
+#: outbound.c:2628
+msgid ""
+"TOPIC [<topic>], sets the topic if one is given, else shows the current topic"
+msgstr ""
+
+#: outbound.c:2629
+msgid "UNIGNORE <mask> [QUIET]"
+msgstr ""
+
+#: outbound.c:2630
+msgid "UNLOAD <name>, unloads a plugin or script"
+msgstr ""
+
+#: outbound.c:2633
+msgid ""
+"WALLCHOP <message>, sends the message to all chanops on the current channel"
+msgstr ""
+
+#: outbound.c:2635
+msgid "WALLCHAN <message>, writes the message to all channels"
+msgstr ""
+
+#: outbound.c:2637
+msgid "VOICE <nick>, gives voice status to someone (needs chanop)"
+msgstr ""
+
+#: outbound.c:2657
+#, c-format
+msgid "Usage: %s\n"
+msgstr ""
+
+#: outbound.c:2662
+msgid ""
+"\n"
+"No help available on that command.\n"
+msgstr ""
+
+#: outbound.c:2669
+msgid "No such command.\n"
+msgstr ""
+
+#: outbound.c:2954
+msgid "Bad arguments for user command.\n"
+msgstr ""
+
+#: outbound.c:3064
+msgid "Too many recursive usercommands, aborting."
+msgstr ""
+
+#: outbound.c:3130
+msgid "Unknown Command. Try /help\n"
+msgstr ""
+
+#: plugin.c:340 plugin.c:361
+msgid "No xchat_plugin_init symbol; is this really an xchat plugin?"
+msgstr ""
+
+#: server.c:830
+#, c-format
+msgid ""
+"Cannot resolve hostname %s\n"
+"Check your IP Settings!\n"
+msgstr ""
+
+#: server.c:835
+msgid "Proxy traversal failed.\n"
+msgstr ""
+
+#: servlist.c:964
+#, c-format
+msgid ""
+"Warning: \"%s\" character set is unknown. No conversion will be applied for "
+"network %s."
+msgstr ""
+
+#: text.c:257
+#, c-format
+msgid "**** ENDING LOGGING AT %s\n"
+msgstr ""
+
+#: text.c:374
+#, c-format
+msgid "**** BEGIN LOGGING AT %s\n"
+msgstr ""
+
+#: text.c:562
+msgid "The nick of the joining person"
+msgstr ""
+
+#: text.c:563
+msgid "The channel being joined"
+msgstr ""
+
+#: text.c:564 text.c:608 text.c:664
+msgid "The host of the person"
+msgstr ""
+
+#: text.c:568 text.c:573 text.c:579 text.c:646 text.c:770 text.c:777
+#: text.c:782 text.c:787 text.c:792 text.c:798 text.c:803 text.c:846
+#: text.c:855 text.c:860 text.c:865 text.c:874 text.c:884 text.c:891
+#: text.c:897 text.c:902 text.c:907 text.c:914 text.c:920 text.c:926
+#: text.c:931 text.c:936 text.c:940 text.c:946 text.c:954 text.c:988
+#: text.c:993
+msgid "Nickname"
+msgstr ""
+
+#: text.c:569
+msgid "The action"
+msgstr ""
+
+#: text.c:574
+msgid "The text"
+msgstr ""
+
+#: text.c:575
+msgid "Mode char"
+msgstr ""
+
+#: text.c:580 text.c:636 text.c:642 text.c:647
+msgid "The message"
+msgstr ""
+
+#: text.c:584 text.c:651
+msgid "Old nickname"
+msgstr ""
+
+#: text.c:585 text.c:652
+msgid "New nickname"
+msgstr ""
+
+#: text.c:589
+msgid "Nick of person who changed the topic"
+msgstr ""
+
+#: text.c:590 text.c:596
+msgid "Topic"
+msgstr ""
+
+#: text.c:591 text.c:595 text.c:1008
+msgid "Channel"
+msgstr ""
+
+#: text.c:600 text.c:658
+msgid "The nickname of the kicker"
+msgstr ""
+
+#: text.c:601 text.c:656
+msgid "The person being kicked"
+msgstr ""
+
+#: text.c:602 text.c:609 text.c:613 text.c:618 text.c:657 text.c:665
+msgid "The channel"
+msgstr ""
+
+#: text.c:603 text.c:659 text.c:666
+msgid "The reason"
+msgstr ""
+
+#: text.c:607 text.c:663
+msgid "The nick of the person leaving"
+msgstr ""
+
+#: text.c:614 text.c:620
+msgid "The time"
+msgstr ""
+
+#: text.c:619
+msgid "The creator"
+msgstr ""
+
+#: text.c:624
+msgid "Nick"
+msgstr ""
+
+#: text.c:625 text.c:861
+msgid "Reason"
+msgstr ""
+
+#: text.c:626 text.c:772 text.c:836
+msgid "Host"
+msgstr ""
+
+#: text.c:630 text.c:635 text.c:640
+msgid "Who it's from"
+msgstr ""
+
+#: text.c:631
+msgid "The time in x.x format (see below)"
+msgstr ""
+
+#: text.c:641 text.c:682
+msgid "The Channel it's going to"
+msgstr ""
+
+#: text.c:670
+msgid "The sound"
+msgstr ""
+
+#: text.c:671 text.c:676 text.c:681
+msgid "The nick of the person"
+msgstr ""
+
+#: text.c:675 text.c:680
+msgid "The CTCP event"
+msgstr ""
+
+#: text.c:686
+msgid "The nick of the person who set the key"
+msgstr ""
+
+#: text.c:687
+msgid "The key"
+msgstr ""
+
+#: text.c:691
+msgid "The nick of the person who set the limit"
+msgstr ""
+
+#: text.c:692
+msgid "The limit"
+msgstr ""
+
+#: text.c:696
+msgid "The nick of the person who did the op'ing"
+msgstr ""
+
+#: text.c:697
+msgid "The nick of the person who has been op'ed"
+msgstr ""
+
+#: text.c:701
+msgid "The nick of the person who has been halfop'ed"
+msgstr ""
+
+#: text.c:702
+msgid "The nick of the person who did the halfop'ing"
+msgstr ""
+
+#: text.c:706
+msgid "The nick of the person who did the voice'ing"
+msgstr ""
+
+#: text.c:707
+msgid "The nick of the person who has been voice'ed"
+msgstr ""
+
+#: text.c:711
+msgid "The nick of the person who did the banning"
+msgstr ""
+
+#: text.c:712 text.c:739
+msgid "The ban mask"
+msgstr ""
+
+#: text.c:716
+msgid "The nick who removed the key"
+msgstr ""
+
+#: text.c:720
+msgid "The nick who removed the limit"
+msgstr ""
+
+#: text.c:724
+msgid "The nick of the person of did the deop'ing"
+msgstr ""
+
+#: text.c:725
+msgid "The nick of the person who has been deop'ed"
+msgstr ""
+
+#: text.c:728
+msgid "The nick of the person of did the dehalfop'ing"
+msgstr ""
+
+#: text.c:729
+msgid "The nick of the person who has been dehalfop'ed"
+msgstr ""
+
+#: text.c:733
+msgid "The nick of the person of did the devoice'ing"
+msgstr ""
+
+#: text.c:734
+msgid "The nick of the person who has been devoice'ed"
+msgstr ""
+
+#: text.c:738
+msgid "The nick of the person of did the unban'ing"
+msgstr ""
+
+#: text.c:743
+msgid "The nick of the person who did the exempt"
+msgstr ""
+
+#: text.c:744 text.c:749
+msgid "The exempt mask"
+msgstr ""
+
+#: text.c:748
+msgid "The nick of the person removed the exempt"
+msgstr ""
+
+#: text.c:753
+msgid "The nick of the person who did the invite"
+msgstr ""
+
+#: text.c:754 text.c:759
+msgid "The invite mask"
+msgstr ""
+
+#: text.c:758
+msgid "The nick of the person removed the invite"
+msgstr ""
+
+#: text.c:763
+msgid "The nick of the person setting the mode"
+msgstr ""
+
+#: text.c:764
+msgid "The mode's sign (+/-)"
+msgstr ""
+
+#: text.c:765
+msgid "The mode letter"
+msgstr ""
+
+#: text.c:766
+msgid "The channel it's being set on"
+msgstr ""
+
+#: text.c:771
+msgid "Username"
+msgstr ""
+
+#: text.c:773
+msgid "Full name"
+msgstr ""
+
+#: text.c:778
+msgid "Channel Membership/\"is an IRC operator\""
+msgstr ""
+
+#: text.c:783
+msgid "Server Information"
+msgstr ""
+
+#: text.c:788 text.c:793
+msgid "Idle time"
+msgstr ""
+
+#: text.c:794
+msgid "Signon time"
+msgstr ""
+
+#: text.c:799
+msgid "Away reason"
+msgstr ""
+
+#: text.c:807 text.c:816 text.c:822 text.c:1003
+msgid "Channel Name"
+msgstr ""
+
+#: text.c:811 text.c:966
+msgid "Text"
+msgstr ""
+
+#: text.c:812 text.c:818 text.c:1004
+msgid "Server Name"
+msgstr ""
+
+#: text.c:817
+msgid "Nick of person who invited you"
+msgstr ""
+
+#: text.c:823
+msgid "Users"
+msgstr ""
+
+#: text.c:827
+msgid "Nickname in use"
+msgstr ""
+
+#: text.c:828
+msgid "Nick being tried"
+msgstr ""
+
+#: text.c:832
+msgid "Error String"
+msgstr ""
+
+#: text.c:837 text.c:970
+msgid "IP"
+msgstr ""
+
+#: text.c:838 text.c:867
+msgid "Port"
+msgstr ""
+
+#: text.c:842
+msgid "PID"
+msgstr ""
+
+#: text.c:850
+msgid "Channel name"
+msgstr ""
+
+#: text.c:851 text.c:856
+msgid "Modes string"
+msgstr ""
+
+#: text.c:866 text.c:903 text.c:908 text.c:949
+msgid "IP address"
+msgstr ""
+
+#: text.c:868 text.c:885 text.c:915
+msgid "Error name"
+msgstr ""
+
+#: text.c:872 text.c:896
+msgid "DCC Type"
+msgstr ""
+
+#: text.c:873 text.c:878 text.c:882 text.c:889 text.c:909 text.c:913
+#: text.c:919 text.c:925 text.c:932 text.c:941 text.c:947
+msgid "Filename"
+msgstr ""
+
+#: text.c:883 text.c:890
+msgid "Destination filename"
+msgstr ""
+
+#: text.c:892 text.c:921
+msgid "CPS"
+msgstr ""
+
+#: text.c:898
+msgid "Error string"
+msgstr ""
+
+#: text.c:927
+msgid "Pathname"
+msgstr ""
+
+#: text.c:942
+msgid "Position"
+msgstr ""
+
+#: text.c:948
+msgid "Size"
+msgstr ""
+
+#: text.c:953
+msgid "DCC String"
+msgstr ""
+
+#: text.c:958
+msgid "Number of notify items"
+msgstr ""
+
+#: text.c:962
+msgid "Servername"
+msgstr ""
+
+#: text.c:974
+msgid "Old Filename"
+msgstr ""
+
+#: text.c:975
+msgid "New Filename"
+msgstr ""
+
+#: text.c:979
+msgid "Receiver"
+msgstr ""
+
+#: text.c:980
+msgid "Message"
+msgstr ""
+
+#: text.c:984
+msgid "Hostmask"
+msgstr ""
+
+#: text.c:989
+msgid "Hostname"
+msgstr ""
+
+#: text.c:994
+msgid "The Packet"
+msgstr ""
+
+#: text.c:998
+msgid "Seconds"
+msgstr ""
+
+#: text.c:1002
+msgid "Nick of person who have been invited"
+msgstr ""
+
+#: text.c:1009
+msgid "Banmask"
+msgstr ""
+
+#: text.c:1010
+msgid "Who set the ban"
+msgstr ""
+
+#: text.c:1011
+msgid "Ban time"
+msgstr ""
+
+#: text.c:1049
+#, c-format
+msgid ""
+"Error parsing event %s.\n"
+"Loading default"
+msgstr ""
+
+#: util.c:291
+msgid "Remote host closed socket"
+msgstr ""
+
+#: util.c:294
+msgid "Connection refused"
+msgstr ""
+
+#: util.c:297
+msgid "No route to host"
+msgstr ""
+
+#: util.c:299
+msgid "Connection timed out"
+msgstr ""
+
+#: util.c:301
+msgid "Cannot assign that address"
+msgstr ""
+
+#: util.c:303
+msgid "Connection reset by peer"
+msgstr ""
+
+#: util.c:696
+msgid "Andorra"
+msgstr ""
+
+#: util.c:697
+msgid "United Arab Emirates"
+msgstr ""
+
+#: util.c:698
+msgid "Afghanistan"
+msgstr ""
+
+#: util.c:699
+msgid "Antigua and Barbuda"
+msgstr ""
+
+#: util.c:700
+msgid "Anguilla"
+msgstr ""
+
+#: util.c:701
+msgid "Albania"
+msgstr ""
+
+#: util.c:702
+msgid "Armenia"
+msgstr ""
+
+#: util.c:703
+msgid "Netherlands Antilles"
+msgstr ""
+
+#: util.c:704
+msgid "Angola"
+msgstr ""
+
+#: util.c:705
+msgid "Antarctica"
+msgstr ""
+
+#: util.c:706
+msgid "Argentina"
+msgstr ""
+
+#: util.c:707
+msgid "American Samoa"
+msgstr ""
+
+#: util.c:708
+msgid "Austria"
+msgstr ""
+
+#: util.c:709
+msgid "Australia"
+msgstr ""
+
+#: util.c:710
+msgid "Aruba"
+msgstr ""
+
+#: util.c:711
+msgid "Azerbaijan"
+msgstr ""
+
+#: util.c:712
+msgid "Bosnia and Herzegovina"
+msgstr ""
+
+#: util.c:713
+msgid "Barbados"
+msgstr ""
+
+#: util.c:714
+msgid "Bangladesh"
+msgstr ""
+
+#: util.c:715
+msgid "Belgium"
+msgstr ""
+
+#: util.c:716
+msgid "Burkina Faso"
+msgstr ""
+
+#: util.c:717
+msgid "Bulgaria"
+msgstr ""
+
+#: util.c:718
+msgid "Bahrain"
+msgstr ""
+
+#: util.c:719
+msgid "Burundi"
+msgstr ""
+
+#: util.c:720
+msgid "Benin"
+msgstr ""
+
+#: util.c:721
+msgid "Bermuda"
+msgstr ""
+
+#: util.c:722
+msgid "Brunei Darussalam"
+msgstr ""
+
+#: util.c:723
+msgid "Bolivia"
+msgstr ""
+
+#: util.c:724
+msgid "Brazil"
+msgstr ""
+
+#: util.c:725
+msgid "Bahamas"
+msgstr ""
+
+#: util.c:726
+msgid "Bhutan"
+msgstr ""
+
+#: util.c:727
+msgid "Bouvet Island"
+msgstr ""
+
+#: util.c:728
+msgid "Botswana"
+msgstr ""
+
+#: util.c:729
+msgid "Belarus"
+msgstr ""
+
+#: util.c:730
+msgid "Belize"
+msgstr ""
+
+#: util.c:731
+msgid "Canada"
+msgstr ""
+
+#: util.c:732
+msgid "Cocos Islands"
+msgstr ""
+
+#: util.c:733
+msgid "Central African Republic"
+msgstr ""
+
+#: util.c:734
+msgid "Congo"
+msgstr ""
+
+#: util.c:735
+msgid "Switzerland"
+msgstr ""
+
+#: util.c:736
+msgid "Cote D'ivoire"
+msgstr ""
+
+#: util.c:737
+msgid "Cook Islands"
+msgstr ""
+
+#: util.c:738
+msgid "Chile"
+msgstr ""
+
+#: util.c:739
+msgid "Cameroon"
+msgstr ""
+
+#: util.c:740
+msgid "China"
+msgstr ""
+
+#: util.c:741
+msgid "Colombia"
+msgstr ""
+
+#: util.c:742
+msgid "Costa Rica"
+msgstr ""
+
+#: util.c:743
+msgid "Former Czechoslovakia"
+msgstr ""
+
+#: util.c:744
+msgid "Cuba"
+msgstr ""
+
+#: util.c:745
+msgid "Cape Verde"
+msgstr ""
+
+#: util.c:746
+msgid "Christmas Island"
+msgstr ""
+
+#: util.c:747
+msgid "Cyprus"
+msgstr ""
+
+#: util.c:748
+msgid "Czech Republic"
+msgstr ""
+
+#: util.c:749
+msgid "Germany"
+msgstr ""
+
+#: util.c:750
+msgid "Djibouti"
+msgstr ""
+
+#: util.c:751
+msgid "Denmark"
+msgstr ""
+
+#: util.c:752
+msgid "Dominica"
+msgstr ""
+
+#: util.c:753
+msgid "Dominican Republic"
+msgstr ""
+
+#: util.c:754
+msgid "Algeria"
+msgstr ""
+
+#: util.c:755
+msgid "Ecuador"
+msgstr ""
+
+#: util.c:756
+msgid "Estonia"
+msgstr ""
+
+#: util.c:757
+msgid "Egypt"
+msgstr ""
+
+#: util.c:758
+msgid "Western Sahara"
+msgstr ""
+
+#: util.c:759
+msgid "Eritrea"
+msgstr ""
+
+#: util.c:760
+msgid "Spain"
+msgstr ""
+
+#: util.c:761
+msgid "Ethiopia"
+msgstr ""
+
+#: util.c:762
+msgid "Finland"
+msgstr ""
+
+#: util.c:763
+msgid "Fiji"
+msgstr ""
+
+#: util.c:764
+msgid "Falkland Islands"
+msgstr ""
+
+#: util.c:765
+msgid "Micronesia"
+msgstr ""
+
+#: util.c:766
+msgid "Faroe Islands"
+msgstr ""
+
+#: util.c:767
+msgid "France"
+msgstr ""
+
+#: util.c:768
+msgid "France, Metropolitan"
+msgstr ""
+
+#: util.c:769
+msgid "Gabon"
+msgstr ""
+
+#: util.c:770
+msgid "Great Britain"
+msgstr ""
+
+#: util.c:771
+msgid "Grenada"
+msgstr ""
+
+#: util.c:772
+msgid "Georgia"
+msgstr ""
+
+#: util.c:773
+msgid "French Guiana"
+msgstr ""
+
+#: util.c:774
+msgid "British Channel Isles"
+msgstr ""
+
+#: util.c:775
+msgid "Ghana"
+msgstr ""
+
+#: util.c:776
+msgid "Gibraltar"
+msgstr ""
+
+#: util.c:777
+msgid "Greenland"
+msgstr ""
+
+#: util.c:778
+msgid "Gambia"
+msgstr ""
+
+#: util.c:779
+msgid "Guinea"
+msgstr ""
+
+#: util.c:780
+msgid "Guadeloupe"
+msgstr ""
+
+#: util.c:781
+msgid "Equatorial Guinea"
+msgstr ""
+
+#: util.c:782
+msgid "Greece"
+msgstr ""
+
+#: util.c:783
+msgid "S. Georgia and S. Sandwich Isles."
+msgstr ""
+
+#: util.c:784
+msgid "Guatemala"
+msgstr ""
+
+#: util.c:785
+msgid "Guam"
+msgstr ""
+
+#: util.c:786
+msgid "Guinea-Bissau"
+msgstr ""
+
+#: util.c:787
+msgid "Guyana"
+msgstr ""
+
+#: util.c:788
+msgid "Hong Kong"
+msgstr ""
+
+#: util.c:789
+msgid "Heard and McDonald Islands"
+msgstr ""
+
+#: util.c:790
+msgid "Honduras"
+msgstr ""
+
+#: util.c:791
+msgid "Croatia"
+msgstr ""
+
+#: util.c:792
+msgid "Haiti"
+msgstr ""
+
+#: util.c:793
+msgid "Hungary"
+msgstr ""
+
+#: util.c:794
+msgid "Indonesia"
+msgstr ""
+
+#: util.c:795
+msgid "Ireland"
+msgstr ""
+
+#: util.c:796
+msgid "Israel"
+msgstr ""
+
+#: util.c:797
+msgid "India"
+msgstr ""
+
+#: util.c:798
+msgid "British Indian Ocean Territory"
+msgstr ""
+
+#: util.c:799
+msgid "Iraq"
+msgstr ""
+
+#: util.c:800
+msgid "Iran"
+msgstr ""
+
+#: util.c:801
+msgid "Iceland"
+msgstr ""
+
+#: util.c:802
+msgid "Italy"
+msgstr ""
+
+#: util.c:803
+msgid "Jamaica"
+msgstr ""
+
+#: util.c:804
+msgid "Jordan"
+msgstr ""
+
+#: util.c:805
+msgid "Japan"
+msgstr ""
+
+#: util.c:806
+msgid "Kenya"
+msgstr ""
+
+#: util.c:807
+msgid "Kyrgyzstan"
+msgstr ""
+
+#: util.c:808
+msgid "Cambodia"
+msgstr ""
+
+#: util.c:809
+msgid "Kiribati"
+msgstr ""
+
+#: util.c:810
+msgid "Comoros"
+msgstr ""
+
+#: util.c:811
+msgid "St. Kitts and Nevis"
+msgstr ""
+
+#: util.c:812
+msgid "North Korea"
+msgstr ""
+
+#: util.c:813
+msgid "South Korea"
+msgstr ""
+
+#: util.c:814
+msgid "Kuwait"
+msgstr ""
+
+#: util.c:815
+msgid "Cayman Islands"
+msgstr ""
+
+#: util.c:816
+msgid "Kazakhstan"
+msgstr ""
+
+#: util.c:817
+msgid "Laos"
+msgstr ""
+
+#: util.c:818
+msgid "Lebanon"
+msgstr ""
+
+#: util.c:819
+msgid "Saint Lucia"
+msgstr ""
+
+#: util.c:820
+msgid "Liechtenstein"
+msgstr ""
+
+#: util.c:821
+msgid "Sri Lanka"
+msgstr ""
+
+#: util.c:822
+msgid "Liberia"
+msgstr ""
+
+#: util.c:823
+msgid "Lesotho"
+msgstr ""
+
+#: util.c:824
+msgid "Lithuania"
+msgstr ""
+
+#: util.c:825
+msgid "Luxembourg"
+msgstr ""
+
+#: util.c:826
+msgid "Latvia"
+msgstr ""
+
+#: util.c:827
+msgid "Libya"
+msgstr ""
+
+#: util.c:828
+msgid "Morocco"
+msgstr ""
+
+#: util.c:829
+msgid "Monaco"
+msgstr ""
+
+#: util.c:830
+msgid "Moldova"
+msgstr ""
+
+#: util.c:831
+msgid "Madagascar"
+msgstr ""
+
+#: util.c:832
+msgid "Marshall Islands"
+msgstr ""
+
+#: util.c:833
+msgid "Macedonia"
+msgstr ""
+
+#: util.c:834
+msgid "Mali"
+msgstr ""
+
+#: util.c:835
+msgid "Myanmar"
+msgstr ""
+
+#: util.c:836
+msgid "Mongolia"
+msgstr ""
+
+#: util.c:837
+msgid "Macau"
+msgstr ""
+
+#: util.c:838
+msgid "Northern Mariana Islands"
+msgstr ""
+
+#: util.c:839
+msgid "Martinique"
+msgstr ""
+
+#: util.c:840
+msgid "Mauritania"
+msgstr ""
+
+#: util.c:841
+msgid "Montserrat"
+msgstr ""
+
+#: util.c:842
+msgid "Malta"
+msgstr ""
+
+#: util.c:843
+msgid "Mauritius"
+msgstr ""
+
+#: util.c:844
+msgid "Maldives"
+msgstr ""
+
+#: util.c:845
+msgid "Malawi"
+msgstr ""
+
+#: util.c:846
+msgid "Mexico"
+msgstr ""
+
+#: util.c:847
+msgid "Malaysia"
+msgstr ""
+
+#: util.c:848
+msgid "Mozambique"
+msgstr ""
+
+#: util.c:849
+msgid "Namibia"
+msgstr ""
+
+#: util.c:850
+msgid "New Caledonia"
+msgstr ""
+
+#: util.c:851
+msgid "Niger"
+msgstr ""
+
+#: util.c:852
+msgid "Norfolk Island"
+msgstr ""
+
+#: util.c:853
+msgid "Nigeria"
+msgstr ""
+
+#: util.c:854
+msgid "Nicaragua"
+msgstr ""
+
+#: util.c:855
+msgid "Netherlands"
+msgstr ""
+
+#: util.c:856
+msgid "Norway"
+msgstr ""
+
+#: util.c:857
+msgid "Nepal"
+msgstr ""
+
+#: util.c:858
+msgid "Nauru"
+msgstr ""
+
+#: util.c:859
+msgid "Neutral Zone"
+msgstr ""
+
+#: util.c:860
+msgid "Niue"
+msgstr ""
+
+#: util.c:861
+msgid "New Zealand"
+msgstr ""
+
+#: util.c:862
+msgid "Oman"
+msgstr ""
+
+#: util.c:863
+msgid "Panama"
+msgstr ""
+
+#: util.c:864
+msgid "Peru"
+msgstr ""
+
+#: util.c:865
+msgid "French Polynesia"
+msgstr ""
+
+#: util.c:866
+msgid "Papua New Guinea"
+msgstr ""
+
+#: util.c:867
+msgid "Philippines"
+msgstr ""
+
+#: util.c:868
+msgid "Pakistan"
+msgstr ""
+
+#: util.c:869
+msgid "Poland"
+msgstr ""
+
+#: util.c:870
+msgid "St. Pierre and Miquelon"
+msgstr ""
+
+#: util.c:871
+msgid "Pitcairn"
+msgstr ""
+
+#: util.c:872
+msgid "Puerto Rico"
+msgstr ""
+
+#: util.c:873
+msgid "Portugal"
+msgstr ""
+
+#: util.c:874
+msgid "Palau"
+msgstr ""
+
+#: util.c:875
+msgid "Paraguay"
+msgstr ""
+
+#: util.c:876
+msgid "Qatar"
+msgstr ""
+
+#: util.c:877
+msgid "Reunion"
+msgstr ""
+
+#: util.c:878
+msgid "Romania"
+msgstr ""
+
+#: util.c:879
+msgid "Russian Federation"
+msgstr ""
+
+#: util.c:880
+msgid "Rwanda"
+msgstr ""
+
+#: util.c:881
+msgid "Saudi Arabia"
+msgstr ""
+
+#: util.c:882
+msgid "Solomon Islands"
+msgstr ""
+
+#: util.c:883
+msgid "Seychelles"
+msgstr ""
+
+#: util.c:884
+msgid "Sudan"
+msgstr ""
+
+#: util.c:885
+msgid "Sweden"
+msgstr ""
+
+#: util.c:886
+msgid "Singapore"
+msgstr ""
+
+#: util.c:887
+msgid "St. Helena"
+msgstr ""
+
+#: util.c:888
+msgid "Slovenia"
+msgstr ""
+
+#: util.c:889
+msgid "Svalbard and Jan Mayen Islands"
+msgstr ""
+
+#: util.c:890
+msgid "Slovak Republic"
+msgstr ""
+
+#: util.c:891
+msgid "Sierra Leone"
+msgstr ""
+
+#: util.c:892
+msgid "San Marino"
+msgstr ""
+
+#: util.c:893
+msgid "Senegal"
+msgstr ""
+
+#: util.c:894
+msgid "Somalia"
+msgstr ""
+
+#: util.c:895
+msgid "Suriname"
+msgstr ""
+
+#: util.c:896
+msgid "Sao Tome and Principe"
+msgstr ""
+
+#: util.c:897
+msgid "Former USSR"
+msgstr ""
+
+#: util.c:898
+msgid "El Salvador"
+msgstr ""
+
+#: util.c:899
+msgid "Syria"
+msgstr ""
+
+#: util.c:900
+msgid "Swaziland"
+msgstr ""
+
+#: util.c:901
+msgid "Turks and Caicos Islands"
+msgstr ""
+
+#: util.c:902
+msgid "Chad"
+msgstr ""
+
+#: util.c:903
+msgid "French Southern Territories"
+msgstr ""
+
+#: util.c:904
+msgid "Togo"
+msgstr ""
+
+#: util.c:905
+msgid "Thailand"
+msgstr ""
+
+#: util.c:906
+msgid "Tajikistan"
+msgstr ""
+
+#: util.c:907
+msgid "Tokelau"
+msgstr ""
+
+#: util.c:908
+msgid "Turkmenistan"
+msgstr ""
+
+#: util.c:909
+msgid "Tunisia"
+msgstr ""
+
+#: util.c:910
+msgid "Tonga"
+msgstr ""
+
+#: util.c:911
+msgid "East Timor"
+msgstr ""
+
+#: util.c:912
+msgid "Turkey"
+msgstr ""
+
+#: util.c:913
+msgid "Trinidad and Tobago"
+msgstr ""
+
+#: util.c:914
+msgid "Tuvalu"
+msgstr ""
+
+#: util.c:915
+msgid "Taiwan"
+msgstr ""
+
+#: util.c:916
+msgid "Tanzania"
+msgstr ""
+
+#: util.c:917
+msgid "Ukraine"
+msgstr ""
+
+#: util.c:918
+msgid "Uganda"
+msgstr ""
+
+#: util.c:919
+msgid "United Kingdom"
+msgstr ""
+
+#: util.c:920
+msgid "US Minor Outlying Islands"
+msgstr ""
+
+#: util.c:921
+msgid "United States of America"
+msgstr ""
+
+#: util.c:922
+msgid "Uruguay"
+msgstr ""
+
+#: util.c:923
+msgid "Uzbekistan"
+msgstr ""
+
+#: util.c:924
+msgid "Vatican City State"
+msgstr ""
+
+#: util.c:925
+msgid "St. Vincent and the grenadines"
+msgstr ""
+
+#: util.c:926
+msgid "Venezuela"
+msgstr ""
+
+#: util.c:927
+msgid "British Virgin Islands"
+msgstr ""
+
+#: util.c:928
+msgid "US Virgin Islands"
+msgstr ""
+
+#: util.c:929
+msgid "Vietnam"
+msgstr ""
+
+#: util.c:930
+msgid "Vanuatu"
+msgstr ""
+
+#: util.c:931
+msgid "Wallis and Futuna Islands"
+msgstr ""
+
+#: util.c:932
+msgid "Samoa"
+msgstr ""
+
+#: util.c:933
+msgid "Yemen"
+msgstr ""
+
+#: util.c:934
+msgid "Mayotte"
+msgstr ""
+
+#: util.c:935
+msgid "Yugoslavia"
+msgstr ""
+
+#: util.c:936
+msgid "South Africa"
+msgstr ""
+
+#: util.c:937
+msgid "Zambia"
+msgstr ""
+
+#: util.c:938
+msgid "Zaire"
+msgstr ""
+
+#: util.c:939
+msgid "Zimbabwe"
+msgstr ""
+
+#: util.c:940
+msgid "Internic Commercial"
+msgstr ""
+
+#: util.c:941
+msgid "Educational Institution"
+msgstr ""
+
+#: util.c:942
+msgid "Government"
+msgstr ""
+
+#: util.c:943
+msgid "International"
+msgstr ""
+
+#: util.c:944
+msgid "Military"
+msgstr ""
+
+#: util.c:945
+msgid "Internic Network"
+msgstr ""
+
+#: util.c:946
+msgid "Internic Non-Profit Organization"
+msgstr ""
+
+#: util.c:947
+msgid "Old School ARPAnet"
+msgstr ""
+
+#: util.c:948
+msgid "Nato Fiel"
+msgstr ""
+
+#: util.c:949
+msgid "United States Medical"
+msgstr ""
+
+#: util.c:950
+msgid "Reverse DNS"
+msgstr ""
+
+#: util.c:956 util.c:964
+msgid "Unknown"
+msgstr ""
+
+#: xchat.c:825
+msgid "Disconnect"
+msgstr ""
+
+#: xchat.c:826
+msgid "Reconnect"
+msgstr ""
+
+#: xchat.c:827
+msgid "Leave Channel"
+msgstr ""
+
+#: xchat.c:828
+msgid "Join Channel..."
+msgstr ""
+
+#: xchat.c:829
+msgid "Enter Channel to Join:"
+msgstr ""
+
+#: xchat.c:830
+msgid "Server Links"
+msgstr ""
+
+#: xchat.c:831
+msgid "Ping Server"
+msgstr ""
+
+#: xchat.c:832
+msgid "Hide Version"
+msgstr ""
+
+#: xchat.c:842
+msgid "Op"
+msgstr ""
+
+#: xchat.c:843
+msgid "DeOp"
+msgstr ""
+
+#: xchat.c:844
+msgid "Ban"
+msgstr ""
+
+#: xchat.c:845
+msgid "Kick"
+msgstr ""
+
+#: xchat.c:846
+msgid "bye"
+msgstr ""
+
+#: xchat.c:847
+#, c-format
+msgid "Enter reason to kick %s:"
+msgstr ""
+
+#: xchat.c:848
+msgid "Sendfile"
+msgstr ""
+
+#: xchat.c:849
+msgid "Dialog"
+msgstr ""

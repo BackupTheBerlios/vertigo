@@ -1,0 +1,142 @@
+In file included from xchat-plugin.h:40,
+                 from plugin-timer.c:4:
+plugin.h:1:9: warning: #pragma once is obsolete
+In file included from xchat-plugin.h:40,
+                 from plugin-timer.c:4:
+plugin.h:51: parse error before "xchat_context"
+plugin.h:52: warning: no semicolon at end of struct or union
+plugin.h:55: warning: type defaults to `int' in declaration of `xchat_get_context'
+plugin.h:55: ISO C forbids data definition with no type or storage class
+plugin.h:100: parse error before '*' token
+plugin.h:100: warning: type defaults to `int' in declaration of `context'
+plugin.h:100: ISO C forbids data definition with no type or storage class
+plugin.h:102: parse error before ':' token
+plugin.h:103: warning: ISO C does not allow extra `;' outside of a function
+plugin.h:106: parse error before '*' token
+plugin.h:107: parse error before '*' token
+plugin.h:108: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+plugin.h:110: parse error before '*' token
+plugin.h:111: parse error before '*' token
+plugin.h:112: parse error before '*' token
+plugin.h:113: parse error before '*' token
+plugin.h:114: parse error before '*' token
+plugin.h:115: parse error before '*' token
+In file included from plugin-timer.c:4:
+xchat-plugin.h:126: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:134: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:141: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:186: parse error before "xchat_context"
+xchat-plugin.h:188: parse error before '*' token
+xchat-plugin.h:191: warning: type defaults to `int' in declaration of `xchat_find_context'
+xchat-plugin.h:191: ISO C forbids data definition with no type or storage class
+xchat-plugin.h:193: parse error before '*' token
+xchat-plugin.h:194: warning: type defaults to `int' in declaration of `xchat_get_context'
+xchat-plugin.h:194: `xchat_get_context' redeclared as different kind of symbol
+plugin.h:55: previous declaration of `xchat_get_context'
+xchat-plugin.h:194: ISO C forbids data definition with no type or storage class
+xchat-plugin.h:198: `xchat_get_info' redeclared as different kind of symbol
+plugin.h:57: previous declaration of `xchat_get_info'
+xchat-plugin.h:202: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:204: `xchat_get_prefs' redeclared as different kind of symbol
+plugin.h:61: previous declaration of `xchat_get_prefs'
+xchat-plugin.h:208: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:208: `xchat_list_get' redeclared as different kind of symbol
+plugin.h:63: previous declaration of `xchat_list_get'
+xchat-plugin.h:212: `xchat_list_free' redeclared as different kind of symbol
+plugin.h:65: previous declaration of `xchat_list_free'
+xchat-plugin.h:216: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:216: `xchat_list_fields' redeclared as different kind of symbol
+plugin.h:67: previous declaration of `xchat_list_fields'
+xchat-plugin.h:220: `xchat_list_next' redeclared as different kind of symbol
+plugin.h:69: previous declaration of `xchat_list_next'
+xchat-plugin.h:225: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:225: `xchat_list_str' redeclared as different kind of symbol
+plugin.h:72: previous declaration of `xchat_list_str'
+xchat-plugin.h:230: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:230: `xchat_list_int' redeclared as different kind of symbol
+plugin.h:75: previous declaration of `xchat_list_int'
+xchat-plugin.h:234: warning: declaration of `filename' shadows a global declaration
+plugin.h:96: warning: shadowed declaration is here
+xchat-plugin.h:235: warning: declaration of `name' shadows a global declaration
+plugin.h:97: warning: shadowed declaration is here
+xchat-plugin.h:236: warning: declaration of `desc' shadows a global declaration
+plugin.h:98: warning: shadowed declaration is here
+xchat-plugin.h:237: warning: declaration of `version' shadows a global declaration
+plugin.h:99: warning: shadowed declaration is here
+xchat-plugin.h:238: `xchat_plugingui_add' redeclared as different kind of symbol
+plugin.h:81: previous declaration of `xchat_plugingui_add'
+xchat-plugin.h:242: warning: declaration of `handle' shadows a global declaration
+plugin.h:95: warning: shadowed declaration is here
+xchat-plugin.h:242: `xchat_plugingui_remove' redeclared as different kind of symbol
+plugin.h:83: previous declaration of `xchat_plugingui_remove'
+xchat-plugin.h:246: `xchat_emit_print' redeclared as different kind of symbol
+plugin.h:85: previous declaration of `xchat_emit_print'
+plugin-timer.c:27: parse error before "xchat_context"
+plugin-timer.c:27: warning: no semicolon at end of struct or union
+plugin-timer.c:32: parse error before ':' token
+plugin-timer.c:33: warning: type defaults to `int' in declaration of `timer'
+plugin-timer.c:33: ISO C forbids data definition with no type or storage class
+plugin-timer.c:36: parse error before '*' token
+plugin-timer.c: In function `timer_del':
+plugin-timer.c:38: `tim' undeclared (first use in this function)
+plugin-timer.c:38: (Each undeclared identifier is reported only once
+plugin-timer.c:38: for each function it appears in.)
+plugin-timer.c: At top level:
+plugin-timer.c:45: warning: declaration of `ref' shadows a global declaration
+plugin-timer.c:29: warning: shadowed declaration is here
+plugin-timer.c: In function `timer_del_ref':
+plugin-timer.c:48: `tim' undeclared (first use in this function)
+plugin-timer.c:58: warning: passing arg 2 of `xchat_printf' discards qualifiers from pointer target type
+plugin-timer.c:64: warning: passing arg 2 of `xchat_print' discards qualifiers from pointer target type
+plugin-timer.c: At top level:
+plugin-timer.c:68: parse error before '*' token
+plugin-timer.c: In function `timeout_cb':
+plugin-timer.c:70: `tim' undeclared (first use in this function)
+plugin-timer.c: At top level:
+plugin-timer.c:87: warning: declaration of `ref' shadows a global declaration
+plugin-timer.c:29: warning: shadowed declaration is here
+plugin-timer.c:87: warning: declaration of `timeout' shadows a global declaration
+plugin-timer.c:30: warning: shadowed declaration is here
+plugin-timer.c:87: warning: declaration of `repeat' shadows a global declaration
+plugin-timer.c:31: warning: shadowed declaration is here
+plugin-timer.c:87: warning: declaration of `command' shadows a global declaration
+plugin-timer.c:28: warning: shadowed declaration is here
+plugin-timer.c: In function `timer_add':
+plugin-timer.c:89: `tim' undeclared (first use in this function)
+plugin-timer.c:90: warning: ISO C89 forbids mixed declarations and code
+plugin-timer.c:116: warning: ISO C forbids passing arg 3 of `xchat_hook_timer' between function pointer and `void *'
+plugin-timer.c: In function `timer_showlist':
+plugin-timer.c:124: `tim' undeclared (first use in this function)
+plugin-timer.c:128: warning: passing arg 2 of `xchat_print' discards qualifiers from pointer target type
+plugin-timer.c:132: warning: passing arg 2 of `xchat_print' discards qualifiers from pointer target type
+plugin-timer.c:138: warning: passing arg 2 of `xchat_printf' discards qualifiers from pointer target type
+plugin-timer.c: In function `timer_cb':
+plugin-timer.c:146: warning: declaration of `repeat' shadows a global declaration
+plugin-timer.c:31: warning: shadowed declaration is here
+plugin-timer.c:147: warning: declaration of `timeout' shadows a global declaration
+plugin-timer.c:30: warning: shadowed declaration is here
+plugin-timer.c:149: warning: declaration of `ref' shadows a global declaration
+plugin-timer.c:29: warning: shadowed declaration is here
+plugin-timer.c:151: warning: declaration of `command' shadows a global declaration
+plugin-timer.c:28: warning: shadowed declaration is here
+plugin-timer.c:187: warning: passing arg 2 of `xchat_print' discards qualifiers from pointer target type
+plugin-timer.c:144: warning: unused parameter `userdata'
+plugin-timer.c: At top level:
+plugin-timer.c:202: warning: no previous prototype for `timer_plugin_init'
+plugin-timer.c: In function `timer_plugin_init':
+plugin-timer.c:206: warning: assignment discards qualifiers from pointer target type
+plugin-timer.c:207: warning: assignment discards qualifiers from pointer target type
+plugin-timer.c:208: warning: assignment discards qualifiers from pointer target type
+plugin-timer.c:210: warning: passing arg 2 of `xchat_hook_command' discards qualifiers from pointer target type
+plugin-timer.c:210: warning: passing arg 5 of `xchat_hook_command' discards qualifiers from pointer target type
+plugin-timer.c:201: warning: unused parameter `arg'
+make: *** [plugin-timer.o] Error 1

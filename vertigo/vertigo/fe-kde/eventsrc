@@ -1,0 +1,623 @@
+[!Global!]
+IconName=vertigo
+Comment=vertigo
+
+[AddNotify]
+Name=Add Notify
+Comment=Add Notify
+default_presentation=8
+
+[BanList]
+Name=Ban List
+Comment=Ban List
+default_presentation=8
+
+[Banned]
+Name=Banned
+Comment=Banned
+default_presentation=8
+
+[ChangeNick]
+Name=Change Nick
+Comment=Change Nick
+default_presentation=8
+
+[ChannelAction]
+Name=Channel Action
+Comment=Channel Action
+default_presentation=8
+
+[ChannelActionHilight]
+Name=Channel Action Hilight
+Comment=Channel Action Hilight
+default_presentation=8
+
+[ChannelBan]
+Name=Channel Ban
+Comment=Channel Ban
+default_presentation=8
+
+[ChannelCreation]
+Name=Channel Creation
+Comment=Channel Creation
+default_presentation=8
+
+[ChannelDeHalfOp]
+Name=Channel DeHalfOp
+Comment=Channel DeHalfOp
+default_presentation=8
+
+[ChannelDeOp]
+Name=Channel DeOp
+Comment=Channel DeOp
+default_presentation=8
+
+[ChannelDeVoice]
+Name=Channel DeVoice
+Comment=Channel DeVoice
+default_presentation=8
+
+[ChannelExempt]
+Name=Channel Exempt
+Comment=Channel Exempt
+default_presentation=8
+
+[ChannelHalf-Operator]
+Name=Channel Half-Operator
+Comment=Channel Half-Operator
+default_presentation=8
+
+[ChannelINVITE]
+Name=Channel INVITE
+Comment=Channel INVITE
+default_presentation=8
+
+[ChannelList]
+Name=Channel List
+Comment=Channel List
+default_presentation=8
+
+[ChannelMessage]
+Name=Channel Message
+Comment=Channel Message
+default_presentation=8
+
+[ChannelModeGeneric]
+Name=Channel Mode Generic
+Comment=Channel Mode Generic
+default_presentation=8
+
+[ChannelModes]
+Name=Channel Modes
+Comment=Channel Modes
+default_presentation=8
+
+[ChannelMsgHilight]
+Name=Channel Msg Hilight
+Comment=Channel Msg Hilight
+default_presentation=8
+
+[ChannelNotice]
+Name=Channel Notice
+Comment=Channel Notice
+default_presentation=8
+
+[ChannelOperator]
+Name=Channel Operator
+Comment=Channel Operator
+default_presentation=8
+
+[ChannelRemoveExempt]
+Name=Channel Remove Exempt
+Comment=Channel Remove Exempt
+default_presentation=8
+
+[ChannelRemoveInvite]
+Name=Channel Remove Invite
+Comment=Channel Remove Invite
+default_presentation=8
+
+[ChannelRemoveKeyword]
+Name=Channel Remove Keyword
+Comment=Channel Remove Keyword
+default_presentation=8
+
+[ChannelRemoveLimit]
+Name=Channel Remove Limit
+Comment=Channel Remove Limit
+default_presentation=8
+
+[ChannelSetKey]
+Name=Channel Set Key
+Comment=Channel Set Key
+default_presentation=8
+
+[ChannelSetLimit]
+Name=Channel Set Limit
+Comment=Channel Set Limit
+default_presentation=8
+
+[ChannelUnBan]
+Name=Channel UnBan
+Comment=Channel UnBan
+default_presentation=8
+
+[ChannelVoice]
+Name=Channel Voice
+Comment=Channel Voice
+default_presentation=8
+
+[Connected]
+Name=Connected
+Comment=Connected
+default_presentation=8
+
+[Connecting]
+Name=Connecting
+Comment=Connecting
+default_presentation=8
+
+[ConnectionFailed]
+Name=Connection Failed
+Comment=Connection Failed
+default_presentation=8
+
+[CTCPGeneric]
+Name=CTCP Generic
+Comment=CTCP Generic
+default_presentation=8
+
+[CTCPGenerictoChannel]
+Name=CTCP Generic to Channel
+Comment=CTCP Generic to Channel
+default_presentation=8
+
+[CTCPSend]
+Name=CTCP Send
+Comment=CTCP Send
+default_presentation=8
+
+[CTCPSound]
+Name=CTCP Sound
+Comment=CTCP Sound
+default_presentation=8
+
+[DCCCHATAbort]
+Name=DCC CHAT Abort
+Comment=DCC CHAT Abort
+default_presentation=8
+
+[DCCCHATConnect]
+Name=DCC CHAT Connect
+Comment=DCC CHAT Connect
+default_presentation=8
+
+[DCCCHATFailed]
+Name=DCC CHAT Failed
+Comment=DCC CHAT Failed
+default_presentation=8
+
+[DCCCHATOffer]
+Name=DCC CHAT Offer
+Comment=DCC CHAT Offer
+default_presentation=8
+
+[DCCCHATOffering]
+Name=DCC CHAT Offering
+Comment=DCC CHAT Offering
+default_presentation=8
+
+[DCCCHATReoffer]
+Name=DCC CHAT Reoffer
+Comment=DCC CHAT Reoffer
+default_presentation=8
+
+[DCCConectionFailed]
+Name=DCC Conection Failed
+Comment=DCC Conection Failed
+default_presentation=8
+
+[DCCGenericOffer]
+Name=DCC Generic Offer
+Comment=DCC Generic Offer
+default_presentation=8
+
+[DCCHeader]
+Name=DCC Header
+Comment=DCC Header
+default_presentation=8
+
+[DCCMalformed]
+Name=DCC Malformed
+Comment=DCC Malformed
+default_presentation=8
+
+[DCCOffer]
+Name=DCC Offer
+Comment=DCC Offer
+default_presentation=8
+
+[DCCOfferNotValid]
+Name=DCC Offer Not Valid
+Comment=DCC Offer Not Valid
+default_presentation=8
+
+[DCCRECVAbort]
+Name=DCC RECV Abort
+Comment=DCC RECV Abort
+default_presentation=8
+
+[DCCRECVComplete]
+Name=DCC RECV Complete
+Comment=DCC RECV Complete
+default_presentation=8
+
+[DCCRECVConnect]
+Name=DCC RECV Connect
+Comment=DCC RECV Connect
+default_presentation=8
+
+[DCCRECVFailed]
+Name=DCC RECV Failed
+Comment=DCC RECV Failed
+default_presentation=8
+
+[DCCRECVFileOpenError]
+Name=DCC RECV File Open Error
+Comment=DCC RECV File Open Error
+default_presentation=8
+
+[DCCRename]
+Name=DCC Rename
+Comment=DCC Rename
+default_presentation=8
+
+[DCCRESUMERequest]
+Name=DCC RESUME Request
+Comment=DCC RESUME Request
+default_presentation=8
+
+[DCCSENDAbort]
+Name=DCC SEND Abort
+Comment=DCC SEND Abort
+default_presentation=8
+
+[DCCSENDComplete]
+Name=DCC SEND Complete
+Comment=DCC SEND Complete
+default_presentation=8
+
+[DCCSENDConnect]
+Name=DCC SEND Connect
+Comment=DCC SEND Connect
+default_presentation=8
+
+[DCCSENDFailed]
+Name=DCC SEND Failed
+Comment=DCC SEND Failed
+default_presentation=8
+
+[DCCSENDOffer]
+Name=DCC SEND Offer
+Comment=DCC SEND Offer
+default_presentation=8
+
+[DCCStall]
+Name=DCC Stall
+Comment=DCC Stall
+default_presentation=8
+
+[DCCTimeout]
+Name=DCC Timeout
+Comment=DCC Timeout
+default_presentation=8
+
+[DeleteNotify]
+Name=Delete Notify
+Comment=Delete Notify
+default_presentation=8
+
+[Disconnected]
+Name=Disconnected
+Comment=Disconnected
+default_presentation=8
+
+[FoundIP]
+Name=Found IP
+Comment=Found IP
+default_presentation=8
+
+[IgnoreAdd]
+Name=Ignore Add
+Comment=Ignore Add
+default_presentation=8
+
+[IgnoreChanged]
+Name=Ignore Changed
+Comment=Ignore Changed
+default_presentation=8
+
+[IgnoreFooter]
+Name=Ignore Footer
+Comment=Ignore Footer
+default_presentation=8
+
+[IgnoreHeader]
+Name=Ignore Header
+Comment=Ignore Header
+default_presentation=8
+
+[IgnoreRemove]
+Name=Ignore Remove
+Comment=Ignore Remove
+default_presentation=8
+
+[IgnorelistEmpty]
+Name=Ignorelist Empty
+Comment=Ignorelist Empty
+default_presentation=8
+
+[Invite]
+Name=Invite
+Comment=Invite
+default_presentation=8
+
+[Invited]
+Name=Invited
+Comment=Invited
+default_presentation=8
+
+[Join]
+Name=Join
+Comment=Join
+default_presentation=8
+
+[Keyword]
+Name=Keyword
+Comment=Keyword
+default_presentation=8
+
+[Kick]
+Name=Kick
+Comment=Kick
+default_presentation=8
+
+[Killed]
+Name=Killed
+Comment=Killed
+default_presentation=8
+
+[MessageSend]
+Name=Message Send
+Comment=Message Send
+default_presentation=8
+
+[Motd]
+Name=Motd
+Comment=Motd
+default_presentation=8
+
+[MOTDSkipped]
+Name=MOTD Skipped
+Comment=MOTD Skipped
+default_presentation=8
+
+[NickClash]
+Name=Nick Clash
+Comment=Nick Clash
+default_presentation=8
+
+[NickFailed]
+Name=Nick Failed
+Comment=Nick Failed
+default_presentation=8
+
+[NoDCC]
+Name=No DCC
+Comment=No DCC
+default_presentation=8
+
+[NoRunningProcess]
+Name=No Running Process
+Comment=No Running Process
+default_presentation=8
+
+[Notice]
+Name=Notice
+Comment=Notice
+default_presentation=8
+
+[NoticeSend]
+Name=Notice Send
+Comment=Notice Send
+default_presentation=8
+
+[NotifyEmpty]
+Name=Notify Empty
+Comment=Notify Empty
+default_presentation=8
+
+[NotifyHeader]
+Name=Notify Header
+Comment=Notify Header
+default_presentation=8
+
+[NotifyNumber]
+Name=Notify Number
+Comment=Notify Number
+default_presentation=8
+
+[NotifyOffline]
+Name=Notify Offline
+Comment=Notify Offline
+default_presentation=8
+
+[NotifyOnline]
+Name=Notify Online
+Comment=Notify Online
+default_presentation=8
+
+[Part]
+Name=Part
+Comment=Part
+default_presentation=8
+
+[PartwithReason]
+Name=Part with Reason
+Comment=Part with Reason
+default_presentation=8
+
+[PingReply]
+Name=Ping Reply
+Comment=Ping Reply
+default_presentation=8
+
+[PingTimeout]
+Name=Ping Timeout
+Comment=Ping Timeout
+default_presentation=8
+
+[PrivateMessage]
+Name=Private Message
+Comment=Private Message
+default_presentation=8
+
+[PrivateMessagetoDialog]
+Name=Private Message to Dialog
+Comment=Private Message to Dialog
+default_presentation=8
+
+[ProcessAlreadyRunning]
+Name=Process Already Running
+Comment=Process Already Running
+default_presentation=8
+
+[Quit]
+Name=Quit
+Comment=Quit
+default_presentation=8
+
+[RawModes]
+Name=Raw Modes
+Comment=Raw Modes
+default_presentation=8
+
+[ReceiveWallops]
+Name=Receive Wallops
+Comment=Receive Wallops
+default_presentation=8
+
+[ResolvingUser]
+Name=Resolving User
+Comment=Resolving User
+default_presentation=8
+
+[ServerConnected]
+Name=Server Connected
+Comment=Server Connected
+default_presentation=8
+
+[ServerError]
+Name=Server Error
+Comment=Server Error
+default_presentation=8
+
+[ServerLookup]
+Name=Server Lookup
+Comment=Server Lookup
+default_presentation=8
+
+[ServerNotice]
+Name=Server Notice
+Comment=Server Notice
+default_presentation=8
+
+[ServerText]
+Name=Server Text
+Comment=Server Text
+default_presentation=8
+
+[StopConnection]
+Name=Stop Connection
+Comment=Stop Connection
+default_presentation=8
+
+[Topic]
+Name=Topic
+Comment=Topic
+default_presentation=8
+
+[TopicCreation]
+Name=Topic Creation
+Comment=Topic Creation
+default_presentation=8
+
+[TopicChange]
+Name=Topic Change
+Comment=Topic Change
+default_presentation=8
+
+[UnknownHost]
+Name=Unknown Host
+Comment=Unknown Host
+default_presentation=8
+
+[UserLimit]
+Name=User Limit
+Comment=User Limit
+default_presentation=8
+
+[UsersOnChannel]
+Name=Users On Channel
+Comment=Users On Channel
+default_presentation=8
+
+[WhoIsAwayLine]
+Name=WhoIs Away Line
+Comment=WhoIs Away Line
+default_presentation=8
+
+[WhoIsChannel/OperLine]
+Name=WhoIs Channel/Oper Line
+Comment=WhoIs Channel/Oper Line
+default_presentation=8
+
+[WhoIsEnd]
+Name=WhoIs End
+Comment=WhoIs End
+default_presentation=8
+
+[WhoIsIdleLine]
+Name=WhoIs Idle Line
+Comment=WhoIs Idle Line
+default_presentation=8
+
+[WhoIsIdleLinewithSignon]
+Name=WhoIs Idle Line with Signon
+Comment=WhoIs Idle Line with Signon
+default_presentation=8
+
+[WhoIsNameLine]
+Name=WhoIs Name Line
+Comment=WhoIs Name Line
+default_presentation=8
+
+[WhoIsServerLine]
+Name=WhoIs Server Line
+Comment=WhoIs Server Line
+default_presentation=8
+
+[YouJoin]
+Name=You Join
+Comment=You Join
+default_presentation=8
+
+[YouPart]
+Name=You Part
+Comment=You Part
+default_presentation=8
+
+[YouPartwithReason]
+Name=You Part with Reason
+Comment=You Part
+default_presentation=8

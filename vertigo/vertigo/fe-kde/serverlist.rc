@@ -1,0 +1,11 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="serverlist" version="2">
+  <Menu name="network_popup">
+	<Action name="add_network"/>   
+<Separator lineSeparator="true"/>	
+<Action name="rename_network"/>
+	<Action name="moveup_network"/>
+        <Action name="movedown_network"/>
+	<Action name="remove_network"/>
+</Menu>
+</kpartgui>

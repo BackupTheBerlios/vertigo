@@ -1,0 +1,10 @@
+if nomenubar, put it in first of popupmenu then seperator
+set sess->gui->win to new detached window renable that shit by setting sess->gui->win.
+textwidget: if doublebuffer, don't resize if smaller than current size 
+mainwindow: go from list of mainviews to count of mainviews (like app from mainwindows to count)
+fix quit with multiple windows--- implement kmail-like passive quit
+in getstr- add pixmaps to buttons and right justifyt.
+fix cmd complettion
+port getstr/getint to kdialogbase
+use namespaces
+repalce fcn(void) with fcn()

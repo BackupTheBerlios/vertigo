@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=vertigo
+Exec=vertigo %i %m -caption "%c"
+Icon=vertigo
+Type=Application
+DocPath=vertigo/vertigo.html
+GenericName=IRC Client
+X-KDE-StartupNotify=true
+X-DCOP-ServiceType=Multi
+Categories=Qt;KDE;Network
+Terminal=0

@@ -1,0 +1,407 @@
+dnl    This file is part of the KDE libraries/packages
+dnl    Copyright (C) 2001 Stephan Kulow (coolo@kde.org)
+ 
+dnl    This file is free software; you can redistribute it and/or
+dnl    modify it under the terms of the GNU Library General Public
+dnl    License as published by the Free Software Foundation; either
+dnl    version 2 of the License, or (at your option) any later version.
+ 
+dnl    This library is distributed in the hope that it will be useful,
+dnl    but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl    Library General Public License for more details.
+ 
+dnl    You should have received a copy of the GNU Library General Public License
+dnl    along with this library; see the file COPYING.LIB.  If not, write to
+dnl    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+dnl    Boston, MA 02111-1307, USA.
+
+# Original Author was Kalle@kde.org
+# I lifted it in some mater. (Stephan Kulow)
+# I used much code from Janos Farkas
+
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(acinclude.m4) dnl a source file from your sub dir
+
+dnl This is so we can use kde-common
+AC_CONFIG_AUX_DIR(admin)
+
+dnl This ksh/zsh feature conflicts with `cd blah ; pwd`
+unset CDPATH
+
+dnl Checking host/target/build systems, for make, install etc.
+AC_CANONICAL_SYSTEM 
+dnl Perform program name transformation
+AC_ARG_PROGRAM
+
+dnl Automake doc recommends to do this only here. (Janos)
+AM_INIT_AUTOMAKE(vertigo, 0.1) dnl searches for some needed programs
+
+KDE_SET_PREFIX
+
+dnl generate the config header
+AM_CONFIG_HEADER(config.h) dnl at the distribution this done
+
+dnl Checks for programs.
+AC_CHECK_COMPILERS
+AC_ENABLE_SHARED(yes)
+AC_ENABLE_STATIC(no)
+KDE_PROG_LIBTOOL
+
+dnl for NLS support. Call them in this order!
+dnl WITH_NLS is for the po files
+AM_KDE_WITH_NLS
+
+dnl KDE_USE_QT
+AC_PATH_KDE
+#MIN_CONFIG
+
+dnl PACKAGE set before
+
+AH_VERBATIM([USE_OPENSSL],[#undef USE_OPENSSL])
+AH_VERBATIM([OLD_PERL],[#undef OLD_PERL])
+AH_VERBATIM([PREFIX],[#undef PREFIX])
+AH_VERBATIM([SOCKS],[#undef SOCKS])
+AH_VERBATIM([USE_DEBUG],[#undef USE_DEBUG])
+AH_VERBATIM([USE_IPV6],[#undef USE_IPV6])
+AH_VERBATIM([USE_OPENSSL],[#undef USE_OPENSSL])
+AH_VERBATIM([USE_PLUGIN],[#undef USE_PLUGIN])
+AH_VERBATIM([USING_FREEBSD],[#undef USING_FREEBSD])
+AH_VERBATIM([USING_LINUX],[#undef USING_LINUX])
+
+AC_PATH_PROG(sedpath, sed)
+if test "_$sedpath" = _; then
+        AC_MSG_ERROR("Cannot find sed: I need it\!")
+fi
+
+AC_PATH_PROG(unamepath, uname)
+if test "_$unamepath" = _; then
+        system="unknown"
+else
+        AC_MSG_CHECKING(system type)
+        system=`$unamepath -s`
+        AC_MSG_RESULT($system)
+        if test "$system" = "Linux"; then
+                AC_DEFINE(USING_LINUX)
+        fi
+        if test "$system" = "FreeBSD"; then
+                AC_DEFINE(USING_FREEBSD)
+        fi
+fi
+
+dnl These are common macros that you might or might not want to use
+
+dnl Image readers/writers
+KDE_CHECK_KIMGIO
+
+AM_PATH_GLIB_2_0(2.0.3, glib=yes, glib=no)
+if test "$glib" = no; then
+        AC_MSG_ERROR("Cannot find glib")
+fi
+
+
+
+CFLAGS="$CFLAGS $GLIB_CFLAGS"
+LIBS="$LIBS $GLIB_LIBS"
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h stdlib.h paths.h)
+AC_CHECK_FUNCS(usleep)
+
+AC_ARG_ENABLE(openssl,
+[  --enable-openssl[=PATH]   enable use of openSSL],
+        openssl=$enableval, openssl=yes)
+
+AC_ARG_ENABLE(socks,
+[  --enable-socks          enable use of SOCKS5 (default: no)],
+        socks=$enableval, socks=no)
+
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6           enable IPv6 (default: no)],
+        ipv6=$enableval, ipv6=no)
+
+AC_ARG_ENABLE(python,
+[  --disable-python        don't build the python plugin],
+        python=$enableval, python=yes)
+
+AC_ARG_ENABLE(perl,
+[  --disable-perl          don't build the perl plugin],
+        perl=$enableval, perl=yes)
+
+AC_ARG_ENABLE(tcl,
+[  --enable-tcl[=PATH]       directory with Tcl config file: tclConfig.sh],
+        tcl=$enableval, tcl=yes)
+
+AC_ARG_ENABLE(plugin,
+[  --disable-plugin        disable plugin support],
+        plugin=$enableval, plugin=yes)
+
+
+dnl *********************************************************************
+dnl ** OPENSSL **********************************************************
+dnl *********************************************************************
+
+retry=no
+if test "$openssl" != no; then
+        AC_PATH_PROG(pkgconfigpath, pkg-config)
+        AC_MSG_CHECKING(for openssl through pkg-config)
+        if $pkgconfigpath openssl --exists; then
+                CPPFLAGS="$CPPFLAGS `$pkgconfigpath openssl --cflags`"
+                LIBS="$LIBS `$pkgconfigpath openssl --libs`"
+                AC_DEFINE(USE_OPENSSL)
+                AC_MSG_RESULT(yes)
+                openssl=yes
+        else
+                AC_MSG_RESULT(no)
+                retry=yes
+        fi
+fi
+
+if test "$retry" = "yes"; then
+        unset openssl_path ac_cv_lib_ssl_SSL_new ac_cv_header_openssl_ssl_h
+        if test "$openssl" != yes; then
+                openssl_path=$openssl
+        fi
+        openssl=no
+        SAVED_LIBS=$LIBS
+        LIBS="$LIBS -lcrypto"
+        if test -n "$openssl_path"; then
+                LIBS="-L$openssl_path/lib $LIBS"
+        fi
+        AC_CHECK_LIB(ssl, SSL_new, have_openssl=yes)
+        LIBS=$SAVED_LIBS
+        if test "$have_openssl" = yes; then
+                SAVED_CPPFLAGS=$CPPFLAGS
+                if test -n "$openssl_path"; then
+                        CPPFLAGS="-I$openssl_path/include $CPPFLAGS"
+                fi
+                AC_CHECK_HEADERS(openssl/ssl.h, have_openssl_h=yes)
+                if test "$have_openssl_h" = yes; then
+                        openssl=yes
+                        AC_DEFINE(USE_OPENSSL)
+                        LIBS="$LIBS -lssl -lcrypto"
+                        if test -n "$openssl_path"; then
+                                LIBS="-L$openssl_path/lib $LIBS"
+                     fi
+                else
+                        CPPFLAGS=$SAVED_CPPFLAGS
+                fi
+        fi
+fi
+
+
+dnl *********************************************************************
+dnl ** PERL *************************************************************
+dnl *********************************************************************
+
+if test "$perl" = yes; then
+        AC_PATH_PROG(perlpath, perl)
+        AC_MSG_CHECKING(for Perl compile flags)
+        PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+        if test "_$PERL_CFLAGS" = _ ; then
+                AC_MSG_RESULT([not found, building without perl.])
+                perl=no
+        else
+                PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts |$sedpath 's/-lgdbm //'`
+                PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-ldb //'`
+                PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lndbm //'`
+                if test "$system" = "Linux"; then
+                        PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lnsl //'`
+                        PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lposix //'`
+                fi
+                PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lc //'`
+                AC_MSG_RESULT(ok)
+
+                oldLIBS=$LIBS
+                LIBS="$LIBS $PERL_LDFLAGS"
+                AC_CHECK_FUNCS(eval_pv)
+                LIBS=$oldLIBS
+
+                AC_MSG_CHECKING(for old perl)
+                PERL_OLD=`$perlpath -e 'if($]<5.006){printf"yes\n";}else{printf"no\n";}'`
+                if test "$PERL_OLD" = "yes"; then
+                        AC_DEFINE(OLD_PERL)
+                        AC_MSG_RESULT(yes)
+                else
+                        AC_MSG_RESULT(no)
+                fi
+        fi
+fi
+
+dnl *********************************************************************
+dnl ** PYTHON ***********************************************************
+dnl *********************************************************************
+
+if test "$python" = yes; then
+        AC_PATH_PROG(pythonpath, python2)
+        if test "_$pythonpath" = _ ; then
+                AC_PATH_PROG(pythonpath, python)
+        fi
+        if test "_$pythonpath" = _ ; then
+                python=no
+        else
+                AC_MSG_CHECKING(Python version)
+                changequote(<<, >>)dnl
+                PY_VERSION=`$pythonpath -c 'import sys; print sys.version[:3]'`
+                $pythonpath -c "import sys; map(int,sys.version[:3].split('.')) >= [2,2] or sys.exit(1)"
+                changequote([, ])dnl
+                AC_MSG_RESULT($PY_VERSION)
+                if test "$?" != "1"; then
+                        AC_MSG_CHECKING(Python compile flags)
+                        PY_PREFIX=`$pythonpath -c 'import sys; print sys.prefix'`
+                        PY_EXEC_PREFIX=`$pythonpath -c 'import sys; print sys.exec_prefix'`
+                        if test -f $PY_PREFIX/include/python$PY_VERSION/Python.h; then
+                                PY_LIBS="-L$PY_EXEC_PREFIX/lib/python$PY_VERSION/config -lpython$PY_VERSION -lpthread -lutil"
+                                PY_CFLAGS="-I$PY_PREFIX/include/python$PY_VERSION"
+                                AC_MSG_RESULT(ok)
+                        else
+                                python=no
+                                AC_MSG_RESULT([Can't find Python.h])
+                        fi
+                else
+                        echo "Python too old. Only 2.2 or above is supported."
+                        python=no
+                fi
+        fi
+fi
+
+
+
+dnl *********************************************************************
+dnl ** TCL **************************************************************
+dnl *********************************************************************
+
+AC_MSG_CHECKING(for location of tclConfig.sh)
+dirs="$tcl /lib /usr/lib /usr/tcl/lib /usr/local/lib /usr/local/tcl-8.4/lib /usr/local/tcl/lib /opt/lib"
+found=0
+if test "$tcl" != "no"; then
+        tcl=no
+        for try in $dirs; do
+                if test -f $try/tclConfig.sh; then
+                        found=1
+                        . $try/tclConfig.sh
+                        TCL_LIBS="$TCL_LIB_SPEC $TCL_LIBS"
+                        TCL_CFLAGS="-I${TCL_PREFIX}/include $TCL_INCLUDE_SPEC"
+                        tcl=yes
+                        AC_MSG_RESULT($try/tclConfig.sh)
+                        break
+                fi
+        done
+        if test "$found" -eq 0 ; then
+                AC_MSG_RESULT([tclConfig.sh not found - use the --enable-tcl option])
+        fi
+fi
+
+dnl *********************************************************************
+dnl ** IPv6 *************************************************************
+dnl *********************************************************************
+
+if test "$ipv6" = yes; then
+        AC_CHECK_FUNCS(getaddrinfo, have_getaddrinfo=yes)
+        AC_MSG_CHECKING(whether to enable IPv6 support)
+        if test "$have_getaddrinfo" = yes; then
+                AC_MSG_RESULT(yes)
+                AC_DEFINE(USE_IPV6)
+        else
+                ipv6=no
+                AC_MSG_RESULT(no)
+        fi
+fi
+
+
+
+
+
+dnl *********************************************************************
+dnl ** PLUGIN ***********************************************************
+dnl *********************************************************************
+
+if test "$plugin" = yes; then
+        AC_CHECK_FUNCS(dlopen, have_dl=yes)
+        if test "$have_dl" != yes; then
+                AC_CHECK_LIB(dl, dlopen, have_dl=yes)
+                if test "$have_dl" = yes; then
+                        LIBS="$LIBS -ldl"
+                fi
+        fi
+        if test "$have_dl" = yes; then
+                AC_DEFINE(USE_PLUGIN)
+                AC_PATH_PROG(pkgconfigpath, pkg-config)
+                # we just need the -Wl,--export-dynamic, but not -lgmodule-2.0
+                RDYNAMIC_FLAGS="`$pkgconfigpath gmodule-2.0 --libs | $sedpath 's/ -lgmodule-2.0//'`"
+                LIBS="$LIBS $RDYNAMIC_FLAGS"
+                if test "x$GCC" = "xyes"; then
+                        GUI_LIBS="$GUI_LIBS -Wl,--version-script,\$(srcdir)/../version-script"
+                fi
+        else
+                plugin=no
+        fi
+fi
+
+
+
+
+
+
+dnl *********************************************************************
+dnl ** CONDITIONALS *****************************************************
+dnl *********************************************************************
+
+AM_CONDITIONAL(USE_OPENSSL, test "x$openssl" = "xyes")
+AM_CONDITIONAL(DO_PERL, test "x$perl" = "xyes")
+AM_CONDITIONAL(DO_PYTHON, test "x$python" = "xyes")
+AM_CONDITIONAL(DO_TCL, test "x$tcl" = "xyes")
+AM_CONDITIONAL(DO_PLUGIN, test "x$plugin" = "xyes")
+
+dnl *********************************************************************
+dnl ** SOCKS5 ***********************************************************
+dnl *********************************************************************
+
+if test "$socks" = yes; then
+        socks=no
+        AC_CHECK_LIB(socks5, SOCKSconnect, have_socks=yes)
+        if test "$have_socks" = yes; then
+                AC_CHECK_HEADERS(socks.h, have_socks_h=yes)
+                if test "$have_socks_h" = yes; then
+                        socks=yes
+                        AC_DEFINE(SOCKS)
+                        LIBS="$LIBS -lsocks5"
+                fi
+        fi
+fi
+
+
+
+
+
+KDE_CREATE_SUBDIRSLIST
+AC_CONFIG_FILES([ Makefile ])
+AC_CONFIG_FILES([ admin/Makefile ])
+AC_CONFIG_FILES([ po/Makefile ])
+AC_CONFIG_FILES([ vertigo/Makefile ])
+AC_CONFIG_FILES([ vertigo/common/Makefile ])
+AC_CONFIG_FILES([ vertigo/fe-kde/Makefile ])
+AC_CONFIG_FILES([ vertigo/fe-kde/pics/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/mailcheck/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/perl/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/python/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/tcl/Makefile ])
+AC_CONFIG_FILES([ vertigo/plugins/xdcc/Makefile ])
+AC_OUTPUT
+if test "$all_tests" = "bad"; then
+  if test ! "$cache_file" = "/dev/null"; then
+    echo ""    
+    echo "Please remove the file $cache_file after changing your setup"
+    echo "so that configure will find the changes next time."
+    echo ""
+  fi
+else
+  echo ""
+  echo "Good - your configure finished. Start make now"
+  echo ""
+fi

@@ -1,0 +1,16 @@
+include "..\..\src\makeinc.msc"
+
+TARGET = $(PERLOUTPUT)
+
+all: $(TARGET)
+
+perl.def:
+	echo EXPORTS > perl.def
+	echo xchat_plugin_init >> perl.def
+	echo xchat_plugin_deinit >> perl.def
+
+perl.obj: perl.c
+	$(CC) -nologo -O1 -MD -G5 -DWIN32 -DG_DISABLE_CAST_CHECKS -Dstrncasecmp=strnicmp -Dstrcasecmp=stricmp -c perl.c $(GLIB) -I.. -I$(PERLPATH) -DPERLDLL=\"$(PERLLIB).dll\"
+
+$(TARGET): perl.obj perl.def
+	$(LINK) /DLL /out:$(TARGET) /SUBSYSTEM:WINDOWS /nologo perl.obj $(PERLLIB).lib /LIBPATH:$(PERLPATH) /DELAYLOAD:$(PERLLIB).dll DELAYIMP.LIB dirent.lib user32.lib shell32.lib advapi32.lib /def:perl.def /OPT:NOWIN98

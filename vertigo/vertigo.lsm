@@ -1,0 +1,16 @@
+Begin4
+Title:          vertigo -- An IRC client
+Version:        0.1
+Entered-date:   YYYY-MM-DD
+Description:    
+Keywords:       KDE3 Qt
+Author:         shm <packeted@msn.com>
+Maintained-by:  shm <packeted@msn.com>
+Home-page:      
+Alternate-site: 
+Primary-site:   ftp://ftp.kde.org/pub/kde/unstable/apps/utils
+                xxxxxx  vertigo-0.1.tar.gz
+                xxx     vertigo-0.1.lsm
+Platform:       Linux. Needs KDE 3.x
+Copying-policy: GPL
+End
