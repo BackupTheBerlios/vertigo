@@ -31,11 +31,12 @@ typedef struct TextRenderState {
 class TextEntry {
   public:
 	TextEntry(QString leftText, QString rightText=QString::null);
-	void setLeftRegion(const QRegion &region);
-	QRegion leftRegion();
-	void addRightRegion(const QRegion & region);
-	QRegion rightRegion();
-	void clearRightRegion();
+	int leftX();
+	int rightX();
+	int y();
+	void setLeftX(int);
+	void setRightX(int);
+	void setY(int);
 	int linesTaken();
 	void setLinesTaken(int a);
 	void addRightWrap(const QString &string);
@@ -47,8 +48,9 @@ class TextEntry {
   	QString m_leftText;
 	QString m_rightText;
 	QStringList m_textWrap;
-	QRegion m_leftRegion;
-	QRegion m_rightRegion;
+	int m_leftX;
+	int m_rightX;
+	int m_y;
 	int m_linesTaken;
 };
 
