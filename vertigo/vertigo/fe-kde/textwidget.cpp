@@ -103,6 +103,9 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent,
     if (isReverseLayout())
 	m_buffer->sepValue = visibleWidth();
 
+
+	m_buffer->layoutTimerId=0;
+
     recalcLayout();
     setFontName("Luxi Sans 12");
 
@@ -128,10 +131,28 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent,
 void TextView::viewportResizeEvent(QResizeEvent * pe)
 {
     QScrollView::resizeEvent(pe);
-    if (!m_buffer->sepActive) {
-	recalcLayout();
+    if (!m_buffer->sepActive && m_buffer->layoutEnabled) {
+	scheduleLayout();
     }
 
+}
+
+void TextView::scheduleLayout()
+{
+	if (!m_buffer->layoutTimerId)
+	m_buffer->layoutTimerId = startTimer( 100 );
+	
+}
+
+void TextView::timerEvent ( QTimerEvent *e )
+{
+    kdDebug() << "timer event " << e->timerId() << endl;
+    killTimer(e->timerId());
+	if ( e->timerId() == m_buffer->layoutTimerId ) {
+		m_buffer->layoutTimerId=0;
+		recalcLayout();
+		repaint();
+	}
 }
 
 void TextView::setFontName(const QString & name)
@@ -866,6 +887,7 @@ QColor TextView::convColor(ushort col)
 void TextView::recalcLayout()
 {
     int ret = 0;
+	m_buffer->layoutEnabled=false;
 
     TextEntry *ent = m_buffer->startEnt;
 
@@ -875,6 +897,7 @@ void TextView::recalcLayout()
     }
     m_buffer->textHeight = ret;
     resizeView(ret);
+	m_buffer->layoutEnabled=true;
 }
 
 void TextView::resizeView(int h)

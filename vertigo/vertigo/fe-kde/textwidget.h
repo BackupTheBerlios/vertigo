@@ -71,6 +71,9 @@ typedef struct TextBuffer {
     bool verticalSliderPressed;
     bool skiprender;
 
+	bool layoutEnabled;
+	int layoutTimerId;
+
     Vertigo::TextEntry *startEnt;
     Vertigo::TextEntry *endEnt;
 
@@ -134,6 +137,9 @@ class TextView:public QScrollView {
 			bool clearState = true, int selstart =
 			-1, int selend = -1, bool dourls =
 			true, bool onlysel = false);
+
+    void scheduleLayout();
+	void timerEvent ( QTimerEvent *e );
 
     bool isUrl(QString txt);
     void paintText(int x, int y, int w, int h, QString text, QPainter * p);
