@@ -52,7 +52,14 @@ void ChanlistView::slotApplyButtonClicked()
 }
 
 void ChanlistView::slotJoinButtonClicked(){
-
+	if (!m_chanlistView->currentItem ())
+		return;
+	QString txt="join "+m_chanlistView->currentItem ()->text(0);
+		
+if (getServer()->connected && m_chanlistView->currentItem ()->text(0) != "*")
+	{
+	handle_command (getServer()->server_session, (char*)txt.latin1(), FALSE);
+	}
 }
 
  void ChanlistView::slotRefreshButtonClicked(){

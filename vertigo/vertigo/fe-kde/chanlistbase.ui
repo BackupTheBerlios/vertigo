@@ -188,7 +188,7 @@
                         <cstring>m_chanlistView</cstring>
                     </property>
                     <property name="selectionMode" stdset="0">
-                        <enum>Extended</enum>
+                        <enum>FileManager</enum>
                     </property>
                     <property name="fullWidth">
                         <bool>true</bool>

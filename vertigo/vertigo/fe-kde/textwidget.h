@@ -133,6 +133,7 @@ void keyPressEvent(QKeyEvent * e);
 	TextBuffer *m_buffer;
 	int m_sepWidth;
 	int m_margin;
+	int m_maxEntries;
 	int m_maxSubLines;
     	int m_minWrapWidth;
 	int m_scrollType;

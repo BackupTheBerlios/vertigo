@@ -112,6 +112,7 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
 	viewport()->setMouseTracking(true);
     m_sepWidth = 1;
     m_margin = 1;
+	m_maxEntries = 999999;
     m_maxSubLines = 6;
     m_minWrapWidth = 30;
     m_wrapBoundary = 15;
@@ -147,7 +148,7 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
     viewport()->setFocusProxy( this );
     viewport()->setFocusPolicy( WheelFocus );
 
-    setFontName("Verdana 10");
+    setFontName("Arial 10");
 }
 
 TextView::~TextView()
@@ -466,6 +467,12 @@ void
     TextEntry *ent = new TextEntry(rightText, leftText);
  	m_entryList.append(ent);
 
+	if (m_entryList.count() > m_maxEntries )
+	{
+			m_buffer->textHeight -= m_entryList.first()->linesTaken() * m_buffer->lineHeight;
+			m_entryList.remove(m_entryList.first());
+	}
+
     int oldHeight = m_buffer->textHeight;
     int i = recalcEntryLayout(ent, m_autoResizeColumns);
 
@@ -480,16 +487,16 @@ void
 
     ent->setTimeStamp(t.toString(m_timeStampFormat));
 
-    if (m_buffer->textHeight < visibleHeight())
+    /*if (m_buffer->textHeight < visibleHeight())
 	if (i == -1)
 	    updateContents();
 	else
 	    updateContents(0, oldHeight, visibleWidth(),
 			   m_buffer->textHeight - oldHeight);
-    else {
+    else {*/
 	if (scroll)
 	    scrollDown();
-    }
+    //}
 }
 
 
@@ -790,7 +797,7 @@ QColor ret;
   switch (col) {
 	//case 0: already white.
     case 1:
-	ret = Qt::white;
+	ret = Qt::black;
 	break;
     case 2:
 	ret = Qt::darkBlue;
@@ -835,7 +842,7 @@ QColor ret;
 	ret = Qt::lightGray;
 	break;
 	default:
-	ret=Qt::white;
+	ret=Qt::black;
     }
     return ret;
 }
@@ -889,7 +896,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     }*/
 
 
-    if (m_buffer->textHeight < visibleHeight() )                                    {                                                                                   p.fillRect(0, m_buffer->textHeight-contentsY(),visibleWidth(), visibleHeight()-m_buffer->textHeight+contentsY(),QBrush(Qt::black));                             drawSeperator(p,m_buffer->textHeight-contentsY(), visibleHeight()-m_buffer->textHeight+contentsY());                                                        }
+    if (m_buffer->textHeight < visibleHeight() )                                    {                                                                                   p.fillRect(0, m_buffer->textHeight-contentsY(),visibleWidth(), visibleHeight()-m_buffer->textHeight+contentsY(),QBrush(Qt::white));                             drawSeperator(p,m_buffer->textHeight-contentsY(), visibleHeight()-m_buffer->textHeight+contentsY());                                                        }
 
 
     for (ent = m_entryList.last(); ent; ent = m_entryList.prev()) {
@@ -923,7 +930,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 						QMAX(m_buffer->pixmap->height(), le));
 				m_buffer->painter.begin(m_buffer->pixmap, false);
 				m_buffer->painter.setFont(*(m_buffer->font));
-				m_buffer->painter.fillRect(0,0,visibleWidth(), le, QBrush(Qt::black));
+				m_buffer->painter.fillRect(0,0,visibleWidth(), le, QBrush(Qt::white));
 				if (m_showTimeStamp) {
 					stamp = ent->timeStamp();
 					paintTextChunk(wrapText(stamp, ent->leftX()-m_margin*2, dummy), m_margin, m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
@@ -943,7 +950,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		}
 		else
 		{
-			p.fillRect(0,a,visibleWidth(), le, QBrush(Qt::black));
+			p.fillRect(0,a,visibleWidth(), le, QBrush(Qt::white));
 			if (m_showTimeStamp) {
                     stamp = ent->timeStamp();
                     paintTextChunk(wrapText(stamp, ent->leftX()-m_margin*2,dummy), m_margin, a+m_buffer->lineHeight-m_buffer->lineDescent, p);
