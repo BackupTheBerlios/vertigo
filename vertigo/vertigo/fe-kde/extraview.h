@@ -13,6 +13,7 @@
 #include "../common/xchat.h"
 
 #include "rawlogbase.h"
+#include "chanlistbase.h"
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -30,29 +31,13 @@ class QSpinBox;
 class MainWindow;
 
 
-class ChanlistView : public ContainerView
+class ChanlistView : public ChanlistViewBase
 {
     Q_OBJECT
 
 public:
     ChanlistView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~ChanlistView();
-
-    KListView* m_chanlistView;
-    QPushButton* m_refreshButton;
-    QPushButton* m_saveButton;
-    QPushButton* m_joinButton;
-    QGroupBox* m_limitGroupBox;
-    QLabel* m_maximumLabel;
-    QSpinBox* m_minSpin;
-    QSpinBox* m_maxSpin;
-    QLabel* m_minimumLabel;
-    QLabel* m_matchLabel;
-    QCheckBox* m_channelCheck;
-    QLabel* m_textLabel;
-    QCheckBox* m_topicCheck;
-    QLineEdit* m_textEdit;
-    QPushButton* m_applyButton;
 
 
     void enableItems(bool yes);
@@ -64,11 +49,8 @@ public slots:
     virtual void slotApplyButtonClicked();
     virtual void slotJoinButtonClicked();
     virtual void slotRefreshButtonClicked();
-    virtual void slotSaveButtonClicked();
-protected:
 
-    QGridLayout* ChanlistViewLayout;
-    QGridLayout* m_limitGroupBoxLayout;
+
 };
 
 class ChanlistItem:public KListViewItem {
@@ -90,11 +72,6 @@ public:
     ~RawlogView();
 
     void appendText(QString s);
-
-    TextView *m_rawlogView;
-    QPushButton* m_clearButton;
-    QPushButton* m_saveButton;
-
 
 public slots:
     void slotClearButtonClicked();

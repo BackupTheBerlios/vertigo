@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget * parent)
 
 //m_statusBarWidget= new StatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
-m_MDIMode=0;
+m_MDIMode=1;
 	m_progressBar=new KProgress(statusBar(),"progressBar");
 m_progressBar->setFormat("Connecting...");
 m_progressBar->setTotalSteps(5);
@@ -209,7 +209,7 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     move(prefs.mainwindow_left, prefs.mainwindow_top);
 
 
-
+switchToTabPageMode();
     if (m_MDIMode==0)
 	{
 switchToTabPageMode();

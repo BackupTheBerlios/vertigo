@@ -28,7 +28,6 @@
 #include "../common/fe.h"
 
 #include "fe-kde.h"
-#include "tabwidget.h"
 #include "mainwindow.h"
 #include "app.h"
 #include "mainview.h"
@@ -103,10 +102,10 @@ extern "C"
         if (!sess->new_data && sess != current_tab && !sess->nick_said) {
             sess->new_data = 1;
             if (sess->msg_said)
-                sess->gui->win->tabWidget()->setTabColor(sess->gui->view,
+                sess->gui->win->setViewColor(sess->gui->view,
                                                          Qt::darkRed);
             else
-                sess->gui->win->tabWidget()->setTabColor(sess->gui->view,
+                sess->gui->win->setViewColor(sess->gui->view,
                                                          Qt::red);
         }
     }
@@ -290,7 +289,7 @@ extern "C"
     void fe_set_hilight(struct session *sess)
     {
         kdDebug() << "fe:fe_set_hilight" << endl;
-        sess->gui->win->tabWidget()->setTabColor(sess->gui->view, Qt::blue);
+        sess->gui->win->setViewColor(sess->gui->view, Qt::blue);
     }
     void fe_update_mode_buttons(struct session *sess, char mode, char sign)
     {
@@ -476,9 +475,9 @@ extern "C"
             tip = tip.append(":");
         }
         tip = tip.append(sess->channel);
-        sess->gui->win->tabWidget()->setTabLabel(sess->gui->view,
+        sess->gui->win->setViewLabel(sess->gui->view,
                                                  sess->channel);
-        sess->gui->win->tabWidget()->setTabToolTip(sess->gui->view, tip);
+        sess->gui->win->setViewToolTip(sess->gui->view, tip);
     }
     void fe_set_title(struct session *sess)
     {

@@ -19,6 +19,7 @@
 #include <qspinbox.h>
 #include <kmessagebox.h>
 #include <klistview.h>
+#include <kpushbutton.h>
 
 #include "../common/xchat.h"
 #include "../common/xchatc.h"
@@ -26,6 +27,7 @@
 #include "../common/util.h"
 
 #include "rawlogbase.h"
+#include "chanlistbase.h"
 
 #include "tabwidget.h"
 #include "fe-kde.h"
@@ -33,137 +35,26 @@
 
 
 ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "ChanList", w, s)
+    :  ChanlistViewBase(parent, "ChanList")
 {
+	setWindow(w);
+	setServer(s);
 
-    ChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "ChanlistViewLayout");
-
-    m_chanlistView = new KListView( this, "m_chanlistView" );
-    m_chanlistView->addColumn( tr( "Channel" ) , m_chanlistView->fontMetrics().width("#halohalohalo"));
-    m_chanlistView->addColumn( tr( "Users" ) );
-    m_chanlistView->addColumn( tr( "Topic" ) );
-
-m_chanlistView->setColumnWidthMode(0, QListView::Manual);
-m_chanlistView->setFullWidth(true);
-
-    ChanlistViewLayout->addMultiCellWidget( m_chanlistView, 1, 4, 0, 0 );
-
-    m_refreshButton = new QPushButton( this, "m_refreshButton" );
-
-    ChanlistViewLayout->addWidget( m_refreshButton, 2, 1 );
-
-    m_saveButton = new QPushButton( this, "m_saveButton" );
-
-    ChanlistViewLayout->addWidget( m_saveButton, 3, 1 );
-
-    m_joinButton = new QPushButton( this, "m_joinButton" );
-
-    ChanlistViewLayout->addWidget( m_joinButton, 1, 1 );
-    QSpacerItem* spacer = new QSpacerItem( 31, 151, QSizePolicy::Minimum, QSizePolicy::Expanding );
-    ChanlistViewLayout->addItem( spacer, 4, 1 );
-
-    m_limitGroupBox = new QGroupBox( this, "m_limitGroupBox" );
-    m_limitGroupBox->setColumnLayout(0, Qt::Vertical );
-    m_limitGroupBox->layout()->setSpacing( 6 );
-    m_limitGroupBox->layout()->setMargin( 11 );
-    m_limitGroupBoxLayout = new QGridLayout( m_limitGroupBox->layout() );
-    m_limitGroupBoxLayout->setAlignment( Qt::AlignTop );
-
-    m_maximumLabel = new QLabel( m_limitGroupBox, "m_maximumLabel" );
-
-    m_limitGroupBoxLayout->addWidget( m_maximumLabel, 1, 0 );
-
-    m_minSpin = new QSpinBox( m_limitGroupBox, "m_minSpin" );
-    m_minSpin->setMinimumSize( QSize( 30, 0 ) );
-
-    m_limitGroupBoxLayout->addWidget( m_minSpin, 0, 1 );
-
-    m_maxSpin = new QSpinBox( m_limitGroupBox, "m_maxSpin" );
-    m_maxSpin->setMinimumSize( QSize( 30, 0 ) );
-
-    m_limitGroupBoxLayout->addWidget( m_maxSpin, 1, 1 );
-
-    m_minimumLabel = new QLabel( m_limitGroupBox, "m_minimumLabel" );
-
-    m_limitGroupBoxLayout->addWidget( m_minimumLabel, 0, 0 );
-
-    m_matchLabel = new QLabel( m_limitGroupBox, "m_matchLabel" );
-
-    m_limitGroupBoxLayout->addWidget( m_matchLabel, 1, 2 );
-
-    m_channelCheck = new QCheckBox( m_limitGroupBox, "m_channelCheck" );
-
-    m_limitGroupBoxLayout->addWidget( m_channelCheck, 1, 3 );
-
-    m_textLabel = new QLabel( m_limitGroupBox, "m_textLabel" );
-
-    m_limitGroupBoxLayout->addWidget( m_textLabel, 0, 2 );
-
-    m_topicCheck = new QCheckBox( m_limitGroupBox, "m_topicCheck" );
-
-    m_limitGroupBoxLayout->addWidget( m_topicCheck, 1, 4 );
-
-    m_textEdit = new QLineEdit( m_limitGroupBox, "m_textEdit" );
-
-    m_limitGroupBoxLayout->addMultiCellWidget( m_textEdit, 0, 0, 3, 5 );
-
-    m_applyButton = new QPushButton( m_limitGroupBox, "m_applyButton" );
-
-    m_limitGroupBoxLayout->addWidget( m_applyButton, 1, 5 );
-
-    ChanlistViewLayout->addMultiCellWidget( m_limitGroupBox, 0, 0, 0, 1 );
-    resize( QSize(570, 456).expandedTo(minimumSizeHint()) );
-    clearWState( WState_Polished );
 
     // signals and slots connections
     connect( m_applyButton, SIGNAL( clicked() ), this, SLOT( slotApplyButtonClicked() ) );
     connect( m_joinButton, SIGNAL( clicked() ), this, SLOT( slotJoinButtonClicked() ) );
     connect( m_refreshButton, SIGNAL( clicked() ), this, SLOT( slotRefreshButtonClicked() ) );
-    connect( m_saveButton, SIGNAL( clicked() ), this, SLOT( slotSaveButtonClicked() ) );
 
-    // buddies
-    m_maximumLabel->setBuddy( m_maxSpin );
-    m_minimumLabel->setBuddy( m_minSpin );
-    m_matchLabel->setBuddy( m_channelCheck );
-    m_textLabel->setBuddy( m_textEdit );
-    m_chanlistView->header()->setLabel( 0, tr( "Channel" ) );
-    m_chanlistView->header()->setLabel( 1, tr( "Users" ) );
-    m_chanlistView->header()->setLabel( 2, tr( "Topic" ) );
-    m_refreshButton->setText( tr( "&Refresh" ) );
-    m_refreshButton->setAccel( QKeySequence( tr( "Alt+R" ) ) );
-    m_saveButton->setText( tr( "&Save..." ) );
-    m_saveButton->setAccel( QKeySequence( tr( "Alt+S" ) ) );
-    m_joinButton->setText( tr( "&Join" ) );
-    m_joinButton->setAccel( QKeySequence( tr( "Alt+J" ) ) );
-    m_limitGroupBox->setTitle( tr( "Show channels that have:" ) );
-    m_maximumLabel->setText( tr( "Ma&ximum:" ) );
-    m_minSpin->setPrefix( QString::null );
-    m_minSpin->setSuffix( tr( " users" ) );
-    m_maxSpin->setPrefix( QString::null );
-    m_maxSpin->setSuffix( tr( " users" ) );
-    m_minimumLabel->setText( tr( "&Minimum:" ) );
-    m_matchLabel->setText( tr( "&Match:" ) );
-    m_channelCheck->setText( tr( "&Channel" ) );
-    m_channelCheck->setAccel( QKeySequence( tr( "Alt+C" ) ) );
-    m_textLabel->setText( tr( "&The text:" ) );
-    m_topicCheck->setText( tr( "&Topic" ) );
-    m_topicCheck->setAccel( QKeySequence( tr( "Alt+T" ) ) );
-    m_applyButton->setText( tr( "&Apply" ) );
-    m_applyButton->setAccel( QKeySequence( tr( "Alt+A" ) ) );
 
-m_chanlistView->setFullWidth(true);
+
 		    m_chanlistView->setAllColumnsShowFocus(true);
 
-
- //m_chanlistView->setVScrollBarMode(QScrollView::AlwaysOn);
 }
 
-/*
- *  Destroys the object and frees any allocated resources
- */
+
 ChanlistView::~ChanlistView()
 {
-    // no need to delete child widgets, Qt does it all for us
 }
 
 void ChanlistView::enableItems(bool yes){
@@ -225,12 +116,6 @@ bool ChanlistView::isMatch(QString chan,QString users,QString topic)
 	return true;
 }
 
-
-
- void ChanlistView::slotSaveButtonClicked()
-{
-
-}
 
 
 

@@ -9,16 +9,16 @@ SUBDIRS = backport . pics
 bin_PROGRAMS = vertigo
 
 # set the include path for X, qt and KDE
-INCLUDES         = $(GLIB_CFLAGS) $(all_includes)
+INCLUDES         = -I./backport $(GLIB_CFLAGS) $(all_includes)
 
 # the library search path.
 vertigo_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 
 # the libraries to link against.
-vertigo_LDADD   = ../common/libxchatcommon.a backport/libbackport.a $(GLIB_LIBS) $(LIB_KFILE) -Lbackport -lbackport
+vertigo_LDADD   = ../common/libxchatcommon.a backport/libbackport.a $(GLIB_LIBS) $(LIB_KFILE) $(LIB_KPARTS) -Lbackport -lbackport
 
 # which sources should be compiled for vertigo
-vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp containerview.cpp rawlogbase.ui extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
+vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp containerview.cpp rawlogbase.ui chanlistbase.ui extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
 
 # these are the headers for your project
 noinst_HEADERS   = fe-kde.h textwidget.h configure.h tabwidget.h serverlist.h extraview.h containerview.h mainview.h mainwindow.cpp app.h
