@@ -7,6 +7,8 @@ Channel List:
 + join on double click
 - s/m_refreshButton/m_reloadButton
 - sane selection
+- implement stop button
+- set min/max value of min/max spinboxes to be equal (0=0) 
 
 Character chart:
 - designerize

@@ -5,6 +5,8 @@
 #include <klineedit.h>
 #include <knuminput.h>
 #include <kconfig.h>
+#include <qregexp.h>
+#include <qcheckbox.h>
 
 #include "../common/xchatc.h"
 #include "../common/outbound.h"
@@ -26,6 +28,7 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
 	m_textEdit->setText(c->readEntry("searchEdit"));
 	c->sync();
 	delete c;
+	setMatchSettings();
 	
 }
 
@@ -50,10 +53,39 @@ void ChanlistView::enableItems(bool yes){
 
 }
 
+void ChanlistView::setMatchSettings()
+{
+        m_matchTopic=m_topicCheck->isChecked();
+        m_matchChan=m_channelCheck->isChecked();
+        m_minUsers=m_minSpin->value();
+        m_maxUsers=m_maxSpin->value();
+        if (!m_minUsers && !m_maxUsers)
+                m_minUsers=-1;
+        m_regExp.setPattern(m_textEdit->text());
+}
 
 void ChanlistView::slotApplyButtonClicked()
 {
+        setMatchSettings();
+        m_chanlistView->setUpdatesEnabled(false);
+        QListViewItemIterator it( m_chanlistView );
+        QListViewItem *item;
+        while ( it.current() ) {
+            item = it.current();
+            if (!isMatch((ChanlistItem *)item)){
+                takeItem(item);
+	    }
+	    else{
+	    	insertItem(item);
+	    }
+            ++it;
+        }
+        m_chanlistView->setUpdatesEnabled(true);
+
 }
+
+
+
 
 void ChanlistView::slotJoinButtonClicked(){
 	if (!m_chanlistView->currentItem ())
@@ -84,7 +116,7 @@ void ChanlistView::appendChannel(QString chan,QString users,QString topic)
 	m_chanlistView->setUpdatesEnabled(false);
 	ChanlistItem *i=new ChanlistItem(m_chanlistView, chan, users, topic);
 	
-	if (isMatch(chan, users, topic))
+	if (isMatch(i))
 	{
 		m_chanlistView->setUpdatesEnabled(true);
 			
@@ -96,16 +128,55 @@ void ChanlistView::appendChannel(QString chan,QString users,QString topic)
 
 }
 
-bool ChanlistView::isMatch(QString chan,QString users,QString topic)
-{
+
+bool ChanlistView::isMatch(ChanlistItem *i)
+{	
+	if (m_minUsers != -1)
+	{
+		if ((i->users() < m_minUsers ) || (i->users() > m_maxUsers ))
+			return false;
+	}
+	
+	if (m_matchChan)
+	{
+		if (m_regExp.search(i->text(0)) == -1)
+			return false;
+	}
+	
+	if (m_matchTopic)
+	{
+		if (m_regExp.search(i->text(2)) == -1)
+			return false;
+	}
+	
 	return true;
 }
 
-
-ChanlistItem::ChanlistItem(QListView * list,  QString chan, QString users, QString topic):
-KListViewItem(list, chan, users, topic)
+void ChanlistView::insertItem ( QListViewItem * i )
 {
+	ChanlistItem *ci=(ChanlistItem *)i;
+	if (!ci->isTaken())
+		return;
+	ci->setTaken(false);
+	m_chanlistView->insertItem(i);
+}
 
+
+void ChanlistView::takeItem ( QListViewItem * i )
+{
+	ChanlistItem *ci=(ChanlistItem *)i;
+	if (ci->isTaken())
+		return;
+	ci->setTaken(true);
+	m_chanlistView->takeItem(i);
+}
+
+
+ChanlistItem::ChanlistItem(QListView * list,  QString chan, QString u, QString topic):
+KListViewItem(list, chan, u, topic)
+{
+	m_users=u.toInt();
+	m_taken=false;
 }
 
 ChanlistItem::~ChanlistItem()
@@ -120,12 +191,11 @@ int ChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
 		
 	}
 	{
-		int a=key( col, ascending ).toInt();
-		int b=i->key( col, ascending ).toInt();
-		if (a==b)
-			return 0;
-		if (a<b)
-			return -1;
-		return 1;
+		ChanlistItem *ci=(ChanlistItem *)i;
+                if (m_users==ci->users())
+                        return 0;
+                if (m_users< ci->users())
+                        return -1;
+                return 1;
 	}
 }
