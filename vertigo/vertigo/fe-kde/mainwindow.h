@@ -73,6 +73,17 @@ int lastSameServerTabIndex();
 	void slotPreferences();
     void slotToolbar();
 
+void slotTab10();
+void slotTab1();
+void slotTab2();
+void slotTab3();
+void slotTab4();
+void slotTab5();
+void slotTab6();
+void slotTab7();
+void slotTab8();
+void slotTab9();
+
     //TODO move these to the tabwidget directly
 void slotNextTab();
 void slotPreviousTab();

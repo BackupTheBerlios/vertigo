@@ -76,6 +76,17 @@ XChatMainWindow::XChatMainWindow(QWidget * parent)
 
     KIconLoader *loader = KGlobal::iconLoader();
 
+new KAction(i18n("Switch to Tab 1"), 0, ALT + Key_1, this, SLOT(slotTab1()), actionCollection(), "switchtab1");
+new KAction(i18n("Switch to Tab 2"), 0, ALT + Key_2, this, SLOT(slotTab2()), actionCollection(), "switchtab2");
+new KAction(i18n("Switch to Tab 3"), 0, ALT + Key_3, this, SLOT(slotTab3()), actionCollection(), "switchtab3");
+new KAction(i18n("Switch to Tab 4"), 0, ALT + Key_4, this, SLOT(slotTab4()), actionCollection(), "switchtab4");
+new KAction(i18n("Switch to Tab 5"), 0, ALT + Key_5, this, SLOT(slotTab5()), actionCollection(), "switchtab5");
+new KAction(i18n("Switch to Tab 6"), 0, ALT + Key_6, this, SLOT(slotTab6()), actionCollection(), "switchtab6");
+new KAction(i18n("Switch to Tab 7"), 0, ALT + Key_7, this, SLOT(slotTab7()), actionCollection(), "switchtab7");
+new KAction(i18n("Switch to Tab 8"), 0, ALT + Key_8, this, SLOT(slotTab8()), actionCollection(), "switchtab8");
+new KAction(i18n("Switch to Tab 9"), 0, ALT + Key_9, this, SLOT(slotTab9()), actionCollection(), "switchtab9");
+new KAction(i18n("Switch to Tab 10"), 0, ALT + Key_0, this, SLOT(slotTab10()), actionCollection(), "switchtab10");
+
 new KAction(i18n("Next Tab"), 0, CTRL + Key_PageUp, this, SLOT(slotNextTab()), actionCollection(), "nexttab");
 
 new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviousTab()), actionCollection(), "prevtab");
@@ -659,6 +670,60 @@ void XChatMainWindow::slotPreferences()
 
     n->show();
 }
+
+void XChatMainWindow::slotTab10()
+{
+	m_tabWidget->setCurrentPage(10);
+}
+
+void XChatMainWindow::slotTab1()
+{
+    m_tabWidget->setCurrentPage(0);
+}
+
+void XChatMainWindow::slotTab2()
+{
+    m_tabWidget->setCurrentPage(1);
+}
+
+void XChatMainWindow::slotTab3()
+{
+    m_tabWidget->setCurrentPage(2);
+}
+
+void XChatMainWindow::slotTab4()
+{
+    m_tabWidget->setCurrentPage(3);
+}
+
+void XChatMainWindow::slotTab5()
+{
+    m_tabWidget->setCurrentPage(4);
+}
+
+void XChatMainWindow::slotTab6()
+{
+    m_tabWidget->setCurrentPage(5);
+}
+
+void XChatMainWindow::slotTab7()
+{
+    m_tabWidget->setCurrentPage(6);
+}
+
+void XChatMainWindow::slotTab8()
+{
+    m_tabWidget->setCurrentPage(7);
+}
+
+void XChatMainWindow::slotTab9()
+{
+    m_tabWidget->setCurrentPage(8);
+}
+
+
+
+
 
 void XChatMainWindow::slotNextTab()
 {
