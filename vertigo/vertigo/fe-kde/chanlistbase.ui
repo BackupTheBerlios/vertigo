@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>681</width>
-            <height>664</height>
+            <height>666</height>
         </rect>
     </property>
     <property name="caption">
@@ -191,7 +191,7 @@
                         <cstring>m_chanlistView</cstring>
                     </property>
                     <property name="selectionMode" stdset="0">
-                        <enum>FileManager</enum>
+                        <enum>Single</enum>
                     </property>
                     <property name="allColumnsShowFocus">
                         <bool>true</bool>
@@ -233,7 +233,7 @@
                         </widget>
                         <widget class="QPushButton">
                             <property name="name">
-                                <cstring>m_refreshButton</cstring>
+                                <cstring>m_reloadButton</cstring>
                             </property>
                             <property name="text">
                                 <string>&amp;Reload</string>
@@ -307,7 +307,7 @@
         <slot>slotJoinButtonClicked()</slot>
     </connection>
     <connection>
-        <sender>m_refreshButton</sender>
+        <sender>m_reloadButton</sender>
         <signal>clicked()</signal>
         <receiver>ChanlistViewBase</receiver>
         <slot>slotRefreshButtonClicked()</slot>
@@ -340,7 +340,7 @@
     <tabstop>m_applyButton</tabstop>
     <tabstop>m_chanlistView</tabstop>
     <tabstop>m_joinButton</tabstop>
-    <tabstop>m_refreshButton</tabstop>
+    <tabstop>m_reloadButton</tabstop>
     <tabstop>m_stopButton</tabstop>
 </tabstops>
 <slots>

@@ -5,10 +5,8 @@ Channel List:
 + on reload don't disable whole widget, just reload button
 + disable stop by default
 + join on double click
-- s/m_refreshButton/m_reloadButton
-- sane selection
++ s/m_refreshButton/m_reloadButton
 - implement stop button
-- set min/max value of min/max spinboxes to be equal (0=0) 
 - apply on return press in search field
 - save config/reload on switch
 - non-auto column resizing

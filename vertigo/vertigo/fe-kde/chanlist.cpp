@@ -42,12 +42,12 @@ void ChanlistView::enableItems(bool yes){
 	if (yes)
 	{
 		m_stopButton->setEnabled(false);
-		m_refreshButton->setEnabled(true);
+		m_reloadButton->setEnabled(true);
 		m_chanlistView->repaint();
 	}
 	else{
 		m_stopButton->setEnabled(true);
-		m_refreshButton->setEnabled(false);
+		m_reloadButton->setEnabled(false);
 	}
 
 }
