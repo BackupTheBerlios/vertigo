@@ -15,7 +15,7 @@ N_("-%C10-%C11-%O$tCannot join%C11 %B$1 %O(You are banned).")},
 N_("-%C10-%C11-%O$t$1 is now known as $2")},
 
 {"Channel Action", pevt_chanaction_help, 2, 0,
-N_("%C13*%O$t$1 $2%O")},
+N_("%C13*%O$t$1%O $2%O")},
 
 {"Channel Action Hilight", pevt_chanaction_help, 2, 0,
 N_("%C13*%O$t%C8%B$1%B%O $2%O")},
@@ -158,8 +158,8 @@ N_("-%C10-%C11-%O$tDCC RECV connection established to %C11$1 %C14[%O$2%C14]%O")}
 {"DCC RECV Failed", pevt_dccrecverr_help, 4, 0,
 N_("-%C10-%C11-%O$tDCC RECV %C11$1%O from %C11$3%O failed. $4.")},
 
-{"DCC RECV File Open Error", pevt_generic_file_help, 1, 0,
-N_("-%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing - aborting.")},
+{"DCC RECV File Open Error", pevt_generic_file_help, 2, 0,
+N_("-%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing ($2).")},
 
 {"DCC Rename", pevt_dccrename_help, 2, 0,
 N_("-%C10-%C11-%O$tThe file %C11$1%C already exists, saving it as %C11$2%O instead.")},
@@ -207,7 +207,7 @@ N_("%O%C11$1%O added to ignore list.")},
 N_("Ignore on %C11$1%O changed.")},
 
 {"Ignore Footer", pevt_generic_none_help, 0, 0,
-N_("%C08,02                                                         %O")},
+N_("%C08,02                                                              %O")},
 
 {"Ignore Header", pevt_generic_none_help, 0, 0,
 N_("%C08,02 Hostmask                  PRIV NOTI CHAN CTCP DCC  INVI UNIG %O")},

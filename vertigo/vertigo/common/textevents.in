@@ -25,7 +25,7 @@ pevt_changenick_help
 Channel Action
 XP_TE_CHANACTION
 pevt_chanaction_help
-%C13*%O$t$1 $2%O
+%C13*%O$t$1%O $2%O
 2
 
 Channel Action Hilight
@@ -313,8 +313,8 @@ pevt_dccrecverr_help
 DCC RECV File Open Error
 XP_TE_DCCFILEERR
 pevt_generic_file_help
--%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing - aborting.
-1
+-%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing ($2).
+2
 
 DCC Rename
 XP_TE_DCCRENAME
@@ -409,7 +409,7 @@ Ignore on %C11$1%O changed.
 Ignore Footer
 XP_TE_IGNOREFOOTER
 pevt_generic_none_help
-%C08,02                                                         %O
+%C08,02                                                              %O
 0
 
 Ignore Header

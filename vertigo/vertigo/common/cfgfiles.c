@@ -72,7 +72,7 @@ list_loadconf (char *file, GSList ** list, char *defaultconf)
 	int fh, pnt = 0;
 	struct stat st;
 
-	snprintf (filebuf, sizeof (filebuf), "%s/%s", get_xdir (), file);
+	snprintf (filebuf, sizeof (filebuf), "%s/%s", get_xdir_fs (), file);
 	fh = open (filebuf, O_RDONLY | OFLAGS);
 	if (fh == -1)
 	{
@@ -154,7 +154,7 @@ list_delentry (GSList ** list, char *name)
 }
 
 char *
-cfg_get_str (char *cfg, char *var, char *dest)
+cfg_get_str (char *cfg, char *var, char *dest, int dest_len)
 {
 	while (1)
 	{
@@ -175,7 +175,7 @@ cfg_get_str (char *cfg, char *var, char *dest)
 				cfg++;
 			t = *cfg;
 			*cfg = 0;
-			strcpy (dest, value);
+			safe_strcpy (dest, value, dest_len);
 			*cfg = t;
 			return cfg;
 		}
@@ -219,7 +219,7 @@ cfg_get_int_with_result (char *cfg, char *var, int *result)
 {
 	char str[128];
 
-	if (!cfg_get_str (cfg, var, str))
+	if (!cfg_get_str (cfg, var, str, sizeof (str)))
 	{
 		*result = 0;
 		return 0;
@@ -234,13 +234,14 @@ cfg_get_int (char *cfg, char *var)
 {
 	char str[128];
 
-	if (!cfg_get_str (cfg, var, str))
+	if (!cfg_get_str (cfg, var, str, sizeof (str)))
 		return 0;
 
 	return atoi (str);
 }
 
-char *xdir = 0;
+char *xdir_fs = NULL;	/* file system encoding */
+char *xdir_utf = NULL;	/* utf-8 encoding */
 
 #ifdef WIN32
 
@@ -270,38 +271,65 @@ get_reg_str (const char *sub, const char *name, char *out, DWORD len)
 }
 
 char *
-get_xdir (void)
+get_xdir_fs (void)
 {
-	if (!xdir)
+	if (!xdir_fs)
 	{
 		char out[256];
 
 		if (!get_reg_str ("Software\\Microsoft\\Windows\\CurrentVersion\\"
 				"Explorer\\Shell Folders", "AppData", out, sizeof (out)))
 			return "./config";
-		xdir = g_strdup_printf ("%s\\" XCHAT_DIR, out);
+		xdir_fs = g_strdup_printf ("%s\\" XCHAT_DIR, out);
 	}
-	return xdir;
+	return xdir_fs;
 }
 
 #else
 
 char *
-get_xdir (void)
+get_xdir_fs (void)
 {
-	if (!xdir)
-	{
-		xdir = g_strdup_printf ("%s/" XCHAT_DIR, g_get_home_dir());
-	}
-	return xdir;
+	if (!xdir_fs)
+		xdir_fs = g_strdup_printf ("%s/" XCHAT_DIR, g_get_home_dir ());
+
+	return xdir_fs;
 }
 
 #endif	/* !WIN32 */
 
+char *
+get_xdir_utf8 (void)
+{
+	if (!xdir_utf)	/* never free this, keep it for program life time */
+		xdir_utf = g_filename_to_utf8 (get_xdir_fs (), -1, 0, 0, 0);
+
+	return xdir_utf;
+}
+
+int
+mkdir_utf8 (char *dir)
+{
+	int ret;
+
+	dir = g_filename_from_utf8 (dir, -1, 0, 0, 0);
+	if (!dir)
+		return -1;
+
+#ifdef WIN32
+	ret = mkdir (dir);
+#else
+	ret = mkdir (dir, S_IRUSR | S_IWUSR | S_IXUSR);
+#endif
+	g_free (dir);
+
+	return ret;
+}
+
 static void
 check_prefs_dir (void)
 {
-	char *dir = get_xdir ();
+	char *dir = get_xdir_fs ();
 	if (access (dir, F_OK) != 0)
 	{
 #ifdef WIN32
@@ -320,8 +348,8 @@ default_file (void)
 
 	if (!dfile)
 	{
-		dfile = malloc (strlen (get_xdir ()) + 12);
-		sprintf (dfile, "%s/xchat.conf", get_xdir ());
+		dfile = malloc (strlen (get_xdir_fs ()) + 12);
+		sprintf (dfile, "%s/xchat.conf", get_xdir_fs ());
 	}
 	return dfile;
 }
@@ -450,9 +478,13 @@ const struct prefs vars[] = {
 	{"net_auto_reconnectonfail", P_OFFINT (autoreconnectonfail), TYPE_BOOL},
 	{"net_bind_host", P_OFFSET (hostname), TYPE_STR},
 	{"net_ping_timeout", P_OFFINT (pingtimeout), TYPE_INT},
+	{"net_proxy_auth", P_OFFINT (proxy_auth), TYPE_BOOL},
 	{"net_proxy_host", P_OFFSET (proxy_host), TYPE_STR},
+	{"net_proxy_pass", P_OFFSET (proxy_pass), TYPE_STR},
 	{"net_proxy_port", P_OFFINT (proxy_port), TYPE_INT},
 	{"net_proxy_type", P_OFFINT (proxy_type), TYPE_INT},
+	{"net_proxy_user", P_OFFSET (proxy_user), TYPE_STR},
+
 	{"net_reconnect_delay", P_OFFINT (recon_delay), TYPE_INT},
 	{"net_throttle", P_OFFINT (throttle), TYPE_BOOL},
 
@@ -593,13 +625,13 @@ load_config (void)
 	strcpy (prefs.username, username);
 #ifdef WIN32
 	strcpy (prefs.sounddir, "./sounds");
-	if (strcmp (get_xdir (), "./config") != 0)
-		sprintf (prefs.dccdir, "%s\\downloads", get_xdir ());
+	if (strcmp (get_xdir_utf8 (), "./config") != 0)
+		sprintf (prefs.dccdir, "%s\\downloads", get_xdir_utf8 ());
 	else
 		strcpy (prefs.dccdir, "./downloads");
 #else
-	sprintf (prefs.sounddir, "%s/sounds", get_xdir ());
-	sprintf (prefs.dccdir, "%s/downloads", get_xdir ());
+	sprintf (prefs.sounddir, "%s/sounds", get_xdir_utf8 ());
+	sprintf (prefs.dccdir, "%s/downloads", get_xdir_utf8 ());
 #endif
 	strcpy (prefs.doubleclickuser, "QUOTE WHOIS %s %s");
 	strcpy (prefs.awayreason, _("I'm busy"));
@@ -625,7 +657,8 @@ load_config (void)
 			switch (vars[i].type)
 			{
 			case TYPE_STR:
-				cfg_get_str (cfg, vars[i].name, (char *) &prefs + vars[i].offset);
+				cfg_get_str (cfg, vars[i].name, (char *) &prefs + vars[i].offset,
+								 vars[i].len);
 				break;
 			case TYPE_BOOL:
 			case TYPE_INT:
@@ -651,14 +684,8 @@ load_config (void)
 #endif
 #endif /* !WIN32 */
 
-#ifdef WIN32
-		mkdir (prefs.dccdir);
-		mkdir (prefs.dcc_completed_dir);
-#else
-		mkdir (prefs.dccdir, S_IRUSR | S_IWUSR | S_IXUSR);
-		mkdir (prefs.dcc_completed_dir, S_IRUSR | S_IWUSR | S_IXUSR);
-#endif
-
+		mkdir_utf8 (prefs.dccdir);
+		mkdir_utf8 (prefs.dcc_completed_dir);
 	}
 	if (prefs.mainwindow_height < 138)
 		prefs.mainwindow_height = 138;
@@ -739,7 +766,7 @@ static void
 set_showval (session *sess, const struct prefs *var, char *tbuf)
 {
 	int len, dots, j;
-	static char *offon[] = { "OFF", "ON" };
+	static const char *offon[] = { "OFF", "ON" };
 
 	len = strlen (var->name);
 	memcpy (tbuf, var->name, len);
@@ -836,8 +863,9 @@ cmd_set (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 			case TYPE_STR:
 				if (*val)
 				{
-					strcpy ((char *) &prefs + vars[i].offset, val);
-					PrintTextf (sess, "%s set to: %s\n", var, val);
+					strncpy ((char *) &prefs + vars[i].offset, val, vars[i].len);
+					((char *) &prefs)[vars[i].offset + vars[i].len - 1] = 0;
+					PrintTextf (sess, "%s set to: %s\n", var, (char *) &prefs + vars[i].offset);
 				} else
 				{
 					set_showval (sess, &vars[i], tbuf);

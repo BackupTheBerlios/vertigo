@@ -669,7 +669,7 @@ find_away_message (struct server *serv, char *nick)
 	return 0;
 }
 
-#define XTERM "gnome-terminal"
+#define XTERM "gnome-terminal -x "
 
 #define defaultconf_ctcp \
 	"NAME TIME\n"				"CMD nctcp %s TIME %t\n\n"\
@@ -725,6 +725,12 @@ find_away_message (struct server *serv, char *nick)
 		"NAME Open in new tab\n"			"CMD !mozilla -remote 'openURL(%s,new-tab)'\n\n"\
 		"NAME Run new Mozilla\n"			"CMD !mozilla %s\n\n"\
 	"NAME ENDSUB\n"							"CMD \n\n"\
+	"NAME SUB\n"								"CMD Mozilla Firebird...\n\n"\
+		"NAME Open in existing\n"			"CMD !MozillaFirebird -remote 'openURL(%s)'\n\n"\
+		"NAME Open in new window\n"		"CMD !MozillaFirebird -remote 'openURL(%s,new-window)'\n\n"\
+		"NAME Open in new tab\n"			"CMD !MozillaFirebird -remote 'openURL(%s,new-tab)'\n\n"\
+		"NAME Run new Mozilla Firebird\n"	"CMD !MozillaFirebird %s\n\n"\
+	"NAME ENDSUB\n"							"CMD \n\n"\
 	"NAME SUB\n"								"CMD Galeon...\n\n"\
 		"NAME Open in existing\n"			"CMD !galeon -x '%s'\n\n"\
 		"NAME Open in new window\n"		"CMD !galeon -w '%s'\n\n"\
@@ -738,23 +744,23 @@ find_away_message (struct server *serv, char *nick)
 	"NAME ENDSUB\n"							"CMD \n\n"\
 	"NAME SUB\n"								"CMD Send URL to...\n\n"\
 		"NAME Gnome URL Handler\n"			"CMD !gnome-moz-remote %s\n\n"\
-		"NAME Lynx\n"							"CMD !"XTERM" -e lynx %s\n\n"\
-		"NAME Links\n"							"CMD !"XTERM" -e links %s\n\n"\
-		"NAME w3m\n"							"CMD !"XTERM" -e w3m %s\n\n"\
-		"NAME NcFTP\n" 						"CMD !"XTERM" -e ncftp %s\n\n"\
+		"NAME Lynx\n"							"CMD !"XTERM"lynx %s\n\n"\
+		"NAME Links\n"							"CMD !"XTERM"links %s\n\n"\
+		"NAME w3m\n"							"CMD !"XTERM"w3m %s\n\n"\
+		"NAME lFTP\n" 							"CMD !"XTERM"lftp %s\n\n"\
 		"NAME gFTP\n"							"CMD !gftp %s\n\n"\
 		"NAME Konqueror\n"					"CMD !konqueror %s\n\n"\
-		"NAME Telnet\n"						"CMD !"XTERM" -e telnet %s\n\n"\
-		"NAME Ping\n"							"CMD !"XTERM" -e ping -c 4 %s\n\n"\
+		"NAME Telnet\n"						"CMD !"XTERM"telnet %s\n\n"\
+		"NAME Ping\n"							"CMD !"XTERM"ping -c 4 %s\n\n"\
 	"NAME ENDSUB\n"							"CMD \n\n"\
 	"NAME Connect as IRC server\n"		"CMD newserver %s\n\n"
 #endif
 
-#ifndef WIN32
+#ifdef USE_SIGACTION
 /* Close and open log files on SIGUSR1. Usefull for log rotating */
 
 static void 
-sighup_handler (int signal)
+sigusr1_handler (int signal, siginfo_t *si, void *un)
 {
 	GSList *list = sess_list;
 	session *sess;
@@ -773,7 +779,7 @@ sighup_handler (int signal)
 /* Execute /SIGUSR2 when SIGUSR2 received */
 
 static void
-sigusr2_handler (int signal)
+sigusr2_handler (int signal, siginfo_t *si, void *un)
 {
 	session *sess = current_sess;
 
@@ -806,9 +812,10 @@ xchat_init (void)
 	}
 #else
 	WSAStartup(0x0101, &wsadata);
-#endif
+#endif	/* !USE_IPV6 */
+#endif	/* !WIN32 */
 
-#else
+#ifdef USE_SIGACTION
 	struct sigaction act;
 
 	/* ignore SIGPIPE's */
@@ -818,8 +825,20 @@ xchat_init (void)
 	sigaction (SIGPIPE, &act, NULL);
 
 	/* Deal with SIGUSR1's & SIGUSR2's */
-	signal (SIGUSR1, sighup_handler);
-	signal (SIGUSR2, sigusr2_handler);
+	act.sa_sigaction = sigusr1_handler;
+	act.sa_flags = 0;
+	sigemptyset (&act.sa_mask);
+	sigaction (SIGUSR1, &act, NULL);
+
+	act.sa_sigaction = sigusr2_handler;
+	act.sa_flags = 0;
+	sigemptyset (&act.sa_mask);
+	sigaction (SIGUSR2, &act, NULL);
+#else
+#ifndef WIN32
+	/* good enough for these old systems */
+	signal (SIGPIPE, SIG_IGN);
+#endif
 #endif
 
 	if (g_get_charset (&cs))
@@ -875,15 +894,15 @@ xchat_init (void)
 	"NAME ENDSUB\n"			"CMD \n\n"\
 	"NAME SUB\n"				"CMD %s\n\n"\
 		"NAME %s\n"				"CMD quote WHO %%s\n\n"\
-		"NAME %s\n"				"CMD quote WHOIS %%s\n\n"\
+		"NAME %s\n"				"CMD quote WHOIS %%s %%s\n\n"\
 		"NAME %s\n"				"CMD dns %%s\n\n"\
 		"NAME %s\n"				"CMD quote TRACE %%s\n\n"\
 		"NAME %s\n"				"CMD quote USERHOST %%s\n\n"\
 	"NAME ENDSUB\n"			"CMD \n\n"\
 	"NAME SUB\n"				"CMD %s\n\n"\
-		"NAME %s\n"				"CMD !"XTERM" -e /bin/sh -c \"/usr/sbin/traceroute %%h ; sleep 30\"\n\n"\
-		"NAME %s\n"				"CMD !"XTERM" -e /bin/sh -c \"ping -c 4 %%h ; sleep 30\"\n\n"\
-		"NAME %s\n"				"CMD !"XTERM" -e telnet %%h\n\n"\
+		"NAME %s\n"				"CMD !"XTERM"/usr/sbin/traceroute %%h\n\n"\
+		"NAME %s\n"				"CMD !"XTERM"ping -c 4 %%h\n\n"\
+		"NAME %s\n"				"CMD !"XTERM"telnet %%h\n\n"\
 	"NAME ENDSUB\n"			"CMD \n\n"\
 	"NAME %s\n"					"CMD query %%s\n\n",
 		_("Direct client-to-client"),
@@ -967,7 +986,7 @@ xchat_init (void)
 	list_loadconf ("buttons.conf", &button_list, buf);
 
 	snprintf (buf, sizeof (buf),
-		"NAME %s\n"				"CMD whois %%s\n\n"
+		"NAME %s\n"				"CMD whois %%s %%s\n\n"
 		"NAME %s\n"				"CMD dcc send %%s\n\n"
 		"NAME %s\n"				"CMD dcc chat %%s\n\n"
 		"NAME %s\n"				"CMD ping %%s\n\n"
@@ -1029,17 +1048,15 @@ xchat_exit (void)
 	ignore_save ();
 	free_sessions ();
 	fe_exit ();
-
-#ifdef WIN32
-	WSACleanup ();
-#endif
 }
 
 #ifndef WIN32
 
 static int
-child_handler (int pid)
+child_handler (gpointer userdata)
 {
+	int pid = GPOINTER_TO_INT (userdata);
+
 	if (waitpid (pid, 0, WNOHANG) == pid)
 		return 0;					  /* remove timeout handler */
 	return 1;						  /* keep the timeout handler */
@@ -1087,6 +1104,10 @@ main (int argc, char *argv[])
 
 #ifdef USE_DEBUG
 	xchat_mem_list ();
+#endif
+
+#ifdef WIN32
+	WSACleanup ();
 #endif
 
 	return 0;

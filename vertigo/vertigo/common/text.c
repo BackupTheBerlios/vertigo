@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 
 #include "xchat.h"
+#include <glib/ghash.h>
 #include "cfgfiles.h"
 #include "plugin.h"
 #include "fe.h"
@@ -34,7 +35,9 @@
 #include "outbound.h"
 #include "xchatc.h"
 #include "text.h"
-
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 struct pevt_stage1
 {
@@ -154,7 +157,7 @@ q3link (char *word)
 
 	if ((s = strchr (word,':')) != NULL)
 	{
-		for (i = 0; i < (int) ((unsigned long)s - (unsigned long)word); i++)
+		for (i = 0; i < s - word; i++)
 		{
 			if (word[i] == '.')
 				d++;
@@ -236,7 +239,7 @@ text_word_check (char *word)
 	dot = strrchr (word, '.');
 	if (at && dot)
 	{
-		if ((unsigned long) at < (unsigned long) dot)
+		if (at < dot)
 		{
 			if (strchr (word, '*'))
 				return WORD_HOST;
@@ -249,7 +252,7 @@ text_word_check (char *word)
 	dots = 0;
 	for (i = 0; i < len; i++)
 	{
-		if (word[i] == '.')
+		if (word[i] == '.' && i > 1)
 			dots++;
 		else if (!isdigit (word[i]))
 		{
@@ -327,8 +330,8 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 				*tmp = rfc_tolower (*tmp);
 				if (*tmp == '/')
 #else
-				/* win32 can't handle filenames with the '|' character */
-				if (*tmp == '|')
+				/* win32 can't handle filenames with \|/ characters */
+				if (*tmp == '\\' || *tmp == '|' || *tmp == '/')
 #endif
 					*tmp = '_';
 			}
@@ -339,7 +342,7 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 		free (sep);
 	}
 
-	snprintf (buf, 512, "%s/xchatlogs", get_xdir ());
+	snprintf (buf, 512, "%s/xchatlogs", get_xdir_fs ());
 	if (access (buf, F_OK) != 0)
 #ifdef WIN32
 		mkdir (buf);
@@ -349,7 +352,7 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 	auto_insert (fn, sizeof (fn), prefs.logmask, NULL, NULL, "", channame, "", "", netname, servname);
 	g_free (channame);
 
-	snprintf (buf, 512, "%s/xchatlogs/%s", get_xdir (), fn);
+	snprintf (buf, 512, "%s/xchatlogs/%s", get_xdir_fs (), fn);
 
  	/* The following code handles subdirectories in logpath and creates
  	 * them, if they don't exist. Useful with logmasks like "%c/%y.log" in
@@ -359,7 +362,7 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 
 	if (access (buf, F_OK) != 0)
 	{
-		snprintf (buf, 512, "%s/xchatlogs/", get_xdir ());
+		snprintf (buf, 512, "%s/xchatlogs/", get_xdir_fs ());
 		pathlen -= strlen(buf);
  
 		/* how many sub-directories do we have? */
@@ -435,7 +438,7 @@ log_open (session *sess)
 		char message[512];
 		snprintf (message, sizeof (message),
 					_("* Can't open log file(s) for writing. Check the\n" \
-					  "  permissions on %s/xchatlogs"), get_xdir());
+					  "  permissions on %s/xchatlogs"), get_xdir_utf8 ());
 		fe_message (message, TRUE);
 
 		log_error = TRUE;
@@ -446,7 +449,7 @@ int
 get_stamp_str (char *fmt, time_t tim, char **ret)
 {
 	char dest[128];
-	int len;
+	gsize len;
 
 	len = strftime (dest, sizeof (dest), fmt, localtime (&tim));
 	if (len)
@@ -938,7 +941,7 @@ static char *pevt_nickclash_help[] = {
 };
 
 static char *pevt_connfail_help[] = {
-	N_("Error String"),
+	N_("Error"),
 };
 
 static char *pevt_connect_help[] = {
@@ -974,7 +977,7 @@ static char *pevt_dccchaterr_help[] = {
 	N_("Nickname"),
 	N_("IP address"),
 	N_("Port"),
-	N_("Error name"),
+	N_("Error"),
 };
 
 static char *pevt_dccstall_help[] = {
@@ -985,13 +988,14 @@ static char *pevt_dccstall_help[] = {
 
 static char *pevt_generic_file_help[] = {
 	N_("Filename"),
+	N_("Error"),
 };
 
 static char *pevt_dccrecverr_help[] = {
 	N_("Filename"),
 	N_("Destination filename"),
 	N_("Nickname"),
-	N_("Error name"),
+	N_("Error"),
 };
 
 static char *pevt_dccrecvcomp_help[] = {
@@ -1004,7 +1008,7 @@ static char *pevt_dccrecvcomp_help[] = {
 static char *pevt_dccconfail_help[] = {
 	N_("DCC Type"),
 	N_("Nickname"),
-	N_("Error string"),
+	N_("Error"),
 };
 
 static char *pevt_dccchatcon_help[] = {
@@ -1021,7 +1025,7 @@ static char *pevt_dcccon_help[] = {
 static char *pevt_dccsendfail_help[] = {
 	N_("Filename"),
 	N_("Nickname"),
-	N_("Error name"),
+	N_("Error"),
 };
 
 static char *pevt_dccsendcomp_help[] = {
@@ -1250,7 +1254,7 @@ pevent_load (char *filename)
 
 	buf = malloc (1000);
 	if (filename == NULL)
-		snprintf (buf, 1000, "%s/pevents.conf", get_xdir ());
+		snprintf (buf, 1000, "%s/pevents.conf", get_xdir_fs ());
    else
       safe_strcpy (buf, filename, 1000);
 
@@ -1289,7 +1293,33 @@ pevent_load (char *filename)
 		{
 			if (text)
 				free (text);
-			text = strdup (ofs);
+
+			/* This allows updating of old strings. We don't use new defaults
+				if the user has customized the strings (.e.g a text theme).
+				Hash of the old default is enough to identify and replace it.
+				This only works in English. */
+
+			switch (g_str_hash (ofs))
+			{
+			case 0x526743a4:
+		/* %C08,02 Hostmask                  PRIV NOTI CHAN CTCP INVI UNIG %O */
+				text = strdup (te[XP_TE_IGNOREHEADER].def);
+				break;
+
+			case 0xe91bc9c2:
+		/* %C08,02                                                         %O */
+				text = strdup (te[XP_TE_IGNOREFOOTER].def);
+				break;
+
+			case 0x1fbfdf22:
+		/* -%C10-%C11-%O$tDCC RECV: Cannot open $1 for writing - aborting. */
+				text = strdup (te[XP_TE_DCCFILEERR].def);
+				break;
+
+			default:
+				text = strdup (ofs);
+			}
+
 			continue;
 		} else if (strcmp (buf, "event_sound") == 0)
 		{
@@ -1595,9 +1625,23 @@ play_wave (const char *file)
 {
 	char buf[512];
 	char wavfile[512];
+	char *file_fs;
+
+	/* the pevents GUI editor triggers this after removing a soundfile */
+	if (!file[0])
+		return;
 
 	memset (buf, 0, sizeof (buf));
 	memset (wavfile, 0, sizeof (wavfile));
+
+#ifdef WIN32
+	/* check for fullpath, windows style */
+	if (strlen (file) > 3 &&
+		 file[1] == ':' && (file[2] == '\\' || file[2] == '/') )
+	{
+		strncpy (wavfile, file, sizeof (wavfile));
+	} else
+#endif
 	if (file[0] != '/')
 	{
 		snprintf (wavfile, sizeof (wavfile), "%s/%s", prefs.sounddir, file);
@@ -1605,16 +1649,31 @@ play_wave (const char *file)
 	{
 		strncpy (wavfile, file, sizeof (wavfile));
 	}
-	if (access (wavfile, R_OK) == 0)
+
+	file_fs = g_filename_from_utf8 (wavfile, -1, 0, 0, 0);
+	if (!file_fs)
+		return;
+
+	if (access (file_fs, R_OK) == 0)
 	{
-		snprintf (buf, sizeof (buf), "%s %s", prefs.soundcmd, wavfile);
-		buf[sizeof (buf) - 1] = '\0';
-		xchat_exec (buf);
+#ifdef WIN32
+		if (strcmp (prefs.soundcmd, "esdplay") == 0)
+		{
+			PlaySound (file_fs, NULL, SND_NODEFAULT|SND_FILENAME|SND_ASYNC);
+		} else
+#endif
+		{
+			snprintf (buf, sizeof (buf), "%s %s", prefs.soundcmd, file_fs);
+			buf[sizeof (buf) - 1] = '\0';
+			xchat_exec (buf);
+		}
 	} else
 	{
-		snprintf (buf, sizeof (buf), "Cannot read %s", wavfile);
+		snprintf (buf, sizeof (buf), _("Cannot read sound file:\n%s"), wavfile);
 		fe_message (buf, FALSE);
 	}
+
+	g_free (file_fs);
 }
 
 /* called by EMIT_SIGNAL macro */
@@ -1675,7 +1734,7 @@ pevent_save (char *fn)
 	char buf[1024];
 
 	if (!fn)
-		snprintf (buf, sizeof (buf), "%s/pevents.conf", get_xdir ());
+		snprintf (buf, sizeof (buf), "%s/pevents.conf", get_xdir_fs ());
 	else
 		safe_strcpy (buf, fn, sizeof (buf));
 	fd = open (buf, O_CREAT | O_TRUNC | O_WRONLY | OFLAGS, 0x180);

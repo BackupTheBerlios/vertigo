@@ -86,7 +86,7 @@ random_line (char *file_name)
 	if (!file_name[0])
 		goto nofile;
 
-	snprintf (buf, sizeof (buf), "%s/%s", get_xdir (), file_name);
+	snprintf (buf, sizeof (buf), "%s/%s", get_xdir_fs (), file_name);
 	fh = fopen (buf, "r");
 	if (!fh)
 	{
@@ -185,8 +185,10 @@ process_data_init (char *buf, char *cmd, char *word[],
 			if (!handle_quotes)
 				goto def;
 			if (quote)
+			{
 				quote = FALSE;
-			else
+				space = FALSE;
+			} else
 				quote = TRUE;
 			cmd++;
 			break;
@@ -716,10 +718,11 @@ cmd_dcc (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 			}
 			return TRUE;
 		}
-		if (!strcasecmp (type, "SEND"))
+		if ((!strcasecmp (type, "SEND")) || (!strcasecmp (type, "PSEND")))
 		{
 			int i = 3, maxcps;
 			char *nick, *file;
+			int passive = (!strcasecmp(type, "PSEND")) ? 1 : 0;
 
 			nick = word[i];
 			if (!*nick)
@@ -740,13 +743,13 @@ cmd_dcc (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 			file = word[i];
 			if (!*file)
 			{
-				fe_dcc_send_filereq (sess, nick, maxcps);
+				fe_dcc_send_filereq (sess, nick, maxcps, passive);
 				return TRUE;
 			}
 
 			do
 			{
-				dcc_send (sess, tbuf, nick, file, maxcps);
+				dcc_send (sess, nick, file, maxcps, passive);
 				i++;
 				file = word[i];
 			}
@@ -3051,13 +3054,13 @@ nick_comp_cb (struct User *user, nickdata *data)
 static void
 perform_nick_completion (struct session *sess, char *cmd, char *tbuf)
 {
-	long len;
+	int len;
 	char *space = strchr (cmd, ' ');
 	if (space && space != cmd)
 	{
 		if (((space[-1] == ':') || (space[-1] == prefs.nick_suffix[0])) && (space - 1 != cmd))
 		{
-			len = (long) space - (long) cmd - 1;
+			len = space - cmd - 1;
 			if (len < NICKLEN)
 			{
 				char nick[NICKLEN];

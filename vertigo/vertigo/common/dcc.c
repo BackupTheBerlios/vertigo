@@ -68,6 +68,13 @@ static struct DCC *new_dcc (void);
 static void dcc_close (struct DCC *dcc, int dccstat, int destroy);
 static gboolean dcc_send_data (GIOChannel *, GIOCondition, struct DCC *);
 static gboolean dcc_read (GIOChannel *, GIOCondition, struct DCC *);
+static gboolean dcc_read_ack (GIOChannel *source, GIOCondition condition, struct DCC *dcc);
+
+static int new_id()
+{
+	static int id = 1;
+	return id++;
+}
 
 static double
 timeval_diff (GTimeVal *greater,
@@ -629,6 +636,10 @@ dcc_read (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 
 	if (dcc->fp == -1)
 	{
+
+		/* try to create the download dir (even if it exists, no harm) */
+		mkdir_utf8 (prefs.dccdir);
+
 		if (dcc->resumable)
 		{
 			dcc->fp = open (dcc->destfile_fs, O_WRONLY | O_APPEND | OFLAGS);
@@ -642,7 +653,7 @@ dcc_read (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 				do
 				{
 					n++;
-					sprintf (buf, "%s.%d", dcc->destfile_fs, n);
+					snprintf (buf, sizeof (buf), "%s.%d", dcc->destfile_fs, n);
 				}
 				while (access (buf, F_OK) == 0);
 
@@ -663,8 +674,9 @@ dcc_read (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 	}
 	if (dcc->fp == -1)
 	{
+		/* the last executed function is open(), errno should be valid */
 		EMIT_SIGNAL (XP_TE_DCCFILEERR, dcc->serv->front_session, dcc->destfile,
-						 NULL, NULL, NULL, 0);
+						 errorstring (errno), NULL, NULL, 0);
 		dcc_close (dcc, STAT_FAILED, FALSE);
 		return TRUE;
 	}
@@ -688,7 +700,6 @@ dcc_read (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 				if (would_block_again ())
 					return TRUE;
 			}
-failedabort:
 			EMIT_SIGNAL (XP_TE_DCCRECVERR, dcc->serv->front_session, dcc->file,
 							 dcc->destfile, dcc->nick,
 							 errorstring ((n < 0) ? sock_error () : 0), 0);
@@ -697,7 +708,12 @@ failedabort:
 		}
 
 		if (write (dcc->fp, buf, n) == -1) /* could be out of hdd space */
-			goto failedabort;
+		{
+			EMIT_SIGNAL (XP_TE_DCCRECVERR, dcc->serv->front_session, dcc->file,
+							 dcc->destfile, dcc->nick, errorstring (errno), 0);
+			dcc_close (dcc, STAT_FAILED, FALSE);
+			return TRUE;
+		}
 		dcc->pos += n;
 		pos = htonl (dcc->pos);
 		send (dcc->sok, (char *) &pos, 4, 0);
@@ -783,7 +799,16 @@ dcc_connect_finished (GIOChannel *source, GIOCondition condition, struct DCC *dc
 		EMIT_SIGNAL (XP_TE_DCCCONRECV, dcc->serv->front_session,
 						 dcc->nick, host, dcc->file, NULL, 0);
 		break;
-
+	case TYPE_SEND:
+		/* passive send */
+		dcc->fastsend = prefs.fastdccsend;
+		if (dcc->fastsend)
+			dcc->wiotag = fe_input_add (dcc->sok, FIA_WRITE, dcc_send_data, dcc);
+		dcc->iotag = fe_input_add (dcc->sok, FIA_READ|FIA_EX, dcc_read_ack, dcc);
+		dcc_send_data (NULL, 0, (gpointer)dcc);
+		EMIT_SIGNAL (XP_TE_DCCCONSEND, dcc->serv->front_session,
+						 dcc->nick, host, dcc->file, NULL, 0);
+		break;
 	case TYPE_CHATRECV:
 		dcc->iotag = fe_input_add (dcc->sok, FIA_READ|FIA_EX, dcc_read_chat, dcc);
 		dcc->dccchat = malloc (sizeof (struct dcc_chat));
@@ -811,7 +836,7 @@ dcc_connect (struct DCC *dcc)
 		return;
 	dcc->dccstat = STAT_CONNECTING;
 
-	if (dcc->pasvid)
+	if (dcc->pasvid && dcc->port == 0)
 	{
 		/* accepted a passive dcc send */
 		ret = dcc_listen_init (dcc, dcc->serv->front_session);
@@ -829,7 +854,6 @@ dcc_connect (struct DCC *dcc)
 		else
 			snprintf (tbuf, sizeof (tbuf), "DCC CHAT chat %lu %d %d",
 				dcc->addr, dcc->port, dcc->pasvid);
-
 		dcc->serv->p_ctcp (dcc->serv, dcc->nick, tbuf);
 	}
 	else
@@ -950,13 +974,7 @@ dcc_read_ack (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 	if (dcc->ackoffset)
 		dcc->ack += dcc->resumable;
 
-	if (!dcc->fastsend)
-	{
-		if (dcc->ack < dcc->pos)
-			return TRUE;
-		dcc_send_data (NULL, 0, (gpointer)dcc);
-	}
-
+	/* DCC complete check */
 	if (dcc->pos >= dcc->size && dcc->ack >= dcc->size)
 	{
 		dcc_calc_average_cps (dcc);
@@ -964,6 +982,10 @@ dcc_read_ack (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 		sprintf (buf, "%d", dcc->cps);
 		EMIT_SIGNAL (XP_TE_DCCSENDCOMP, dcc->serv->front_session,
 						 file_part (dcc->file), dcc->nick, buf, NULL, 0);
+	}
+	else if ((!dcc->fastsend) && (dcc->ack >= dcc->pos))
+	{
+		dcc_send_data (NULL, 0, (gpointer)dcc);
 	}
 
 	return TRUE;
@@ -1119,20 +1141,17 @@ dcc_listen_init (struct DCC *dcc, session *sess)
 
 static struct session *dccsess;
 static char *dccto;				  /* lame!! */
-static char *dcctbuf;
 static int dccmaxcps;
 static int recursive = FALSE;
 
 static void
 dcc_send_wild (char *file)
 {
-	dcc_send (dccsess, dcctbuf, dccto, file, dccmaxcps);
+	dcc_send (dccsess, dccto, file, dccmaxcps, 0);
 }
 
-/* tbuf is at least 400 bytes */
-
 void
-dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
+dcc_send (struct session *sess, char *to, char *file, int maxcps, int passive)
 {
 	char outbuf[512];
 	struct stat st;
@@ -1154,7 +1173,6 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 
 		dccsess = sess;
 		dccto = to;
-		dcctbuf = tbuf;
 		dccmaxcps = maxcps;
 
 		free (file);
@@ -1196,7 +1214,7 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 				if (dcc->fp != -1)
 				{
 					g_free (file_fs);
-					if (dcc_listen_init (dcc, sess))
+					if (passive || dcc_listen_init (dcc, sess))
 					{
 						char havespaces = 0;
 						file = dcc->file;
@@ -1219,11 +1237,22 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 						} else
 							fe_dcc_add (dcc);
 
-						snprintf (outbuf, sizeof (outbuf), (havespaces) ? 
-								"DCC SEND \"%s\" %lu %d %u" :
-								"DCC SEND %s %lu %d %u",
-								 file_part (dcc->file), dcc->addr,
-								 dcc->port, dcc->size);
+						if (passive)
+						{
+							dcc->pasvid = new_id();
+							snprintf (outbuf, sizeof (outbuf), (havespaces) ?
+									"DCC SEND \"%s\" %lu %d %u %d" :
+									"DCC SEND %s %lu %d %u %d",
+									file_part (dcc->file), 199ul,
+									0, dcc->size, dcc->pasvid);
+						} else
+						{
+							snprintf (outbuf, sizeof (outbuf), (havespaces) ?
+									"DCC SEND \"%s\" %lu %d %u" :
+									"DCC SEND %s %lu %d %u",
+									file_part (dcc->file), dcc->addr,
+									dcc->port, dcc->size);
+						}
 						sess->server->p_ctcp (sess->server, to, outbuf);
 
 						EMIT_SIGNAL (XP_TE_DCCOFFER, sess, file_part (dcc->file),
@@ -1242,6 +1271,23 @@ noaxs:
 	g_free (file_fs);
 	dcc_close (dcc, 0, TRUE);
 }
+
+static struct DCC *
+find_dcc_from_id (int id, int type)
+{
+	struct DCC *dcc;
+	GSList *list = dcc_list;
+	while (list)
+	{
+		dcc = (struct DCC *) list->data;
+		if (dcc->pasvid == id &&
+		dcc->dccstat == STAT_QUEUED && dcc->type == type)
+		return dcc;
+		list = list->next;
+	}
+	return 0;
+}
+
 
 static struct DCC *
 find_dcc_from_port (int port, int type)
@@ -1521,7 +1567,15 @@ handle_dcc (struct session *sess, char *nick, char *word[],
 	if (!strcasecmp (type, "RESUME"))
 	{
 		port = atoi (word[7]);
-		dcc = find_dcc_from_port (port, TYPE_SEND);
+
+		if (port == 0)
+		{ /* PASSIVE */
+			pasvid = atoi(word[9]);
+			dcc = find_dcc_from_id(pasvid, TYPE_SEND);
+		} else
+		{
+			dcc = find_dcc_from_port (port, TYPE_SEND);
+		}
 		if (!dcc)
 			dcc = find_dcc (nick, word[6], TYPE_SEND);
 		if (dcc)
@@ -1533,11 +1587,19 @@ handle_dcc (struct session *sess, char *nick, char *word[],
 				dcc->pos = dcc->resumable;
 				dcc->ack = dcc->resumable;
 				lseek (dcc->fp, dcc->pos, SEEK_SET);
-				/* filename contains spaces? */
-				snprintf (tbuf, sizeof (tbuf), strchr (file_part (dcc->file), ' ') ?
+
+				/* Checking if dcc is passive and if filename contains spaces */
+				if (dcc->pasvid)
+					snprintf (tbuf, sizeof (tbuf), strchr (file_part (dcc->file), ' ') ?
+							"DCC ACCEPT \"%s\" %d %u %d" :
+							"DCC ACCEPT %s %d %u %d",
+							file_part (dcc->file), port, dcc->resumable, dcc->pasvid);
+				else
+					snprintf (tbuf, sizeof (tbuf), strchr (file_part (dcc->file), ' ') ?
 							"DCC ACCEPT \"%s\" %d %u" :
 							"DCC ACCEPT %s %d %u",
 							file_part (dcc->file), port, dcc->resumable);
+
 				dcc->serv->p_ctcp (dcc->serv, dcc->nick, tbuf);
 			}
 			sprintf (tbuf, "%u", dcc->pos);
@@ -1559,13 +1621,29 @@ handle_dcc (struct session *sess, char *nick, char *word[],
 	if (!strcasecmp (type, "SEND"))
 	{
 		char *file = file_part (word[6]);
-		port = atoi (word[8]);
+		int psend = 0;
 
+		port = atoi (word[8]);
 		sscanf (word[7], "%lu", &addr);
 		sscanf (word[9], "%lu", &size);
 
-		if (port == 0)
+		if (port == 0) /* Passive dcc requested */
 			pasvid = atoi (word[10]);
+		else if (word[10][0] != 0)
+		{
+			/* Requesting passive dcc.
+			 * Destination user of an active dcc is giving his
+			 * TRUE address/port/pasvid data.
+			 * This information will be used later to
+			 * establish the connection to the user.
+			 * We can recognize this type of dcc using word[10]
+			 * because this field is always null (no pasvid)
+			 * in normal dcc sends.
+			 */
+			pasvid = atoi (word[10]);
+			psend = 1;
+		}
+
 
 		if (!addr || !size /*|| (port < 1024 && port != 0)*/
 			|| port > 0xffff || (port == 0 && pasvid == 0))
@@ -1573,6 +1651,26 @@ handle_dcc (struct session *sess, char *nick, char *word[],
 			dcc_malformed (sess, nick, word_eol[4] + 2);
 			return;
 		}
+
+		if (psend)
+		{
+			/* Third Step of Passive send.
+			 * Connecting to the destination and finally
+			 * sending file.
+			 */
+			dcc = find_dcc_from_id (pasvid, TYPE_SEND);
+			if (dcc)
+			{
+				dcc->addr = addr;
+				dcc->port = port;
+				dcc_connect (dcc);
+			} else
+			{
+				dcc_malformed (sess, nick, word_eol[4] + 2);
+			}
+			return;
+		}
+
 		dcc = new_dcc ();
 		if (dcc)
 		{
@@ -1659,7 +1757,7 @@ handle_dcc (struct session *sess, char *nick, char *word[],
 				} else
 				{
 dontresume:
-					dcc->resume_error = 3;
+					/*dcc->resume_error = 3;*/
 					dcc->resumable = 0;
 					dcc->pos = 0;
 					dcc_connect (dcc);

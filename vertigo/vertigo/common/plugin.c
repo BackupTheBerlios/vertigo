@@ -46,7 +46,7 @@ typedef struct session xchat_context;
 #endif
 #endif
 
-#define DEBUG(t) PrintText(0,t)
+#define DEBUG(x) {x;}
 
 /* crafted to be an even 32 bytes */
 struct _xchat_hook
@@ -403,10 +403,10 @@ plugin_auto_load (session *sess)
 	ps = sess;
 #ifdef WIN32
 	for_files ("./plugins", "*.dll", plugin_auto_load_cb);
-	for_files (get_xdir (), "*.dll", plugin_auto_load_cb);
+	for_files (get_xdir_fs (), "*.dll", plugin_auto_load_cb);
 #else
 	for_files (XCHATLIBDIR"/plugins", "*.so", plugin_auto_load_cb);
-	for_files (get_xdir (), "*.so", plugin_auto_load_cb);
+	for_files (get_xdir_fs (), "*.so", plugin_auto_load_cb);
 #endif
 }
 
@@ -741,7 +741,7 @@ xchat_print (xchat_plugin *ph, char *text)
 {
 	if (!is_session (ph->context))
 	{
-		DEBUG("xchat_print called without a valid context.\n");
+		DEBUG(PrintTextf(0, "%s\txchat_print called without a valid context.\n", ph->name));
 		return;
 	}
 
@@ -767,7 +767,7 @@ xchat_command (xchat_plugin *ph, char *command)
 {
 	if (!is_session (ph->context))
 	{
-		DEBUG("xchat_command called without a valid context.\n");
+		DEBUG(PrintTextf(0, "%s\txchat_command called without a valid context.\n", ph->name));
 		return;
 	}
 
@@ -859,7 +859,7 @@ xchat_get_info (xchat_plugin *ph, const char *id)
 	sess = ph->context;
 	if (!is_session (sess))
 	{
-		DEBUG("xchat_get_info called without a valid context.\n");
+		DEBUG(PrintTextf(0, "%s\txchat_get_info called without a valid context.\n", ph->name));
 		return NULL;
 	}
 
@@ -894,7 +894,7 @@ xchat_get_info (xchat_plugin *ph, const char *id)
 		return VERSION;
 
 	case 0xdd9b1abd:	/* xchatdir */
-		return get_xdir ();
+		return get_xdir_utf8 ();
 	}
 
 	return NULL;
@@ -1013,7 +1013,7 @@ xchat_list_fields (xchat_plugin *ph, const char *name)
 	};
 	static const char *users_fields[] =
 	{
-		"shost", "snick", "sprefix", NULL
+		"iaway", "shost", "snick", "sprefix", NULL
 	};
 	static const char *list_of_lists[] =
 	{
@@ -1138,6 +1138,14 @@ xchat_list_int (xchat_plugin *ph, xchat_list *xlist, const char *name)
 		{
 		case 0x368f3a:	/* type */
 			return ((struct session *)data)->type;
+		}
+		break;
+
+	case LIST_USERS:
+		switch (hash)
+		{
+		case 0x2de2ee:	/* away */
+			return ((struct User *)data)->away;
 		}
 		break;
 

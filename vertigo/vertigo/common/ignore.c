@@ -252,14 +252,14 @@ ignore_read_next_entry (char *my_cfg, struct ignore *ignore)
 
 	if (my_cfg)
 	{
-		my_cfg = cfg_get_str (my_cfg, "mask", tbuf);
+		my_cfg = cfg_get_str (my_cfg, "mask", tbuf, sizeof (tbuf));
 		if (!my_cfg)
 			return NULL;
 		ignore->mask = strdup (tbuf);
 	}
 	if (my_cfg)
 	{
-		my_cfg = cfg_get_str (my_cfg, "type", tbuf);
+		my_cfg = cfg_get_str (my_cfg, "type", tbuf, sizeof (tbuf));
 		ignore->type = atoi (tbuf);
 	}
 	return my_cfg;
@@ -274,7 +274,7 @@ ignore_load ()
 	char file[256];
 	int fh, i;
 
-	snprintf (file, sizeof (file), "%s/ignore.conf", get_xdir ());
+	snprintf (file, sizeof (file), "%s/ignore.conf", get_xdir_fs ());
 	fh = open (file, O_RDONLY | OFLAGS);
 	if (fh != -1)
 	{
@@ -310,7 +310,7 @@ ignore_save ()
 	GSList *temp = ignore_list;
 	struct ignore *ig;
 
-	snprintf (buf, sizeof (buf), "%s/ignore.conf", get_xdir ());
+	snprintf (buf, sizeof (buf), "%s/ignore.conf", get_xdir_fs ());
 	fh = open (buf, O_TRUNC | O_WRONLY | O_CREAT | OFLAGS, 0600);
 	if (fh != -1)
 	{
@@ -370,7 +370,7 @@ flood_check (char *nick, char *ip, server *serv, session *sess, int what)	/*0=ct
 					   int ctcp, int invi, int unignore, int no_save) */
 
 					snprintf (buf, sizeof (buf),
-								 "You are being CTCP flooded from %s, ignoring %s\n",
+								 _("You are being CTCP flooded from %s, ignoring %s\n"),
 								 nick, real_ip);
 					PrintText (sess, buf);
 
@@ -395,7 +395,7 @@ flood_check (char *nick, char *ip, server *serv, session *sess, int what)	/*0=ct
 				if (serv->msg_counter == prefs.msg_number_limit)	/*if we reached the maximun numbers of ctcp in the seconds limits */
 				{
 					snprintf (buf, sizeof (buf),
-					 "You are being MSG flooded from %s, setting autodialog OFF.\n",
+					 _("You are being MSG flooded from %s, setting autodialog OFF.\n"),
 								 ip);
 					PrintText (sess, buf);
 					serv->msg_last_time = current_time;	/*we got the flood, restore all the vars for next one */

@@ -65,14 +65,15 @@ static const struct defaultserver def[] =
 #ifdef USE_IPV6
 	{0,			"irc6.ktu.lt/7666"},
 #endif
-	{0,			"irc.delfi.lt"},
+	{0,			"irc.data.lt"},
 	{0,			"irc.ktu.lt"},
 	{0,			"irc.le.lt"},
-	{0,			"irc.takas.lt"},
 	{0,			"irc.omnitel.net"},
+	{0,			"irc.takas.lt"},
 	{0,			"irc.5ci.net"},
 	{0,			"irc.interneka.lt"},
 	{0,			"irc.elekta.lt"},
+	{0,			"irc.if.lt"},
 
 	{"AmigaNet",	0},
 	{0,			"linux.us.amiganet.org"},
@@ -116,6 +117,9 @@ static const struct defaultserver def[] =
 	{0,			"irc.azzurra.org"},
 	{0,			"crypto.azzurra.org"},
 
+	{"Buzzpot", 0},
+	{0,			"irc.chatspike.net"},
+
 	{"ChatJunkies",	0, "#xchat"},
 	{0,			"irc.chatjunkies.org"},
 	{0,			"nl.chatjunkies.org"},
@@ -129,9 +133,6 @@ static const struct defaultserver def[] =
 	{0,			"unix.coolchat.net"},
 	{0,			"toronto.coolchat.net"},
 
-	{"CyberArmy",	0},
-	{0,			"irc.cyberarmy.com"},
-
 	{"DALnet",	0},
 	{0,			"irc.dal.net"},
 	{0,			"irc.eu.dal.net"},
@@ -141,6 +142,9 @@ static const struct defaultserver def[] =
 	{0,			"bw.d-t-net.de"},
 	{0,			"nc.d-t-net.de"},
 	{0,			"wakka.d-t-net.de"},
+
+	{"DeepIRC", 0},
+	{0,			"irc.deepirc.net"},
 
 	{"EFnet",	0},
 	{0,			"irc.Prison.NET"},
@@ -165,10 +169,6 @@ static const struct defaultserver def[] =
 	{0,			"irc.vie.at.euirc.net"},
 	{0,			"irc.inn.at.euirc.net"},
 	{0,			"irc.bas.ch.euirc.net"},
-
-	{"Evolnet",	0},/*undersized*/
-	{0,			"irc.evolnet.org"},
-	{0,			"blender.evolnet.org"},
 
 	{"FDFNet",	0},
 	{0,			"irc.fdfnet.net"},
@@ -203,10 +203,6 @@ static const struct defaultserver def[] =
 	{0,				"irc.ca.gamesnet.net"},
 	{0,				"irc.eu.gamesnet.net"},
 
-	{"Gamma Force",	0},/*undersized*/
-	{0,			"irc.gammaforce.org"},
-	{0,			"sphinx.or.us.gammaforce.org"},
-
 	{"German-Elite",	0},
 	{0,			"dominion.german-elite.net"},
 	{0,			"komatu.german-elite.net"},
@@ -231,9 +227,6 @@ static const struct defaultserver def[] =
 
 	{"IRCDZone",		0},
 	{0,			"irc.ircdzone.net"},
-
-	{"ircfr",			0},
-	{0,			"irc.ircfr.org"},
 
 	{"IrcLink",	0},
 	{0,			"irc.irclink.net"},
@@ -267,16 +260,6 @@ static const struct defaultserver def[] =
 	{0,			"random.irc.kewl.org"},
 	{0,			"la.defense.fr.eu.kewl.org"},
 	{0,			"nanterre.fr.eu.kewl.org"},
-
-	{"KrushNet",	0},
-	{0,			"Jeffersonville.IN.US.KrushNet.Org"},
-	{0,			"Auckland.NZ.KrushNet.Org"},
-	{0,			"Hastings.NZ.KrushNet.Org"},
-	{0,			"Seattle-R.WA.US.KrushNet.Org"},
-	{0,			"Minneapolis.MN.US.KrushNet.Org"},
-	{0,			"Cullowhee.NC.US.KrushNet.Org"},
-	{0,			"Asheville-R.NC.US.KrushNet.Org"},
-	{0,			"San-Antonio.TX.US.KrushNet.Org"},
 
 	{"Librenet",	0},
 	{0,			"irc.librenet.net"},
@@ -314,7 +297,6 @@ static const struct defaultserver def[] =
 	{0,			"us.pa.nixhelp.org"},
 
 	{"NullusNet",	0},
-	{0,			"irc.spot.org"},/*refused*/
 	{0,			"irc.nullus.net"},
 
 	{"OFTC",	0},
@@ -447,6 +429,14 @@ static const struct defaultserver def[] =
 	{"UnderNet",	0},
 	{0,			"us.undernet.org"},
 	{0,			"eu.undernet.org"},
+
+	{"UniBG",		0},
+	{0,			"irc.lirex.com"},
+	{0,			"irc.naturella.com"},
+	{0,			"irc.spnet.net"},
+	{0,			"irc.techno-link.com"},
+	{0,			"irc.telecoms.bg"},
+	{0,			"irc.tu-varna.edu"},
 
 	{"Unsecurity",	0},
 	{0,			"irc.unsecurity.org"},
@@ -640,7 +630,7 @@ static gint
 servlist_cycle_cb (server *serv)
 {
 	PrintTextf (serv->server_session,
-		"Cycling to next server in %s...\n", ((ircnet *)serv->network)->name);
+		_("Cycling to next server in %s...\n"), ((ircnet *)serv->network)->name);
 	servlist_connect (serv->server_session, serv->network);
 
 	return 0;
@@ -847,7 +837,7 @@ servlist_load (void)
 	int len;
 	ircnet *net = NULL;
 
-	snprintf (buf, sizeof (buf), "%s/servlist_.conf", get_xdir ());
+	snprintf (buf, sizeof (buf), "%s/servlist_.conf", get_xdir_fs ());
 	fp = fopen (buf, "r");
 	if (!fp)
 		return FALSE;
@@ -945,7 +935,7 @@ servlist_save (void)
 	GSList *hlist;
 	int first = FALSE;
 
-	snprintf (buf, sizeof (buf), "%s/servlist_.conf", get_xdir ());
+	snprintf (buf, sizeof (buf), "%s/servlist_.conf", get_xdir_fs ());
 	if (access (buf, F_OK) != 0)
 		first = TRUE;
 	fp = fopen (buf, "w");
