@@ -2,7 +2,12 @@
 #define TEXTWIDGET_H
 
 
-#include <time.h>
+#include <qscrollview.h>
+#include <qptrlist.h>
+#include <qstringlist.h>
+
+class QString;
+class QCursor;
 
 
 #define ATTR_BOLD '\002'
@@ -12,28 +17,6 @@
 #define ATTR_REVERSE '\026'
 #define ATTR_UNDERLINE '\037'
 
-
-class QScrollView;
-
-
-#include "app.h"
-
-typedef struct TextEntry {
-    TextEntry *next;
-    QString timeStamp;
-    QString rightText;
-    QString leftText;
-    uint leftWidth;
-    uint leftX;
-    uint leftY;
-    uint rightX;
-    uint rightWidth;
-    uint linesTaken;
-    int selStartOffset;
-    int selEndOffset;
-
-};
-
 typedef struct TextRenderState {
     ushort bg;
     ushort fg;
@@ -42,139 +25,111 @@ typedef struct TextRenderState {
     bool parsingBG;
     bool bold;
     bool underline;
+
+};
+
+class TextEntry {
+  public:
+	TextEntry(QString leftText, QString rightText=QString::null);
+	void setLeftRegion(const QRegion &region);
+	QRegion leftRegion();
+	void addRightRegion(const QRegion & region);
+	QRegion rightRegion();
+	void clearRightRegion();
+	uint linesTaken();
+	void setLinesTaken(uint a);
+	void addRightWrap(const QString &string);
+	void clearRightWrap();
+	QStringList rightWrapList();
+	QString text (const int col);
+
+  private:
+  	QString m_leftText;
+	QString m_rightText;
+	QStringList m_textWrap;
+	QRegion m_leftRegion;
+	QRegion m_rightRegion;
+	uint m_linesTaken;
 };
 
 typedef struct TextBuffer {
     QFont *font;
     QFontMetrics *fm;
     uint sepValue;
+    bool sepActive;
     ulong textHeight;
     uint lineHeight;
     uint lineDescent;
 
-    bool onlySep;
-    bool sepActive;
-    bool hasSelection;
-    bool verticalSliderPressed;
-    bool skiprender;
-
-	bool layoutEnabled;
+    bool layoutEnabled;
 	int layoutTimerId;
 
-    TextEntry *startEnt;
-    TextEntry *endEnt;
-
-    TextEntry *lastStartEnt;
-    TextEntry *lastEndEnt;
-    TextEntry *pageTopEnt;
-    TextEntry *pageBottomEnt;
-    uint lastStartOffset;
-    uint lastEndOffset;
-
-    uint selStartX;
-    uint selStartY;
-    uint selEndX;
-    uint selEndY;
-
-    uint numEnts;
 
     QPixmap *pixmap;
-    bool paintDirty;
+    QPainter *painter;
 
+    QRegion sepRegion;
     TextRenderState *renderState;
 };
 
-#define isReverseLayout() QApplication::reverseLayout()
-
-/*
-class STextViewportWidget : public QWidget{
-public:
-	STextViewportWidget (QWidget * parent);
-	~STextViewportWidget();
-};
-*/
-
-
 
 class TextView:public QScrollView {
-  Q_OBJECT public:
+  Q_OBJECT
+  public:
 
-    enum TextScrollType { NoScroll, AutoScroll, AlwaysScroll };
+      enum TextScrollType { NoScroll, AutoScroll, AlwaysScroll };
+  TextView(QWidget * parent = 0, const char *name = 0);
 
-     TextView(QWidget * parent = 0, const char *name = 0);
+void clear();
+  void setFontName(const QString & name);
 
-    void setFontName(const QString & name);
-    void clearBuffer(bool resetFonts = true, bool resetRenderState = true);
-    void appendLines(const QString & rawLines, bool scroll = true);
-    void appendText(QString text, bool indent, bool scroll = true);
-    void appendTextIndent(QString r, QString l, bool scroll = true);
-    void newTextEntry(QString r, QString l = QString::null, bool scroll =
-		      true);
-    void clear();
-  protected:
-    void viewportResizeEvent(QResizeEvent * pe);
-    void clearRenderState(bool attribs = false);
-    int recalcEntryLayout(TextEntry * ent, bool resizeCols = false);
-    void paintArea(QPainter * p);
-    int paintEntry(TextEntry * ent,
-		   QPainter * p, int y = -1,
-		   int selStart = -1, int selEnd = -1, bool onlysel =
-		   false);
-    void paintTextChunk(QString text, int x, int y, QPainter * p,
-			bool clearState = true, int selstart =
-			-1, int selend = -1, bool dourls =
-			true, bool onlysel = false);
+	int textWidth(const QString &text);
+	int charWidth(const QChar &c);
 
-    void scheduleLayout();
-	void timerEvent ( QTimerEvent *e );
 
-    bool isUrl(QString txt);
-    void paintText(int x, int y, int w, int h, QString text, QPainter * p);
+  void drawContents(QPainter * p, int clipx, int clipy,
+			     int clipw, int cliph);
 
-    QColor convColor(ushort col);
-    void recalcLayout();
+   void appendLines(const QString & rawLines, bool scroll=false);
+void appendText(const QString &text, bool indent, bool scroll=false);
 
-    void resizeView(int h);
-    QString wrapText(QString & text, int wrapLen, bool clearState = true);
+  void appendTextIndent(const QString &leftText, const QString &rightText, bool scroll=false);
+
     void scrollDown();
-    int textWidth(QString text);
-    int charWidth(QChar c);
-    TextEntry *findEntAt(int x, int y, bool exact = false);
-    int findOffsetAt(TextEntry * ent, int x, int y);
-    int findCharAtX(QString text, int x);
-    void updateSelection();
-    void drawSelection(TextEntry * startEnt, int startOffset,
-		       TextEntry * endEnt, int endOffset);
-    bool clearSelection();
+protected:
+void clearBuffer();
+   void clearRenderState(bool attribs = false);
+   QString wrapText(QString & text, int wrapLen, int &curLen, bool clearState = true);
+  int recalcEntryLayout(TextEntry * ent, bool resizeCols=false);
+void recalcLayout();
+void scheduleLayout();
+void timerEvent ( QTimerEvent *e );
+void viewportResizeEvent(QResizeEvent * pe);
+void resizeView(int h);
 
+void paintText(int x, int y, int w, int h, QString text,
+			  QPainter * p);
+QColor convColor(ushort col);
+void paintTextChunk(QString text, int x, int y, QPainter * p,
+			       bool clearState=true);
 
-    void contentsMousePressEvent(QMouseEvent * e);
-    void contentsMouseMoveEvent(QMouseEvent * e);
-    void contentsMouseReleaseEvent(QMouseEvent * e);
-    void contentsKeyPressEvent(QKeyEvent * e);
-
-    void drawContents(QPainter * p, int clipx, int clipy,
-		      int clipw, int cliph);
-
+void contentsMousePressEvent(QMouseEvent * e);
+void contentsMouseMoveEvent(QMouseEvent * e);
+void contentsMouseReleaseEvent(QMouseEvent * e);
   private:
-
-     uint m_maxEntries;
-    uint m_sepWidth;
-    ushort m_marginWidth;
-    uint m_maxSubLines;
-    uint m_minWrapWidth;
-    uint m_wrapBoundary;
-    bool m_autoResizeColumns;
-    TextScrollType m_scrollType;
-    bool m_doubleBuffer;
-    bool m_showTimeStamp;
-    bool m_styledSep;
-    QString m_timeStampFormat;
-
-    TextBuffer *m_buffer;
-    Palette m_palette;
-
-    QCursor *m_cursorSplit;
+  	QPtrList<TextEntry> m_entryList;
+	TextBuffer *m_buffer;
+	uint m_sepWidth;
+	uint m_margin;
+	uint m_maxSubLines;
+    	uint m_minWrapWidth;
+	uint m_scrollType;
+	bool m_showTimeStamp;
+	uint m_wrapBoundary;
+	bool m_reversedLayout;
+	bool m_doubleBuffer;
+	bool m_autoResizeColumns;
+	    QCursor *m_cursorSplit;
     QCursor *m_cursorIbeam;
 
 };
