@@ -561,7 +561,7 @@ void XChatTopicEdit::setTopicText(QString s)
 {
 	m_topicText=s;
 	setText(convertText(s));
-	QToolTip::add(this, text());
+	QToolTip::add(this, "<b></b>"+text());
 }
 
 void XChatTopicEdit::focusInEvent ( QFocusEvent * )
