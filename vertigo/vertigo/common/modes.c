@@ -26,10 +26,8 @@
 #include "server.h"
 #include "text.h"
 #include "fe.h"
-
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
 #endif
 
 typedef struct
@@ -51,12 +49,16 @@ void
 send_channel_modes (session *sess, char *tbuf, char *word[], int wpos,
 						  int end, char sign, char mode)
 {
-	int usable_modes, orig_len, len, wlen, i;
+	int usable_modes, orig_len, len, wlen, i, max;
 	server *serv = sess->server;
 
 	/* sanity check. IRC RFC says three per line. */
 	if (serv->modes_per_line < 3)
 		serv->modes_per_line = 3;
+
+	/* RFC max, minus length of "MODE %s " and "\r\n" and 1 +/- sign */
+	/* 512 - 6 - 2 - 1 - strlen(chan) */
+	max = 503 - strlen (sess->channel);
 
 	while (wpos < end)
 	{
@@ -73,8 +75,7 @@ send_channel_modes (session *sess, char *tbuf, char *word[], int wpos,
 			if (wpos + i >= end)
 				break;
 			wlen = strlen (word[wpos + i]) + 1;
-			/* 512 is IRC max, minus 2 for \r\n, 1 for sign, 1 for OBO error */
-			if (wlen + len > 508)
+			if (wlen + len > max)
 				break;
 			len += wlen; /* length of our whole string so far */
 		}
@@ -262,15 +263,15 @@ mode_cat (char *str, char *addition)
 }
 
 /* handle one mode, e.g.
-   handle_single_mode (mr,outbuf,'+','b',"elite","#warez","banneduser",) */
+   handle_single_mode (mr,'+','b',"elite","#warez","banneduser",) */
 
 static void
-handle_single_mode (mode_run *mr, char *outbuf, char sign, char mode,
-						  char *nick, char *chan, char *arg, int quiet,
-						  int is_324)
+handle_single_mode (mode_run *mr, char sign, char mode, char *nick,
+						  char *chan, char *arg, int quiet, int is_324)
 {
 	session *sess;
 	server *serv = mr->serv;
+	char outbuf[4];
 
 	outbuf[0] = sign;
 	outbuf[1] = 0;
@@ -444,7 +445,7 @@ mode_has_arg (server * serv, char sign, char mode)
 /* handle a MODE or numeric 324 from server */
 
 void
-handle_mode (server * serv, char *outbuf, char *word[], char *word_eol[],
+handle_mode (server * serv, char *word[], char *word_eol[],
 				 char *nick, int numeric_324)
 {
 	session *sess;
@@ -539,7 +540,7 @@ handle_mode (server * serv, char *outbuf, char *word[], char *word_eol[],
 				arg++;
 				argstr = word[arg + offset];
 			}
-			handle_single_mode (&mr, outbuf, sign, *modes, nick, chan,
+			handle_single_mode (&mr, sign, *modes, nick, chan,
 									  argstr, numeric_324 || prefs.raw_modes,
 									  numeric_324);
 		}
@@ -623,6 +624,13 @@ inbound_005 (server * serv, char *word[])
 			if (serv->networkname)
 				free (serv->networkname);
 			serv->networkname = strdup (word[w] + 8);
+
+			if (serv->server_session->type == SESS_SERVER)
+			{
+				safe_strcpy (serv->server_session->channel, serv->networkname, CHANLEN);
+				fe_set_channel (serv->server_session);
+			}
+
 		} else if (strncmp (word[w], "CASEMAPPING=", 12) == 0)
 		{
 			if (strcmp (word[w] + 12, "ascii") == 0)	/* bahamut */
@@ -639,12 +647,11 @@ inbound_005 (server * serv, char *word[])
 		{
 									/* 12345678901234567 */
 			tcp_send_len (serv, "PROTOCTL NAMESX\r\n", 17);
+		} else if (strcmp (word[w], "WHOX") == 0)
+		{
+			serv->have_whox = TRUE;
 		}
 
 		w++;
 	}
 }
-
-#ifdef __cplusplus
-}
-#endif

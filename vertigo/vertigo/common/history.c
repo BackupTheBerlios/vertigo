@@ -20,11 +20,6 @@
 #include <stdlib.h>
 #include "history.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 void
 history_add (struct history *his, char *text)
 {
@@ -114,8 +109,3 @@ history_up (struct history *his)
 
 	return 0;
 }
-
-
-#ifdef __cplusplus
-}
-#endif

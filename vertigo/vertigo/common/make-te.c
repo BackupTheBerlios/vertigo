@@ -14,8 +14,6 @@ int main()
   	int i = 0, max;
 
 	printf("/* this file is auto generated, edit textevents.in instead! */\n\nstruct text_event te[] = {\n");
-	
-	printf("#pragma once\n#ifdef __cplusplus\nextern "C" {\n#endif\n");
 	while(fgets(name, sizeof(name), stdin))
 	{
 		name[strlen(name)-1] = 0;
@@ -38,10 +36,6 @@ int main()
 	printf("};\n");
 	
 	fprintf(stderr, "/* this file is auto generated, edit textevents.in instead! */\n\nenum\n{\n");
-	
-	fprintf(stderr, "#pragma once\n#ifdef __cplusplus\nextern "C" {\n#endif\n");
-
-	
 	max = i;
 	i = 0;
 	while (i < max)

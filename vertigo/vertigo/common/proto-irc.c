@@ -44,9 +44,6 @@
 #include "util.h"
 #include "xchatc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static void
 irc_login (server *serv, char *user, char *realname)
@@ -167,6 +164,15 @@ irc_user_list (server *serv, char *channel)
 	tcp_sendf (serv, "WHO %s\r\n", channel);
 }
 
+static void
+irc_away_status (server *serv, char *channel)
+{
+	if (serv->have_whox)
+		tcp_sendf (serv, "WHO %s %%ctnf,152\r\n", channel);
+	else
+		tcp_sendf (serv, "WHO %s\r\n", channel);
+}
+
 /*static void
 irc_get_ip (server *serv, char *nick)
 {
@@ -205,7 +211,9 @@ irc_notice (server *serv, char *channel, char *text)
 static void
 irc_topic (server *serv, char *channel, char *topic)
 {
-	if (topic[0])
+	if (!topic)
+		tcp_sendf (serv, "TOPIC %s :\r\n", channel);
+	else if (topic[0])
 		tcp_sendf (serv, "TOPIC %s :%s\r\n", channel, topic);
 	else
 		tcp_sendf (serv, "TOPIC %s\r\n", channel);
@@ -285,7 +293,7 @@ channel_date (session *sess, char *chan, char *timestr)
 }
 
 static void
-process_numeric (session * sess, char *outbuf, int n,
+process_numeric (session * sess, int n,
 					  char *word[], char *word_eol[], char *text)
 {
 	session *realsess;
@@ -317,6 +325,11 @@ process_numeric (session * sess, char *outbuf, int n,
 		inbound_005 (serv, word);
 		goto def;
 
+	case 263:	/*Server load is temporarily too heavy */
+		if (fe_is_chanwindow (sess->server))
+			fe_chan_list_end (sess->server);
+		goto def;
+
 	case 301:
 		inbound_away (serv, word[4],
 						(word_eol[5][0] == ':') ? word_eol[5] + 1 : word_eol[5]);
@@ -344,23 +357,27 @@ process_numeric (session * sess, char *outbuf, int n,
 		/* FALL THROUGH */
 
 	case 314:
+		inbound_user_info_start (sess, word[4]);
 		EMIT_SIGNAL (XP_TE_WHOIS1, serv->server_session, word[4], word[5],
 						 word[6], word_eol[8] + 1, 0);
 		break;
 
 	case 317:
 		{
-			long n = atol (word[6]);
+			long nn = atol (word[6]);
 			long idle = atol (word[5]);
 			char *tim;
-			sprintf (outbuf, "%02ld:%02ld:%02ld", idle / 3600, (idle / 60) % 60,
+			char outbuf[64];
+
+			snprintf (outbuf, sizeof (outbuf),
+						"%02ld:%02ld:%02ld", idle / 3600, (idle / 60) % 60,
 						idle % 60);
-			if (n == 0)
+			if (nn == 0)
 				EMIT_SIGNAL (XP_TE_WHOIS4, serv->server_session, word[4],
 								 outbuf, NULL, NULL, 0);
 			else
 			{
-				tim = ctime (&n);
+				tim = ctime (&nn);
 				tim[19] = 0; 	/* get rid of the \n */
 				EMIT_SIGNAL (XP_TE_WHOIS4T, serv->server_session, word[4],
 								 outbuf, tim, NULL, 0);
@@ -380,6 +397,12 @@ process_numeric (session * sess, char *outbuf, int n,
 						 word_eol[5] + 1, NULL, NULL, 0);
 		break;
 
+	case 307:	/* dalnet version */
+	case 320:	/* :is an identified user */
+		EMIT_SIGNAL (XP_TE_WHOIS_ID, serv->server_session, word[4],
+						 word_eol[5] + 1, NULL, NULL, 0);
+		break;
+
 	case 321:
 		if (!fe_is_chanwindow (sess->server))
 			EMIT_SIGNAL (XP_TE_CHANLISTHEAD, sess, NULL, NULL, NULL, NULL, 0);
@@ -391,16 +414,16 @@ process_numeric (session * sess, char *outbuf, int n,
 			fe_add_chan_list (sess->server, word[4], word[5], word_eol[6] + 1);
 		} else
 		{
-			sprintf (outbuf, "%-16s %-7d %s\017\n",
-						word[4], atoi (word[5]), word_eol[6] + 1);
-			PrintText (sess, outbuf);
+			PrintTextf (sess, "%-16s %-7d %s\017\n",
+							word[4], atoi (word[5]), word_eol[6] + 1);
 		}
 		break;
 
 	case 323:
 		if (!fe_is_chanwindow (sess->server))
-			goto def;
-		fe_chan_list_end (sess->server);
+			EMIT_SIGNAL (XP_TE_SERVTEXT, sess, text, word[1], NULL, NULL, 0);
+		else
+			fe_chan_list_end (sess->server);
 		break;
 
 	case 324:
@@ -420,7 +443,7 @@ process_numeric (session * sess, char *outbuf, int n,
 		fe_update_mode_buttons (sess, 'm', '-');
 		fe_update_mode_buttons (sess, 'l', '-');
 		fe_update_mode_buttons (sess, 'k', '-');
-		handle_mode (serv, outbuf, word, word_eol, "", TRUE);
+		handle_mode (serv, word, word_eol, "", TRUE);
 		break;
 
 	case 329:
@@ -434,6 +457,11 @@ process_numeric (session * sess, char *outbuf, int n,
 		}
 		break;
 
+	case 330:
+		EMIT_SIGNAL (XP_TE_WHOIS_AUTH, serv->server_session, word[4],
+			word_eol[6] + 1, word[5], NULL, 0);
+                break;
+
 	case 332:
 		inbound_topic (serv, word[4],
 						(word_eol[5][0] == ':') ? word_eol[5] + 1 : word_eol[5]);
@@ -443,6 +471,13 @@ process_numeric (session * sess, char *outbuf, int n,
 		inbound_topictime (serv, word[4], word[5], atol (word[6]));
 		break;
 
+#if 0
+	case 338:  /* Undernet Real user@host, Real IP */
+		EMIT_SIGNAL (XP_TE_WHOIS_REALHOST, sess, word[4], word[5], word[6], 
+			(word_eol[7][0]==':') ? word_eol[7]+1 : word_eol[7], 0);
+		break;
+#endif
+
 	case 341:						  /* INVITE ACK */
 		EMIT_SIGNAL (XP_TE_UINVITE, sess, word[4], word[5], serv->servername,
 						 NULL, 0);
@@ -451,13 +486,48 @@ process_numeric (session * sess, char *outbuf, int n,
 	case 352:						  /* WHO */
 		if (!serv->skip_next_who)
 		{
-			if (!inbound_user_info (sess, outbuf, word[4], word[5], word[6],
-											word[7], word[8], word_eol[11]))
-				goto def;
+			unsigned int away = 0;
+			session *who_sess = find_channel (serv, word[4]);
+
+			if (*word[9] == 'G')
+				away = 1;
+
+			inbound_user_info (sess, word[4], word[5], word[6], word[7],
+									 word[8], word_eol[11], away);
+
+			/* try to show only user initiated whos */
+			if (!who_sess || !who_sess->doing_who)
+				EMIT_SIGNAL (XP_TE_SERVTEXT, serv->server_session, text, word[1],
+								 NULL, NULL, 0);
 		} else
 		{
 			if (!serv->p_cmp (word[8], serv->nick))
 				inbound_foundip (sess, word[6]);
+		}
+		break;
+
+	case 354:	/* undernet WHOX: used as a reply for irc_away_status */
+		{
+			unsigned int away = 0;
+			session *who_sess;
+
+			/* irc_away_status sends out a "152" */
+			if (!strcmp (word[4], "152"))
+			{
+				who_sess = find_channel (serv, word[5]);
+
+				if (*word[7] == 'G')
+					away = 1;
+
+				/* :SanJose.CA.us.undernet.org 354 z1 152 #zed1 z1 H@ */
+				inbound_user_info (sess, word[5], 0, 0, 0, word[6], 0, away);
+
+				/* try to show only user initiated whos */
+				if (!who_sess || !who_sess->doing_who)
+					EMIT_SIGNAL (XP_TE_SERVTEXT, serv->server_session, text,
+									 word[1], NULL, NULL, 0);
+			} else
+				goto def;
 		}
 		break;
 
@@ -472,13 +542,15 @@ process_numeric (session * sess, char *outbuf, int n,
 			if (who_sess)
 			{
 				if (!who_sess->doing_who)
-					goto def;
+					EMIT_SIGNAL (XP_TE_SERVTEXT, serv->server_session, text,
+									 word[1], NULL, NULL, 0);
 				who_sess->doing_who = FALSE;
 			} else
 			{
-				if (!serv->doing_who)
-					goto def;
-				serv->doing_who = FALSE;
+				if (!serv->doing_dns)
+					EMIT_SIGNAL (XP_TE_SERVTEXT, serv->server_session, text,
+									 word[1], NULL, NULL, 0);
+				serv->doing_dns = FALSE;
 			}
 		}
 		break;
@@ -578,8 +650,7 @@ process_numeric (session * sess, char *outbuf, int n,
 /* handle named messages that starts with a ':' */
 
 static void
-process_named_msg (session *sess, char *type, char *outbuf,
-					    char *word[], char *word_eol[])
+process_named_msg (session *sess, char *type, char *word[], char *word_eol[])
 {
 	server *serv = sess->server;
 	char ip[128], nick[NICKLEN];
@@ -622,7 +693,7 @@ process_named_msg (session *sess, char *type, char *outbuf,
 	}
 	if (!strcmp ("MODE", type))
 	{
-		handle_mode (serv, outbuf, word, word_eol, nick, FALSE);	/* modes.c */
+		handle_mode (serv, word, word_eol, nick, FALSE);	/* modes.c */
 		return;
 	}
 	if (!strcmp ("NICK", type))
@@ -634,7 +705,7 @@ process_named_msg (session *sess, char *type, char *outbuf,
 	if (!strcmp ("NOTICE", type))
 	{
 		if (!ignore_check (word[1], IG_NOTI))
-			inbound_notice (serv, outbuf, word[3], nick,
+			inbound_notice (serv, word[3], nick,
 					(word_eol[4][0] == ':') ? word_eol[4] + 1 : word_eol[4], ip);
 		return;
 	}
@@ -669,24 +740,22 @@ process_named_msg (session *sess, char *type, char *outbuf,
 				text++;
 				if (strncasecmp (text, "ACTION", 6) != 0)
 					flood_check (nick, ip, serv, sess, 0);
-				if (ignore_check (word[1], IG_CTCP))
-					return;
 				if (strncasecmp (text, "DCC ", 4) == 0)
 					/* redo this with handle_quotes TRUE */
 					process_data_init (word[1], word_eol[1], word, word_eol, TRUE);
-				ctcp_handle (sess, outbuf, to, nick, text, word, word_eol);
+				ctcp_handle (sess, to, nick, text, word, word_eol);
 			} else
 			{
 				if (is_channel (serv, to))
 				{
 					if (ignore_check (word[1], IG_CHAN))
 						return;
-					inbound_chanmsg (serv, outbuf, to, nick, text, FALSE);
+					inbound_chanmsg (serv, to, nick, text, FALSE);
 				} else
 				{
 					if (ignore_check (word[1], IG_PRIV))
 						return;
-					inbound_privmsg (serv, outbuf, nick, ip, text);
+					inbound_privmsg (serv, nick, ip, text);
 				}
 			}
 		}
@@ -694,7 +763,7 @@ process_named_msg (session *sess, char *type, char *outbuf,
 	}
 	if (!strcmp ("PONG", type))
 	{
-		inbound_ping_reply (sess, outbuf,
+		inbound_ping_reply (serv->server_session,
 							 (word[4][0] == ':') ? word[4] + 1 : word[4], word[3]);
 		return;
 	}
@@ -740,8 +809,7 @@ process_named_msg (session *sess, char *type, char *outbuf,
 	}
 
 	/* unknown message */
-	sprintf (outbuf, "GARBAGE: %s\n", word_eol[1]);
-	PrintText (sess, outbuf);
+	PrintTextf (sess, "GARBAGE: %s\n", word_eol[1]);
 }
 
 /* handle named messages that DON'T start with a ':' */
@@ -781,7 +849,6 @@ irc_inline (server *serv, char *buf, int len)
 	char *type, *text;
 	char *word[PDIWORDS];
 	char *word_eol[PDIWORDS];
-	char outbuf[4096];
 	char pdibuf_static[522]; /* 1 line can potentially be 512*6 in utf8 */
 	char *pdibuf = pdibuf_static;
 
@@ -835,10 +902,10 @@ irc_inline (server *serv, char *buf, int len)
 		if (*text == ':')
 			text++;
 
-		process_numeric (sess, outbuf, atoi (word[2]), word, word_eol, text);
+		process_numeric (sess, atoi (word[2]), word, word_eol, text);
 	} else
 	{
-		process_named_msg (sess, type, outbuf, word, word_eol);
+		process_named_msg (sess, type, word, word_eol);
 	}
 
 xit:
@@ -863,6 +930,7 @@ proto_fill_her_up (server *serv)
 	serv->p_chan_mode = irc_chan_mode;
 	serv->p_nick_mode = irc_nick_mode;
 	serv->p_user_list = irc_user_list;
+	serv->p_away_status = irc_away_status;
 	/*serv->p_get_ip = irc_get_ip;*/
 	serv->p_whois = irc_user_whois;
 	serv->p_get_ip = irc_user_list;
@@ -879,7 +947,3 @@ proto_fill_her_up (server *serv)
 	serv->p_raw = irc_raw;
 	serv->p_cmp = rfc_casecmp;	/* can be changed by 005 in modes.c */
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -19,9 +19,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -35,9 +32,11 @@
 #include "xchatc.h"
 
 #ifdef WIN32
-#define DEF_FONT "monospace 10"
+#define XCHAT_DIR "X-Chat 2"
+#define DEF_FONT "Monospace 10"
 #else
-#define DEF_FONT "monospace 11"
+#define XCHAT_DIR ".xchat2"
+#define DEF_FONT "Monospace 10"
 #endif
 
 void
@@ -280,8 +279,7 @@ get_xdir (void)
 		if (!get_reg_str ("Software\\Microsoft\\Windows\\CurrentVersion\\"
 				"Explorer\\Shell Folders", "AppData", out, sizeof (out)))
 			return "./config";
-		xdir = malloc (strlen (out) + 10);
-		sprintf (xdir, "%s\\X-Chat 2", out);
+		xdir = g_strdup_printf ("%s\\" XCHAT_DIR, out);
 	}
 	return xdir;
 }
@@ -293,8 +291,7 @@ get_xdir (void)
 {
 	if (!xdir)
 	{
-		xdir = malloc (strlen (g_get_home_dir ()) + 9);
-		sprintf (xdir, "%s/.xchat2", g_get_home_dir ());
+		xdir = g_strdup_printf ("%s/" XCHAT_DIR, g_get_home_dir());
 	}
 	return xdir;
 }
@@ -304,13 +301,13 @@ get_xdir (void)
 static void
 check_prefs_dir (void)
 {
-	char *xdir = get_xdir ();
-	if (access (xdir, F_OK) != 0)
+	char *dir = get_xdir ();
+	if (access (dir, F_OK) != 0)
 	{
 #ifdef WIN32
-		if (mkdir (xdir) != 0)
+		if (mkdir (dir) != 0)
 #else
-		if (mkdir (xdir, S_IRUSR | S_IWUSR | S_IXUSR) != 0)
+		if (mkdir (dir, S_IRUSR | S_IWUSR | S_IXUSR) != 0)
 #endif
 			fe_message (_("Cannot create ~/.xchat2"), FALSE);
 	}
@@ -339,6 +336,8 @@ const struct prefs vars[] = {
 	{"away_reason", P_OFFSET (awayreason), TYPE_STR},
 	{"away_show_message", P_OFFINT (show_away_message), TYPE_BOOL},
 	{"away_show_once", P_OFFINT (show_away_once), TYPE_BOOL},
+	{"away_size_max", P_OFFINT (away_size_max), TYPE_INT},
+	{"away_timeout", P_OFFINT (away_timeout), TYPE_INT},
 
 	{"completion_auto", P_OFFINT (nickcompletion), TYPE_BOOL},
 	{"completion_old", P_OFFINT (old_nickcompletion), TYPE_BOOL},
@@ -348,13 +347,13 @@ const struct prefs vars[] = {
 	{"dcc_auto_resume", P_OFFINT (autoresume), TYPE_BOOL},
 	{"dcc_auto_send", P_OFFINT (autodccsend), TYPE_BOOL},
 	{"dcc_blocksize", P_OFFINT (dcc_blocksize), TYPE_INT},
-	{"dcc_dir", P_OFFSET (dccdir), TYPE_STR},
 	{"dcc_completed_dir", P_OFFSET (dcc_completed_dir), TYPE_STR},
+	{"dcc_dir", P_OFFSET (dccdir), TYPE_STR},
 	{"dcc_fast_send", P_OFFINT (fastdccsend), TYPE_BOOL},
-	{"dcc_ip", P_OFFSET (dcc_ip_str), TYPE_STR},
-	{"dcc_ip_from_server", P_OFFINT (ip_from_server), TYPE_BOOL},
 	{"dcc_global_max_get_cps", P_OFFINT (dcc_global_max_get_cps), TYPE_INT},
 	{"dcc_global_max_send_cps", P_OFFINT (dcc_global_max_send_cps), TYPE_INT},
+	{"dcc_ip", P_OFFSET (dcc_ip_str), TYPE_STR},
+	{"dcc_ip_from_server", P_OFFINT (ip_from_server), TYPE_BOOL},
 	{"dcc_max_get_cps", P_OFFINT (dcc_max_get_cps), TYPE_INT},
 	{"dcc_max_send_cps", P_OFFINT (dcc_max_send_cps), TYPE_INT},
 	{"dcc_permissions", P_OFFINT (dccpermissions), TYPE_INT},
@@ -376,15 +375,19 @@ const struct prefs vars[] = {
 	{"font_shell", P_OFFSET (font_shell), TYPE_STR},
 #endif
 
-	{"gui_auto_open_dialog", P_OFFINT (autodialog), TYPE_BOOL},
 	{"gui_auto_open_chat", P_OFFINT (autoopendccchatwindow), TYPE_BOOL},
+	{"gui_auto_open_dialog", P_OFFINT (autodialog), TYPE_BOOL},
 	{"gui_auto_open_recv", P_OFFINT (autoopendccrecvwindow), TYPE_BOOL},
 	{"gui_auto_open_send", P_OFFINT (autoopendccsendwindow), TYPE_BOOL},
-	{"gui_chanmode_buttons", P_OFFINT (chanmodebuttons), TYPE_BOOL},
+	{"gui_dialog_height", P_OFFINT (dialog_height), TYPE_INT},
+	{"gui_dialog_left", P_OFFINT (dialog_left), TYPE_INT},
+	{"gui_dialog_top", P_OFFINT (dialog_top), TYPE_INT},
+	{"gui_dialog_width", P_OFFINT (dialog_width), TYPE_INT},
 	{"gui_hide_menu", P_OFFINT (hidemenu), TYPE_BOOL},
 	{"gui_input_style", P_OFFINT (style_inputbox), TYPE_BOOL},
 	{"gui_lagometer", P_OFFINT (lagometer), TYPE_INT},
 	{"gui_multiple_instances", P_OFFINT (multiple_instances), TYPE_BOOL},
+	{"gui_mode_buttons", P_OFFINT (chanmodebuttons), TYPE_BOOL},
 	{"gui_slist_edit", P_OFFINT (slist_edit), TYPE_BOOL},
 	{"gui_slist_select", P_OFFINT (slist_select), TYPE_INT},
 	{"gui_slist_skip", P_OFFINT (slist_skip), TYPE_BOOL},
@@ -395,7 +398,8 @@ const struct prefs vars[] = {
 	{"gui_ulist_doubleclick", P_OFFSET (doubleclickuser), TYPE_STR},
 	{"gui_ulist_hide", P_OFFINT (hideuserlist), TYPE_BOOL},
 	{"gui_ulist_hilight_notify", P_OFFINT (hilitenotify), TYPE_BOOL},
-	{"gui_ulist_paned", P_OFFINT (paned_userlist), TYPE_BOOL},
+	{"gui_ulist_pos", P_OFFINT (paned_pos), TYPE_INT},
+	{"gui_ulist_resizable", P_OFFINT (paned_userlist), TYPE_BOOL},
 	{"gui_ulist_show_hosts", P_OFFINT(showhostname_in_userlist), TYPE_BOOL},
 	{"gui_ulist_sort", P_OFFINT (userlist_sort), TYPE_INT},
 	{"gui_ulist_style", P_OFFINT (style_namelistgad), TYPE_BOOL},
@@ -409,34 +413,38 @@ const struct prefs vars[] = {
 	{"hebrew", P_OFFINT (hebrew), TYPE_BOOL},
 #endif
 
-	{"irc_auto_rejoin", P_OFFINT (autorejoin), TYPE_BOOL},
-	{"irc_ban_type", P_OFFINT (bantype), TYPE_INT},
-	{"irc_conf_mode", P_OFFINT (confmode), TYPE_BOOL},
-	{"irc_extra_hilight", P_OFFSET (bluestring), TYPE_STR},
-	{"irc_invisible", P_OFFINT (invisible), TYPE_BOOL},
-	{"irc_logging", P_OFFINT (logging), TYPE_BOOL},
-	{"irc_logmask", P_OFFSET (logmask), TYPE_STR},
-	{"irc_hide_version", P_OFFINT (hidever), TYPE_BOOL},
-	{"irc_nick1", P_OFFSET (nick1), TYPE_STR},
-	{"irc_nick2", P_OFFSET (nick2), TYPE_STR},
-	{"irc_nick3", P_OFFSET (nick3), TYPE_STR},
-	{"irc_part_reason", P_OFFSET (partreason), TYPE_STR},
-	{"irc_raw_modes", P_OFFINT (raw_modes), TYPE_BOOL},
-	{"irc_real_name", P_OFFSET (realname), TYPE_STR},
-	{"irc_quit_reason", P_OFFSET (quitreason), TYPE_STR},
-	{"irc_servernotice", P_OFFINT (servernotice), TYPE_BOOL},
-	{"irc_skip_motd", P_OFFINT (skipmotd), TYPE_BOOL},
-	{"irc_user_name", P_OFFSET (username), TYPE_STR},
-	{"irc_wallops", P_OFFINT (wallops), TYPE_BOOL},
-	{"irc_who_join", P_OFFINT (userhost), TYPE_BOOL},
-
+#ifdef WIN32
+	{"identd", P_OFFINT (identd), TYPE_BOOL},
+#endif
 	{"input_beep_chans", P_OFFINT (beepchans), TYPE_BOOL},
+	{"input_beep_hilight", P_OFFINT (beephilight), TYPE_BOOL},
 	{"input_beep_msg", P_OFFINT (beepmsg), TYPE_BOOL},
 	{"input_command_char", P_OFFSET (cmdchar), TYPE_STR},
 	{"input_filter_beep", P_OFFINT (filterbeep), TYPE_BOOL},
 	{"input_fudge_snotice", P_OFFINT (fudgeservernotice), TYPE_BOOL},
 	{"input_perc_ascii", P_OFFINT (perc_ascii), TYPE_BOOL},
 	{"input_perc_color", P_OFFINT (perc_color), TYPE_BOOL},
+
+	{"irc_auto_rejoin", P_OFFINT (autorejoin), TYPE_BOOL},
+	{"irc_ban_type", P_OFFINT (bantype), TYPE_INT},
+	{"irc_conf_mode", P_OFFINT (confmode), TYPE_BOOL},
+	{"irc_extra_hilight", P_OFFSET (bluestring), TYPE_STR},
+	{"irc_hide_version", P_OFFINT (hidever), TYPE_BOOL},
+	{"irc_invisible", P_OFFINT (invisible), TYPE_BOOL},
+	{"irc_logging", P_OFFINT (logging), TYPE_BOOL},
+	{"irc_logmask", P_OFFSET (logmask), TYPE_STR},
+	{"irc_nick1", P_OFFSET (nick1), TYPE_STR},
+	{"irc_nick2", P_OFFSET (nick2), TYPE_STR},
+	{"irc_nick3", P_OFFSET (nick3), TYPE_STR},
+	{"irc_part_reason", P_OFFSET (partreason), TYPE_STR},
+	{"irc_quit_reason", P_OFFSET (quitreason), TYPE_STR},
+	{"irc_raw_modes", P_OFFINT (raw_modes), TYPE_BOOL},
+	{"irc_real_name", P_OFFSET (realname), TYPE_STR},
+	{"irc_servernotice", P_OFFINT (servernotice), TYPE_BOOL},
+	{"irc_skip_motd", P_OFFINT (skipmotd), TYPE_BOOL},
+	{"irc_user_name", P_OFFSET (username), TYPE_STR},
+	{"irc_wallops", P_OFFINT (wallops), TYPE_BOOL},
+	{"irc_who_join", P_OFFINT (userhost), TYPE_BOOL},
 
 	{"net_auto_reconnect", P_OFFINT (autoreconnect), TYPE_BOOL},
 	{"net_auto_reconnectonfail", P_OFFINT (autoreconnectonfail), TYPE_BOOL},
@@ -456,35 +464,35 @@ const struct prefs vars[] = {
 
 	{"sound_command", P_OFFSET (soundcmd), TYPE_STR},
 	{"sound_dir", P_OFFSET (sounddir), TYPE_STR},
-	{"stamp_text", P_OFFINT (timestamp), TYPE_BOOL},
-	{"stamp_text_format", P_OFFSET (stamp_format), TYPE_STR},
 	{"stamp_log", P_OFFINT (timestamp_logs), TYPE_BOOL},
 	{"stamp_log_format", P_OFFSET (timestamp_log_format), TYPE_STR},
+	{"stamp_text", P_OFFINT (timestamp), TYPE_BOOL},
+	{"stamp_text_format", P_OFFSET (stamp_format), TYPE_STR},
 
-	{"tab_dialogs", P_OFFINT (privmsgtab), TYPE_BOOL},
 	{"tab_chans", P_OFFINT (tabchannels), TYPE_BOOL},
-/*	{"tab_limited_hilight", P_OFFINT (limitedtabhighlight), TYPE_BOOL},*/
+	{"tab_dialogs", P_OFFINT (privmsgtab), TYPE_BOOL},
+	{"tab_dnd",  P_OFFINT (tab_dnd), TYPE_BOOL},
 	{"tab_new_to_front", P_OFFINT (newtabstofront), TYPE_BOOL},
 	{"tab_notices", P_OFFINT (notices_tabs), TYPE_BOOL},
 	{"tab_position", P_OFFINT (tabs_position), TYPE_INT},
-	{"tab_trunc", P_OFFINT (truncchans), TYPE_INT},
 	{"tab_server", P_OFFINT (use_server_tab), TYPE_BOOL},
+	{"tab_trunc", P_OFFINT (truncchans), TYPE_INT},
 	{"tab_utils", P_OFFINT (windows_as_tabs), TYPE_BOOL},
 
-	{"text_color_nicks", P_OFFINT (colorednicks), TYPE_BOOL},
 	{"text_background", P_OFFSET (background), TYPE_STR},
+	{"text_color_nicks", P_OFFINT (colorednicks), TYPE_BOOL},
 	{"text_font", P_OFFSET (font_normal), TYPE_STR},
 	{"text_indent", P_OFFINT (indent_nicks), TYPE_BOOL},
 	{"text_max_indent", P_OFFINT (max_auto_indent), TYPE_INT},
 	{"text_max_lines", P_OFFINT (max_lines), TYPE_INT},
+	{"text_show_sep", P_OFFINT (show_separator), TYPE_BOOL},
+	{"text_stripcolor", P_OFFINT (stripcolor), TYPE_BOOL},
 	{"text_thin_sep", P_OFFINT (thin_separator), TYPE_BOOL},
 	{"text_tint", P_OFFINT (tint), TYPE_BOOL},
 	{"text_tint_blue", P_OFFINT (tint_blue), TYPE_INT},
 	{"text_tint_green", P_OFFINT (tint_green), TYPE_INT},
 	{"text_tint_red", P_OFFINT (tint_red), TYPE_INT},
 	{"text_transparent", P_OFFINT (transparent), TYPE_BOOL},
-	{"text_show_sep", P_OFFINT (show_separator), TYPE_BOOL},
-	{"text_stripcolor", P_OFFINT (stripcolor), TYPE_BOOL},
 	{"text_wordwrap", P_OFFINT (wordwrap), TYPE_BOOL},
 
 	{0, 0, 0},
@@ -510,14 +518,16 @@ load_config (void)
 	memset (&prefs, 0, sizeof (struct xchatprefs));
 
 	/* put in default values, anything left out is automatically zero */
+	prefs.away_timeout = 60;
+	prefs.away_size_max = 300;
 	prefs.timestamp_logs = 1;
 	prefs.truncchans = 20;
 	prefs.autoresume = 1;
 	prefs.show_away_once = 1;
-	prefs.show_away_message = 1;
+	/*prefs.show_away_message = 1;*/
 	prefs.indent_nicks = 1;
 	prefs.thin_separator = 1;
-	prefs.tabs_position = 1;
+	/*prefs.tabs_position = 1;*/ /* 0 = bottom */
 	prefs.fastdccsend = 1;
 	prefs.wordwrap = 1;
 	prefs.autosave = 1;
@@ -525,18 +535,20 @@ load_config (void)
 	prefs.autoreconnect = 1;
 	prefs.recon_delay = 10;
 	prefs.tabchannels = 1;
+	prefs.paned_userlist = 1;
 	prefs.newtabstofront = 1;
 	prefs.use_server_tab = 1;
-	prefs.windows_as_tabs = 1;
+	/*prefs.windows_as_tabs = 1;*/
 	prefs.privmsgtab = 1;
-	prefs.nickcompletion = 1;
 	prefs.style_inputbox = 1;
-	prefs.slist_select = 9;
+	/*prefs.slist_select = 99;*/
 	prefs.nu_color = 4;
 	prefs.dccpermissions = 0600;
 	prefs.max_lines = 300;
 	prefs.mainwindow_width = 640;
 	prefs.mainwindow_height = 400;
+	prefs.dialog_width = 500;
+	prefs.dialog_height = 256;
 	prefs.dcctimeout = 180;
 	prefs.dccstalltimeout = 60;
 	prefs.notify_timeout = 15;
@@ -558,18 +570,19 @@ load_config (void)
 	prefs.autoopendccrecvwindow = 1;
 	prefs.autoopendccsendwindow = 1;
 	prefs.autoopendccchatwindow = 1;
-	prefs.chanmodebuttons = 1;
 	prefs.userhost = 1;
-	prefs.userlistbuttons = 1;
 	prefs.perc_color = 1;
 	prefs.dcc_send_fillspaces = 1;
 	prefs.mainwindow_save = 1;
-        prefs.multiple_instances = 1;
-
+	prefs.multiple_instances = 1;
+	prefs.bantype = 2;
+#ifdef WIN32
+	prefs.identd = 1;
+#endif
 	strcpy (prefs.stamp_format, "[%H:%M] ");
 	strcpy (prefs.timestamp_log_format, "%b %d %H:%M:%S ");
 	strcpy (prefs.logmask, "%n-%c.log");
-	strcpy (prefs.nick_suffix, ":");
+	strcpy (prefs.nick_suffix, ",");
 	strcpy (prefs.cmdchar, "/");
 	strcpy (prefs.nick1, username);
 	strcpy (prefs.nick2, username);
@@ -579,18 +592,18 @@ load_config (void)
 	strcpy (prefs.realname, realname);
 	strcpy (prefs.username, username);
 #ifdef WIN32
-	strcpy (prefs.sounddir, "./sound");
+	strcpy (prefs.sounddir, "./sounds");
 	if (strcmp (get_xdir (), "./config") != 0)
-		sprintf (prefs.dccdir, "%s\\download", get_xdir ());
+		sprintf (prefs.dccdir, "%s\\downloads", get_xdir ());
 	else
-		strcpy (prefs.dccdir, "./download");
+		strcpy (prefs.dccdir, "./downloads");
 #else
-	sprintf (prefs.sounddir, "%s/sound", g_get_home_dir ());
-	sprintf (prefs.dccdir, "%s/dcc", g_get_home_dir ());
+	sprintf (prefs.sounddir, "%s/sounds", get_xdir ());
+	sprintf (prefs.dccdir, "%s/downloads", get_xdir ());
 #endif
-	strcpy (prefs.doubleclickuser, "QUOTE WHOIS %s");
+	strcpy (prefs.doubleclickuser, "QUOTE WHOIS %s %s");
 	strcpy (prefs.awayreason, _("I'm busy"));
-	strcpy (prefs.quitreason, _("Client exiting"));
+	strcpy (prefs.quitreason, _("Leaving"));
 	strcpy (prefs.partreason, prefs.quitreason);
 	strcpy (prefs.font_normal, DEF_FONT);
 	strcpy (prefs.soundcmd, "esdplay");

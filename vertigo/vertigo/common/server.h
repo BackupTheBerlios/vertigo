@@ -1,6 +1,10 @@
+#ifndef _XCHAT__H
+#define _XCHAT__H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 
 /* eventually need to keep the tcp_* functions isolated to server.c */
@@ -12,4 +16,6 @@ void server_fill_her_up (server *serv);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -59,10 +59,6 @@
 #include "identd.c"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef USE_OPENSSL
 extern SSL_CTX *ctx;				  /* xchat.c */
 /* local variables */
@@ -83,7 +79,7 @@ tcp_send_real (server *serv, char *buf, int len)
 {
 	int ret;
 	char *locale;
-	int loc_len;
+	gsize loc_len;
 
 	fe_add_rawlog (serv, buf, len, TRUE);
 
@@ -91,10 +87,17 @@ tcp_send_real (server *serv, char *buf, int len)
 	{
 		locale = NULL;
 		if (!prefs.utf8_locale)
-			locale = g_locale_from_utf8 (buf, len, NULL, &loc_len, NULL);
+		{
+			const gchar *charset;
+
+			g_get_charset (&charset);
+			locale = g_convert_with_fallback (buf, len, charset, "UTF-8",
+														 "?", 0, &loc_len, 0);
+		}
 	} else
 	{
-		locale = g_convert (buf, len, serv->encoding, "UTF-8", 0, &loc_len, 0);
+		locale = g_convert_with_fallback (buf, len, serv->encoding, "UTF-8",
+													 "?", 0, &loc_len, 0);
 	}
 
 	if (locale)
@@ -234,9 +237,9 @@ tcp_sendf (server *serv, char *fmt, ...)
 }
 
 static int
-close_socket_cb (int sok)
+close_socket_cb (gpointer sok)
 {
-	closesocket (sok);
+	closesocket (GPOINTER_TO_INT (sok));
 	return 0;
 }
 
@@ -252,28 +255,85 @@ close_socket (int sok)
 static void
 server_inline (server *serv, char *line, int len)
 {
-	char *utf;
-	char *conv;
-	int utf_len;
+	char *utf_line_allocated = NULL;
 
-	if (serv->encoding == NULL)	/* system */
+	/* Checks whether we're set to use UTF-8 charset */
+	if ((serv->encoding == NULL && prefs.utf8_locale) ||
+	    (serv->encoding != NULL &&
+		 (strcasecmp (serv->encoding, "utf8") == 0 ||
+		  strcasecmp (serv->encoding, "utf-8") == 0)))
 	{
-		utf = NULL;
-		if (!prefs.utf8_locale)
-			utf = g_locale_to_utf8 (line, len, NULL, &utf_len, NULL);
+		/* The user has the UTF-8 charset set, either via /charset
+		command or from his UTF-8 locale. Thus, we first try the
+		UTF-8 charset, and if we fail to convert, we assume
+		it to be ISO-8859-1 (see text_validate). */
+
+		utf_line_allocated = text_validate (&line, &len);
+
 	} else
 	{
-		utf = g_convert (line, len, "UTF-8", serv->encoding, 0, &utf_len, 0);
-	}
+		/* Since the user has an explicit charset set, either
+		via /charset command or from his non-UTF8 locale,
+		we don't fallback to ISO-8859-1 and instead try to remove
+		errnoeous octets till the string is convertable in the
+		said charset. */
 
-	if (utf)
-	{
-		line = utf;
-		len = utf_len;
-	}
+		const char *encoding = NULL;
 
-	/* we really need valid UTF-8 now */
-	conv = text_validate (&line, &len);
+		if (serv->encoding != NULL)
+			encoding = serv->encoding;
+		else
+			g_get_charset (&encoding);
+
+		if (encoding != NULL)
+		{
+			char *conv_line; /* holds a copy of the original string */
+			int conv_len; /* tells g_convert how much of line to convert */
+			int utf_len;
+			int read_len;
+			GError *err;
+			gboolean retry;
+
+			conv_line = g_malloc (len + 1);
+			memcpy (conv_line, line, len);
+			conv_line[len] = 0;
+			conv_len = len;
+
+			do
+			{
+				err = NULL;
+				retry = FALSE;
+				utf_line_allocated = g_convert_with_fallback (conv_line, conv_len, "UTF-8", encoding, "?", &read_len, &utf_len, &err);
+				if (err != NULL)
+				{
+					if (err->code == G_CONVERT_ERROR_ILLEGAL_SEQUENCE)
+					{
+						/* Make our best bet by removing the erroneous char.
+						   This will work for casual 8-bit strings with non-standard chars. */
+						memmove (conv_line + read_len, conv_line + read_len + 1, conv_len - read_len -1);
+						conv_len--;
+						retry = TRUE;
+					}
+					g_error_free (err);
+				}
+			} while (retry);
+
+			g_free (conv_line);
+
+			/* If any conversion has occured at all. Conversion might fail
+			due to errors other than invalid sequences, e.g. unknown charset. */
+			if (utf_line_allocated != NULL)
+			{
+				line = utf_line_allocated;
+				len = utf_len;
+			}
+			else
+			{
+				/* If all fails, treat as UTF-8 with fallback to ISO-8859-1. */
+				utf_line_allocated = text_validate (&line, &len);
+			}
+		}
+	}
 
 	fe_add_rawlog (serv, line, len, FALSE);
 	url_check (line);
@@ -281,11 +341,8 @@ server_inline (server *serv, char *line, int len)
 	/* let proto-irc.c handle it */
 	serv->p_inline (serv, line, len);
 
-	if (utf)
-		g_free (utf);
-
-	if (conv)
-		g_free (conv);
+	if (utf_line_allocated != NULL) /* only if a special copy was allocated */
+		g_free (utf_line_allocated);
 }
 
 /* read data from socket */
@@ -381,7 +438,8 @@ server_connected (server * serv)
 	serv->ping_recv = time (0);
 
 #ifdef WIN32
-	identd_start ();
+	if (prefs.identd)
+		identd_start ();
 #else
 	sprintf (outbuf, "%s/auth/xchat_auth", g_get_home_dir ());
 	if (access (outbuf, X_OK) == 0)
@@ -427,7 +485,6 @@ server_stopconnecting (server * serv)
 	waitpid (serv->childpid, NULL, 0);
 #else
 	PostThreadMessage (serv->childpid, WM_QUIT, 0, 0);
-	CloseHandle ((HANDLE)serv->childhandle);
 #endif
 
 	close (serv->childwrite);
@@ -682,9 +739,9 @@ auto_reconnect (server *serv, int send_quit, int err)
 		del = 500;				  /* so it doesn't block the gui */
 
 #ifndef WIN32
-	if (err == 0 || err == ECONNRESET || err == ETIMEDOUT)
+	if (err == -1 || err == 0 || err == ECONNRESET || err == ETIMEDOUT)
 #else
-	if (err == 0 || err == WSAECONNRESET || err == WSAETIMEDOUT)
+	if (err == -1 || err == 0 || err == WSAECONNRESET || err == WSAETIMEDOUT)
 #endif
 		serv->reconnect_away = serv->is_away;
 
@@ -944,6 +1001,7 @@ server_disconnect (session * sess, int sendquit, int err)
 	serv->motd_skipped = FALSE;
 	serv->no_login = FALSE;
 	serv->servername[0] = 0;
+	serv->lag_sent = 0;
 
 	notify_cleanup ();
 }
@@ -1225,7 +1283,7 @@ xit:
 		free (ip);
 	if (real_hostname)
 		free (real_hostname);
-	fclose (fd);
+	/*fclose (fd);*/
 #endif
 
 	return 0;
@@ -1298,9 +1356,9 @@ server_connect (server *serv, char *hostname, int port, int no_login)
 	net_sockets (&serv->sok4, &serv->sok6);
 
 #ifdef WIN32
-	serv->childhandle = (int)CreateThread (NULL, 0,
-													(LPTHREAD_START_ROUTINE)server_child,
-													serv, 0, (DWORD *)&pid);
+	CloseHandle (CreateThread (NULL, 0,
+										(LPTHREAD_START_ROUTINE)server_child,
+										serv, 0, (DWORD *)&pid));
 #else
 	switch (pid = fork ())
 	{
@@ -1329,7 +1387,3 @@ void server_fill_her_up (server *serv)
 
 	proto_fill_her_up (serv);
 }
-
-#ifdef __cplusplus
-}
-#endif

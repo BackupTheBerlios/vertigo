@@ -19,10 +19,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../config.h"
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,18 +33,34 @@
 #include "xchatc.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
 int ignored_ctcp = 0;			  /* keep a count of all we ignore */
 int ignored_priv = 0;
 int ignored_chan = 0;
 int ignored_noti = 0;
 int ignored_invi = 0;
 static int ignored_total = 0;
+
+/* ignore_exists ():
+ * returns: struct ig, if this mask is in the ignore list already
+ *          NULL, otherwise
+ */
+struct ignore *
+ignore_exists (char *mask)
+{
+	struct ignore *ig = 0;
+	GSList *list;
+
+	list = ignore_list;
+	while (list)
+	{
+		ig = (struct ignore *) list->data;
+		if (!rfc_casecmp (ig->mask, mask))
+			return ig;
+		list = list->next;
+	}
+	return NULL;
+
+}
 
 /* ignore_add(...)
 
@@ -62,22 +74,12 @@ int
 ignore_add (char *mask, int type)
 {
 	struct ignore *ig = 0;
-	GSList *list;
 	int change_only = FALSE;
 
 	/* first check if it's already ignored */
-	list = ignore_list;
-	while (list)
-	{
-		ig = (struct ignore *) list->data;
-		if (!rfc_casecmp (ig->mask, mask))
-		{
-			/* already ignored, change the flags */
-			change_only = TRUE;
-			break;
-		}
-		list = list->next;
-	}
+	ig = ignore_exists (mask);
+	if (ig)
+		change_only = TRUE;
 
 	if (!change_only)
 		ig = malloc (sizeof (struct ignore));
@@ -127,6 +129,10 @@ ignore_showlist (session *sess)
 		else
 			strcat (tbuf, _("NO   "));
 		if (ig->type & IG_CTCP)
+			strcat (tbuf, _("YES  "));
+		else
+			strcat (tbuf, _("NO   "));
+		if (ig->type & IG_DCC)
 			strcat (tbuf, _("YES  "));
 		else
 			strcat (tbuf, _("NO   "));
@@ -247,6 +253,8 @@ ignore_read_next_entry (char *my_cfg, struct ignore *ignore)
 	if (my_cfg)
 	{
 		my_cfg = cfg_get_str (my_cfg, "mask", tbuf);
+		if (!my_cfg)
+			return NULL;
 		ignore->mask = strdup (tbuf);
 	}
 	if (my_cfg)
@@ -405,6 +413,3 @@ flood_check (char *nick, char *ip, server *serv, session *sess, int what)	/*0=ct
 	return 1;
 }
 
-#ifdef __cplusplus
-}
-#endif

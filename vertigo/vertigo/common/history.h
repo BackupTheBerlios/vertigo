@@ -1,8 +1,12 @@
-#define HISTORY_SIZE 100
+#ifndef _XCHAT_HIST_H
+#define _XCHAT_HIST_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+#define HISTORY_SIZE 100
 
 struct history
 {
@@ -18,4 +22,6 @@ char *history_down (struct history *his);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -1,3 +1,6 @@
+#ifndef _XCHAT_XCHATC_H
+#define _XCHAT_XCHATC_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -5,6 +8,7 @@ extern "C" {
 extern struct xchatprefs prefs;
 
 extern int auto_connect;
+extern int skip_plugins;
 extern int xchat_is_quitting;
 extern char *connect_url;
 
@@ -37,7 +41,9 @@ void kill_session_callback (session * killsess);
 void xchat_exit (void);
 void xchat_exec (char *cmd);
 
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

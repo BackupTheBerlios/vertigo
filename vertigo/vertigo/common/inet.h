@@ -1,5 +1,11 @@
 /* include stuff for internet */
 
+#ifndef _XCHAT_INET_H
+#define _XCHAT_INET_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef WIN32
 
@@ -14,11 +20,6 @@
 #ifdef WANTDNS
 #include <netdb.h>
 #endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define closesocket close
 #define set_blocking(sok) fcntl(sok, F_SETFL, 0)
 #define set_nonblocking(sok) fcntl(sok, F_SETFL, O_NONBLOCK)
@@ -28,14 +29,12 @@ extern "C" {
 
 #else
 
-#ifdef __cplusplus
-}
-#endif
-
+#ifdef USE_IPV6
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <tpipv6.h>
+#else
 #include <winsock.h>
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 #define set_blocking(sok)	{ \
@@ -51,9 +50,10 @@ extern "C" {
 #define would_block() (WSAGetLastError() == WSAEWOULDBLOCK)
 #define sock_error WSAGetLastError
 
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

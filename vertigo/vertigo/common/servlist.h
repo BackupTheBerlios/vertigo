@@ -1,8 +1,10 @@
-#pragma once
+#ifndef _XCHAT_SERVLIST_H
+#define _XCHAT_SERVLIST_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 typedef struct ircserver
 {
@@ -52,7 +54,8 @@ void servlist_server_remove (ircnet *net, ircserver *serv);
 ircserver *servlist_server_add (ircnet *net, char *name);
 ircserver *servlist_server_find (ircnet *net, char *name, int *pos);
 
-
 #ifdef __cplusplus
 }
+#endif
+
 #endif

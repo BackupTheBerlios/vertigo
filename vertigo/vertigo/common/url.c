@@ -22,43 +22,47 @@
 #include "xchat.h"
 #include "cfgfiles.h"
 #include "fe.h"
-#include "util.h"
+#include "tree.h"
 #include "url.h"
-
-#ifdef __cplusplus
-extern "C" {
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
 #endif
 
-GSList *url_list = 0;
+void *url_tree = NULL;
+
+
+static int
+url_free (char *url, void *data)
+{
+	free (url);
+	return TRUE;
+}
 
 void
 url_clear (void)
 {
-	while (url_list)
-	{
-		free (url_list->data);
-		url_list = g_slist_remove (url_list, url_list->data);
-	}
+	tree_foreach (url_tree, (tree_traverse_func *)url_free, NULL);
+	tree_destroy (url_tree);
+	url_tree = NULL;
+}
+
+static int
+url_save_cb (char *url, FILE *fd)
+{
+	fprintf (fd, "%s\n", url);
+	return TRUE;
 }
 
 void
 url_save (const char *fname, const char *mode)
 {
 	FILE *fd;
-	GSList *list;
 
 	fd = fopen (fname, mode);
 	if (fd == NULL)
 		return;
 
-	list = url_list;
-
-	while (list)
-	{
-		fprintf (fd, "%s\n", (char *) list->data);
-		list = list->next;
-	}
-
+	tree_foreach (url_tree, (tree_traverse_func *)url_save_cb, fd);
 	fclose (fd);
 }
 
@@ -76,13 +80,10 @@ url_autosave (void)
 static int
 url_find (char *urltext)
 {
-	GSList *list = url_list;
-	while (list)
-	{
-		if (!strcasecmp (urltext, (char *) list->data))
-			return 1;
-		list = list->next;
-	}
+	int pos;
+
+	if (tree_find (url_tree, urltext, (tree_cmp_func *)strcasecmp, NULL, &pos))
+		return 1;
 	return 0;
 }
 
@@ -102,38 +103,44 @@ url_add (char *urltext)
 		return;
 	}
 
-	url_list = g_slist_prepend (url_list, data);
+	if (!url_tree)
+		url_tree = tree_new ((tree_cmp_func *)strcasecmp, NULL);
+
+	tree_insert (url_tree, data);
 	fe_url_add (data);
 }
 
 void
 url_check (char *buf)
 {
-	char t, *po, *urltext = nocasestrstr (buf, "http:");
-	if (!urltext)
-		urltext = nocasestrstr (buf, "www.");
-	if (!urltext)
-		urltext = nocasestrstr (buf, "ftp.");
-	if (!urltext)
-		urltext = nocasestrstr (buf, "ftp:");
-	if (!urltext)
-		urltext = nocasestrstr (buf, "irc://");
-	if (!urltext)
-		urltext = nocasestrstr (buf, "irc.");
-	if (urltext)
+	char *sp, *po = buf + 1;
+	unsigned char t;
+
+	if (buf[0] == ':' && buf[1] != 0)
+		po++;
+
+	while (po[0])
 	{
-		po = strchr (urltext, ' ');
-		if (po)
+		if (strncasecmp (po, "http:", 5) == 0 ||
+			 strncasecmp (po, "www.", 4) == 0 ||
+			 strncasecmp (po, "ftp.", 4) == 0 ||
+			 strncasecmp (po, "ftp:", 4) == 0 ||
+			 strncasecmp (po, "irc://", 6) == 0 ||
+			 strncasecmp (po, "irc.", 4) == 0)
+			break;
+		po++;
+	}
+
+	if (po[0])
+	{
+		sp = strchr (po, ' ');
+		if (sp)
 		{
-			t = *po;
-			*po = 0;
-			url_add (urltext);
-			*po = t;
+			t = sp[0];
+			sp[0] = 0;
+			url_add (po);
+			sp[0] = t;
 		} else
-			url_add (urltext);
+			url_add (po);
 	}
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,3 +1,11 @@
+#ifndef _XCHAT_UTIL_H
+#define _XCHAT_UTIL_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /************************************************************************
  *    This technique was borrowed in part from the source code to 
  *    ircd-hybrid-5.3 to implement case-insensitive string matches which
@@ -12,11 +20,6 @@
  */
 
 #define rfc_tolower(c) (rfc_tolowertab[(unsigned char)(c)])
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 extern const unsigned char rfc_tolowertab[];
 
@@ -33,13 +36,15 @@ char *nocasestrstr (char *text, char *tofind);
 char *country (char *);
 char *get_cpu_str (void);
 int util_exec (char *cmd);
-unsigned char *strip_color (unsigned char *text);
+char *strip_color (char *text);
 char *errorstring (int err);
 int waitline (int sok, char *buf, int bufsize);
 unsigned long make_ping_time (void);
 void download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir, char *output_name, int dccpermissions);
-void play_wave (const char *file);
+
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

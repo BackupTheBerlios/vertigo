@@ -1,11 +1,5 @@
 /* this file is auto generated, edit textevents.in instead! */
 
-#pragma once
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct text_event te[] = {
 
 {"Add Notify", pevt_generic_nick_help, 1, 0,
@@ -119,7 +113,7 @@ N_("-%C10-%C11-%O$tReceived a CTCP Sound $1 from $2")},
 {"DCC CHAT Abort", pevt_dccchatabort_help, 1, 0,
 N_("-%C10-%C11-%O$tDCC CHAT to %C11$1%O aborted.")},
 
-{"DCC CHAT Connect", pevt_dccchatcon_help, 1, 0,
+{"DCC CHAT Connect", pevt_dccchatcon_help, 2, 0,
 N_("-%C10-%C11-%O$tDCC CHAT connection established to %C11$1 %C14[%O$2%C14]%O")},
 
 {"DCC CHAT Failed", pevt_dccchaterr_help, 4, 0,
@@ -203,6 +197,9 @@ N_("-%C10-%C11-%O$tDisconnected ($1).")},
 {"Found IP", pevt_foundip_help, 1, 0,
 N_("-%C10-%C11-%O$tFound your IP: [$1]")},
 
+{"Generic Message", pevt_genmsg_help, 2, 0,
+N_("$1$t$2")},
+
 {"Ignore Add", pevt_ignoreaddremove_help, 1, 0,
 N_("%O%C11$1%O added to ignore list.")},
 
@@ -213,7 +210,7 @@ N_("Ignore on %C11$1%O changed.")},
 N_("%C08,02                                                         %O")},
 
 {"Ignore Header", pevt_generic_none_help, 0, 0,
-N_("%C08,02 Hostmask                  PRIV NOTI CHAN CTCP INVI UNIG %O")},
+N_("%C08,02 Hostmask                  PRIV NOTI CHAN CTCP DCC  INVI UNIG %O")},
 
 {"Ignore Remove", pevt_ignoreaddremove_help, 1, 0,
 N_("%O%C11$1%O removed from ignore list.")},
@@ -359,6 +356,15 @@ N_("-%C10-%C11-%O$t%C12[%O$1%C12]%C $2")},
 {"WhoIs End", pevt_whois6_help, 1, 0,
 N_("-%C10-%C11-%O$t%C12[%O$1%C12] %CEnd of WHOIS list.")},
 
+{"WhoIs Identified", pevt_whoisid_help, 2, 0,
+N_("-%C10-%C11-%O$t%C12[%O$1%C12] %O$2")},
+
+{"WhoIs Authenticated", pevt_whoisauth_help, 3, 0,
+N_("-%C10-%C11-%O$t%C12[%O$1%C12] %O$2 %C11$3%O")},
+
+{"WhoIs Real Host", pevt_whoisrealhost_help, 4, 0,
+N_("-%C10-%C11-%O$t%C12[%O$1%C12] %Oreal user@host %C11$2%O, real IP %C11$3%O")},
+
 {"WhoIs Idle Line", pevt_whois4_help, 2, 0,
 N_("-%C10-%C11-%O$t%C12[%O$1%C12]%O idle %C11$2%O")},
 
@@ -392,8 +398,3 @@ N_("%C6<%O$1%C6>%O$t$2%O")},
 {"Your Nick Changing", pevt_uchangenick_help, 2, 0,
 N_("-%C10-%C11-%O$tYou are now known as $2")},
 };
-
-
-#ifdef __cplusplus
-}
-#endif

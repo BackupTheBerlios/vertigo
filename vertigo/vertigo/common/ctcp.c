@@ -26,16 +26,13 @@
 #include "util.h"
 #include "modes.h"
 #include "outbound.h"
+#include "ignore.h"
 #include "inbound.h"
 #include "dcc.h"
 #include "text.h"
 #include "ctcp.h"
 #include "server.h"
 #include "xchatc.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 static void
@@ -45,7 +42,7 @@ ctcp_reply (session *sess, char *tbuf, char *nick, char *word[],
 	conf = strdup (conf);
 	/* process %C %B etc */
 	check_special_chars (conf, TRUE);
-	auto_insert (tbuf, conf, word, word_eol, "", "", word_eol[5], "", "", nick);
+	auto_insert (tbuf, 2048, conf, word, word_eol, "", "", word_eol[5], "", "", nick);
 	free (conf);
 	handle_command (sess, tbuf, FALSE);
 }
@@ -81,16 +78,33 @@ ctcp_check (session *sess, char *tbuf, char *nick, char *word[],
 }
 
 void
-ctcp_handle (session *sess, char *outbuf, char *to, char *nick,
+ctcp_handle (session *sess, char *to, char *nick,
 				 char *msg, char *word[], char *word_eol[])
 {
 	char *po;
 	session *chansess;
 	server *serv = sess->server;
+	char outbuf[1024];
 
-	if (!strncasecmp (msg, "VERSION", 7) && !prefs.hidever)
+	/* consider DCC to be different from other CTCPs */
+	if (!strncasecmp (msg, "DCC", 3))
 	{
-		sprintf (outbuf, "VERSION xchat "VERSION" %s", get_cpu_str ());
+		/* but still let CTCP replies override it */
+		if (!ctcp_check (sess, outbuf, nick, word, word_eol, word[4] + 2))
+		{
+			if (!ignore_check (word[1], IG_DCC))
+				handle_dcc (sess, nick, word, word_eol);
+		}
+		return;
+	}
+
+	if (ignore_check (word[1], IG_CTCP))
+		return;
+
+	if (!strcasecmp (msg, "VERSION") && !prefs.hidever)
+	{
+		snprintf (outbuf, sizeof (outbuf), "VERSION xchat "VERSION" %s",
+					 get_cpu_str ());
 		serv->p_nctcp (serv, nick, outbuf);
 	}
 
@@ -98,12 +112,7 @@ ctcp_handle (session *sess, char *outbuf, char *to, char *nick,
 	{
 		if (!strncasecmp (msg, "ACTION", 6))
 		{
-			inbound_action (sess, outbuf, to, nick, msg + 7, FALSE);
-			return;
-		}
-		if (!strncasecmp (msg, "DCC", 3))
-		{
-			handle_dcc (sess, outbuf, nick, word, word_eol);
+			inbound_action (sess, to, nick, msg + 7, FALSE);
 			return;
 		}
 		if (!strncasecmp (msg, "SOUND", 5))
@@ -113,11 +122,11 @@ ctcp_handle (session *sess, char *outbuf, char *to, char *nick,
 				po[0] = 0;
 			EMIT_SIGNAL (XP_TE_CTCPSND, sess->server->front_session, word[5],
 							 nick, NULL, NULL, 0);
-			sprintf (outbuf, "%s/%s", prefs.sounddir, word[5]);
+			snprintf (outbuf, sizeof (outbuf), "%s/%s", prefs.sounddir, word[5]);
 			if (strchr (word[5], '/') == 0 && access (outbuf, R_OK) == 0)
 			{
-				sprintf (outbuf, "%s %s/%s", prefs.soundcmd, prefs.sounddir,
-							word[5]);
+				snprintf (outbuf, sizeof (outbuf), "%s %s/%s", prefs.soundcmd,
+							 prefs.sounddir, word[5]);
 				xchat_exec (outbuf);
 			}
 			return;
@@ -140,7 +149,3 @@ ctcp_handle (session *sess, char *outbuf, char *to, char *nick,
 		EMIT_SIGNAL (XP_TE_CTCPGENC, sess, msg, nick, to, NULL, 0);
 	}
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -34,6 +34,8 @@ int lastSameServerTabIndex();
 	void setLag(int lag);
     void setNumbers(int ops, int total);
 
+	void raiseView(XChatMainView *v);
+
 	
     XChatTabWidget *tabWidget() {
 	return tabWidget2;

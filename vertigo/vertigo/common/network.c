@@ -23,21 +23,15 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "../../config.h"				  /* grab USE_IPV6 define */
+
 #define WANTSOCKET
 #define WANTARPA
 #define WANTDNS
 #include "inet.h"
 
-#include "../../config.h"				  /* grab USE_IPV6 define */
-
 #define NETWORK_PRIVATE
 #include "network.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 
 
 /* ================== COMMON ================= */
@@ -221,8 +215,4 @@ net_sockets (int *sok4, int *sok6)
 	net_set_socket_options (*sok6);
 }
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif

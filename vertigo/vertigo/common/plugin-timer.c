@@ -7,12 +7,6 @@
 #define strcasecmp stricmp
 #endif
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 static xchat_plugin *ph;	/* plugin handle */
 static GSList *timer_list = NULL;
 
@@ -211,8 +205,3 @@ xchat_plugin_init
 
 	return 1;       /* return 1 for success */
 }
-
-
-#ifdef __cplusplus
-}
-#endif

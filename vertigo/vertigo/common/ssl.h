@@ -1,10 +1,14 @@
-/*
-    ...
-*/
+#ifndef _XCHAT_SSL_H
+#define _XCHAT_SSL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/*
+    ...
+*/
 
 struct cert_info {
     char subject[256];
@@ -68,6 +72,10 @@ int _SSL_recv (SSL * ssl, char *buf, int len);
 
 /*int _SSL_verify_x509(X509 *x509);*/
 
+
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

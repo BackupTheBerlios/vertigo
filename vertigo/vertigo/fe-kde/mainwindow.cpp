@@ -675,6 +675,11 @@ void XChatMainWindow::slotPreviousTab()
 
 
 
+void XChatMainWindow::raiseView(XChatMainView *v)
+{
+	tabWidget2->showPage(v);
+}
+
 int XChatMainWindow::viewCount()
 {
     return tabWidget2->count();

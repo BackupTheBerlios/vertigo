@@ -1,5 +1,12 @@
 /* dcc.h */
 
+#ifndef _XCHAT_DCC_H
+#define _XCHAT_DCC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>						/* for time_t */
 
 #define STAT_QUEUED 0
@@ -16,12 +23,6 @@
 
 #define CPS_AVG_WINDOW 10
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
 struct DCC
 {
 	struct server *serv;
@@ -34,9 +35,11 @@ struct DCC
 	int port;
 	int pasvid;						/* mIRC's passive DCC id */
 	int cps;
+	int resume_error;
+	int resume_errno;
 
 	GTimeVal lastcpstv, firstcpstv;
-	int lastcpspos;
+	unsigned int lastcpspos;
 	int maxcps;
 
 	unsigned int size;
@@ -50,8 +53,8 @@ struct DCC
 	char *destfile;			/* utf8 */
 	char *destfile_fs;		/* local filesystem encoding */
 	char *nick;
-	char type;				  /* 0 = SEND  1 = RECV  2 = CHAT */
-	char dccstat;			  /* 0 = QUEUED  1 = ACTIVE  2 = FAILED  3 = DONE */
+	unsigned char type;		  /* 0 = SEND  1 = RECV  2 = CHAT */
+	unsigned char dccstat;	  /* 0 = QUEUED  1 = ACTIVE  2 = FAILED  3 = DONE */
 	unsigned int fastsend:1;
 	unsigned int ackoffset:1;	/* is reciever sending acks as an offset from */
 										/* the resume point? */
@@ -75,7 +78,7 @@ extern struct dccstat_info dccstat[];
 
 void dcc_abort (session *sess, struct DCC *dcc);
 void dcc_get (struct DCC *dcc);
-void dcc_resume (struct DCC *dcc);
+int dcc_resume (struct DCC *dcc);
 void dcc_check_timeouts (void);
 void dcc_change_nick (server *serv, char *oldnick, char *newnick);
 void dcc_notify_kill (struct server *serv);
@@ -84,13 +87,16 @@ void dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcp
 struct DCC *find_dcc (char *nick, char *file, int type);
 void dcc_get_nick (struct session *sess, char *nick);
 void dcc_chat (session *sess, char *nick);
-void handle_dcc (session *sess, char *outbudcc_chatf, char *nick, char *word[],
-					  char *word_eol[]);
-void dcc_show_list (session *sess, char *outbuf);
+void handle_dcc (session *sess, char *nick, char *word[], char *word_eol[]);
+void dcc_show_list (session *sess);
 void open_dcc_recv_window (void);
 void open_dcc_send_window (void);
 void open_dcc_chat_window (void);
 
+
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

@@ -36,10 +36,6 @@
 #include "text.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct pevt_stage1
 {
 	int len;
@@ -145,6 +141,48 @@ static char *strhebpatch(char *dest, const char *src)
 
 #endif /* !USE_HEBREW */
 
+/* Make ip:port urls clikable (127.0.0.1:80 etc)
+*  patch by Alex <alex@cosinus.org> & dobler <dobler@barrysworld.com>
+*/
+
+static int
+q3link (char *word)
+{
+	char *s;
+	int i;
+	int d = 0;
+
+	if ((s = strchr (word,':')) != NULL)
+	{
+		for (i = 0; i < (int) ((unsigned long)s - (unsigned long)word); i++)
+		{
+			if (word[i] == '.')
+				d++;
+			else if (!isdigit (word[i]))
+			{
+				d = 0;
+				break;
+			}
+		}
+
+		if (d == 3)
+		{
+			s++;
+			d = 0;
+
+			while (*s != 0)
+			{
+				if (!isdigit (*s++))
+					return (0);
+				d++;
+			}
+			if (d > 0)
+				return (1);
+		}
+	}
+	return (0);
+}
+
 /* check if a word is clickable */
 
 int
@@ -155,37 +193,43 @@ text_word_check (char *word)
 	int i, dots;
 	int len = strlen (word);
 
+	if(q3link(word))
+		return WORD_URL;
+
 	if ((word[0] == '@' || word[0] == '+') && word[1] == '#')
 		return WORD_CHANNEL;
 
-	if (word[0] == '#' && word[1] != '#' && word[1] != 0)
+	if ((word[0] == '#' || word[0] == '&') && word[1] != '#' && word[1] != 0)
 		return WORD_CHANNEL;
 
-	if (!strncasecmp (word, "irc://", 6))
+	if (!strncasecmp (word, "irc.", 4) && word[4] != '.')
 		return WORD_URL;
 
-	if (!strncasecmp (word, "irc.", 4))
+	if (!strncasecmp (word, "ftp.", 4) && word[4] != '.')
 		return WORD_URL;
 
-	if (!strncasecmp (word, "ftp.", 4))
+	if (!strncasecmp (word, "www.", 4) && word[4] != '.')
 		return WORD_URL;
 
-	if (!strncasecmp (word, "ftp:", 4))
+	if (!strncasecmp (word, "irc://", 6) && word[6] != 0)
 		return WORD_URL;
 
-	if (!strncasecmp (word, "www.", 4))
+	if (!strncasecmp (word, "ftp://", 6) && word[6] != 0)
 		return WORD_URL;
 
-	if (!strncasecmp (word, "http:", 5))
+	if (!strncasecmp (word, "http://", 7) && word[7] != 0)
 		return WORD_URL;
 
-	if (!strncasecmp (word, "gopher:", 7))
+	if (!strncasecmp (word, "file://", 7) && word[7] != 0)
 		return WORD_URL;
 
-	if (!strncasecmp (word, "https:", 6))
+	if (!strncasecmp (word, "https://", 8) && word[8] != 0)
 		return WORD_URL;
 
-	if (find_name (sess, word))
+	if (!strncasecmp (word, "gopher://", 9) && word[9] != 0)
+		return WORD_URL;
+
+	if (( (word[0]=='@' || word[0]=='+') && find_name (sess, word+1)) || find_name (sess, word))
 		return WORD_NICK;
 
 	at = strchr (word, '@');	  /* check for email addy */
@@ -200,7 +244,7 @@ text_word_check (char *word)
 				return WORD_EMAIL;
 		}
 	}
-
+ 
 	/* check if it's an IP number */
 	dots = 0;
 	for (i = 0; i < len; i++)
@@ -265,7 +309,7 @@ static void
 log_create_filename (char *buf, char *servname, char *channame, char *netname)
 {
 	char fn[256];
-	unsigned char *tmp, *dir, *sep;
+	char *tmp, *dir, *sep;
 	int pathlen=510, c=0, mbl;
 
 	if (!rfc_casecmp (channame, servname))
@@ -276,11 +320,11 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 		sep = tmp = strdup (channame);
 		while (*tmp)
 		{
-			mbl = g_utf8_skip[*tmp];
+			mbl = g_utf8_skip[((unsigned char *)tmp)[0]];
 			if (mbl == 1)
 			{
 #ifndef WIN32
-				*tmp = tolower (*tmp);
+				*tmp = rfc_tolower (*tmp);
 				if (*tmp == '/')
 #else
 				/* win32 can't handle filenames with the '|' character */
@@ -302,7 +346,7 @@ log_create_filename (char *buf, char *servname, char *channame, char *netname)
 #else
 		mkdir (buf, S_IRUSR | S_IWUSR | S_IXUSR);
 #endif
-	auto_insert (fn, prefs.logmask, NULL, NULL, "", channame, "", "", netname, servname);
+	auto_insert (fn, sizeof (fn), prefs.logmask, NULL, NULL, "", channame, "", "", netname, servname);
 	g_free (channame);
 
 	snprintf (buf, 512, "%s/xchatlogs/%s", get_xdir (), fn);
@@ -380,26 +424,59 @@ log_open_file (char *servname, char *channame, char *netname)
 void
 log_open (session *sess)
 {
+	static gboolean log_error = FALSE;
+
 	log_close (sess);
 	sess->logfd = log_open_file (sess->server->servername, sess->channel,
 										  sess->server->networkname);
+
+	if (!log_error && sess->logfd == -1)
+	{
+		char message[512];
+		snprintf (message, sizeof (message),
+					_("* Can't open log file(s) for writing. Check the\n" \
+					  "  permissions on %s/xchatlogs"), get_xdir());
+		fe_message (message, TRUE);
+
+		log_error = TRUE;
+	}
+}
+
+int
+get_stamp_str (char *fmt, time_t tim, char **ret)
+{
+	char dest[128];
+	int len;
+
+	len = strftime (dest, sizeof (dest), fmt, localtime (&tim));
+	if (len)
+	{
+		if (prefs.utf8_locale)
+			*ret = g_strdup (dest);
+		else
+			*ret = g_locale_to_utf8 (dest, len, 0, &len, 0);
+	}
+
+	return len;
 }
 
 static void
 log_write (session *sess, char *text)
 {
-	time_t timval;
 	char *temp;
-	char tim[32];
+	char *stamp;
+	int len;
 
 	if (sess->logfd != -1 && prefs.logging)
 	{
 		if (prefs.timestamp_logs)
 		{
-			timval = time (0);
-			strftime (tim, sizeof (tim), prefs.timestamp_log_format,
-						 localtime (&timval));
-			write (sess->logfd, tim, strlen (tim));
+			len = get_stamp_str (prefs.timestamp_log_format, time (0), &stamp);
+			if (len)
+			{
+				write (sess->logfd, stamp, len);
+				g_free (stamp);
+			}
 		}
 		temp = strip_color (text);
 		write (sess->logfd, temp, strlen (temp));
@@ -411,18 +488,27 @@ char *
 text_validate (char **text, int *len)
 {
 	char *utf;
-	int utf_len;
+	gsize utf_len;
+	GError *error = NULL;
 
 	/* valid utf8? */
 	if (g_utf8_validate (*text, *len, 0))
 		return NULL;
 
 	/* maybe it's iso-8859-1 */
-	utf = g_convert (*text, *len, "UTF-8", "ISO-8859-1", 0, &utf_len, 0);
+	utf = g_convert (*text, *len, "UTF-8", "ISO-8859-1", 0, &utf_len, &error);
 	if (!utf)       /* should never happen; all text is iso-8859-1 valid */
 	{
-		*text = g_strdup ("%INVALID%");
-		*len = 8;
+		if (error)
+		{
+			*text = g_strdup_printf ("\0034ICONV\017 %s\n", error->message);
+			*len = strlen (*text);
+			g_error_free (error);
+		} else
+		{
+			*text = g_strdup ("%INVALID%");
+			*len = 9;
+		}
 	} else
 	{
 		*text = utf;
@@ -433,7 +519,7 @@ text_validate (char **text, int *len)
 }
 
 void
-PrintText (session *sess, unsigned char *text)
+PrintText (session *sess, char *text)
 {
 	char *conv;
 
@@ -557,6 +643,11 @@ char *pntevts_text[NUM_XP];
 char *pntevts[NUM_XP];
 
 #define pevt_generic_none_help NULL
+
+static char *pevt_genmsg_help[] = {
+	N_("Left message"),
+	N_("Right message"),
+};
 
 static char *pevt_join_help[] = {
 	N_("The nick of the joining person"),
@@ -801,6 +892,24 @@ static char *pevt_whois5_help[] = {
 
 static char *pevt_whois6_help[] = {
 	N_("Nickname"),
+};
+
+static char *pevt_whoisid_help[] = {
+	N_("Nickname"),
+	N_("Message"),
+};
+
+static char *pevt_whoisauth_help[] = {
+	N_("Nickname"),
+	N_("Message"),
+	N_("Account"),
+};
+
+static char *pevt_whoisrealhost_help[] = {
+	N_("Nickname"),
+	N_("Real user@host"),
+	N_("Real IP"),
+	N_("Message"),
 };
 
 static char *pevt_generic_channel_help[] = {
@@ -1167,8 +1276,8 @@ pevent_load (char *filename)
 			continue;
 		*ofs = 0;
 		ofs++;
-		if (*ofs == 0)
-			continue;
+		/*if (*ofs == 0)
+			continue;*/
 
 		if (strcmp (buf, "event_name") == 0)
 		{
@@ -1481,6 +1590,33 @@ pevt_build_string (const char *input, char **output, int *max_arg)
 	return 0;
 }
 
+static void
+play_wave (const char *file)
+{
+	char buf[512];
+	char wavfile[512];
+
+	memset (buf, 0, sizeof (buf));
+	memset (wavfile, 0, sizeof (wavfile));
+	if (file[0] != '/')
+	{
+		snprintf (wavfile, sizeof (wavfile), "%s/%s", prefs.sounddir, file);
+	} else
+	{
+		strncpy (wavfile, file, sizeof (wavfile));
+	}
+	if (access (wavfile, R_OK) == 0)
+	{
+		snprintf (buf, sizeof (buf), "%s %s", prefs.soundcmd, wavfile);
+		buf[sizeof (buf) - 1] = '\0';
+		xchat_exec (buf);
+	} else
+	{
+		snprintf (buf, sizeof (buf), "Cannot read %s", wavfile);
+		fe_message (buf, FALSE);
+	}
+}
+
 /* called by EMIT_SIGNAL macro */
 
 void
@@ -1488,6 +1624,15 @@ text_emit (int index, session *sess, char *a, char *b, char *c, char *d)
 {
 	char *word[PDIWORDS];
 	int i;
+
+	if (!a)
+		a = "\000";
+	if (!b)
+		b = "\000";
+	if (!c)
+		c = "\000";
+	if (!d)
+		d = "\000";
 
 	word[0] = te[index].name;
 	word[1] = a;
@@ -1501,10 +1646,8 @@ text_emit (int index, session *sess, char *a, char *b, char *c, char *d)
 		return;
 
 	if (te[index].sound)
-		fe_play_wave (te[index].sound);
+		play_wave (te[index].sound);
 
-	fe_event_emitted(te[index].name);
-	
 	display_event (pntevts[index], sess, te[index].num_args, word);
 }
 
@@ -1516,16 +1659,6 @@ text_emit_by_name (char *name, session *sess, char *a, char *b, char *c, char *d
 	i = pevent_find (name, &i);
 	if (i >= 0)
 	{
-		/* incase new args are added and plugins don't provide them */
-		if (!a && te[i].num_args > 0)
-			a = "";
-		if (!b && te[i].num_args > 1)
-			b = "";
-		if (!c && te[i].num_args > 2)
-			c = "";
-		if (!d && te[i].num_args > 3)
-			d = "";
-
 		text_emit (i, sess, a, b, c, d);
 		return 1;
 	}
@@ -1570,7 +1703,3 @@ pevent_save (char *fn)
 
 	close (fd);
 }
-
-#ifdef __cplusplus
-}
-#endif

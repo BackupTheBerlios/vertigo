@@ -53,11 +53,6 @@
 #include "ssl.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 GSList *popup_list = 0;
 GSList *button_list = 0;
 GSList *dlgbutton_list = 0;
@@ -75,6 +70,7 @@ static GSList *away_list = 0;
 static int in_xchat_exit = FALSE;
 int xchat_is_quitting = FALSE;
 int auto_connect = TRUE;
+int skip_plugins = FALSE;
 char *connect_url = NULL;
 
 struct session *current_tab;
@@ -191,6 +187,67 @@ lag_check (void)
 }
 
 static int
+away_check (void)
+{
+	session *sess;
+	GSList *list;
+	int full, sent, loop = 0;
+
+	if (prefs.away_size_max < 1)
+		return 1;
+
+doover:
+	/* request an update of AWAY status of 1 channel every 30 seconds */
+	full = TRUE;
+	sent = 0;	/* number of WHOs (users) requested */
+	list = sess_list;
+	while (list)
+	{
+		sess = list->data;
+
+		if (sess->server->connected &&
+			 sess->type == SESS_CHANNEL &&
+			 sess->channel[0] &&
+			 sess->total <= prefs.away_size_max)
+		{
+			if (!sess->done_away_check)
+			{
+				full = FALSE;
+
+				/* if we're under 31 WHOs, send another channels worth */
+				if (sent < 31 && !sess->doing_who)
+				{
+					sess->done_away_check = TRUE;
+					sess->doing_who = TRUE;
+					/* this'll send a WHO #channel */
+					sess->server->p_away_status (sess->server, sess->channel);
+					sent += sess->total;
+				}
+			}
+		}
+
+		list = list->next;
+	}
+
+	/* done them all, reset done_away_check to FALSE and start over */
+	if (full)
+	{
+		list = sess_list;
+		while (list)
+		{
+			sess = list->data;
+			sess->done_away_check = FALSE;
+			list = list->next;
+		}
+		loop++;
+		if (loop < 2)
+			goto doover;
+	}
+
+	return 1;
+}
+
+static int
 xchat_misc_checks (void)		/* this gets called every 1/2 second */
 {
 	static int count = 0;
@@ -225,7 +282,8 @@ irc_init (session *sess)
 	done_init = TRUE;
 
 #ifdef USE_PLUGIN
-	plugin_auto_load (sess);	/* autoload ~/.xchat *.so */
+	if (!skip_plugins)
+		plugin_auto_load (sess);	/* autoload ~/.xchat *.so */
 #endif
 	plugin_add (sess, NULL, NULL, timer_plugin_init, NULL, NULL, FALSE);
 
@@ -233,6 +291,7 @@ irc_init (session *sess)
 		notify_tag = fe_timeout_add (prefs.notify_timeout * 1000,
 											  notify_checklist, 0);
 
+	fe_timeout_add (prefs.away_timeout * 1000, away_check, 0);
 	fe_timeout_add (500, xchat_misc_checks, 0);
 
 	if (connect_url != NULL)
@@ -616,71 +675,6 @@ find_away_message (struct server *serv, char *nick)
 	"NAME TIME\n"				"CMD nctcp %s TIME %t\n\n"\
 	"NAME PING\n"				"CMD nctcp %s PING %d\n\n"
 
-#define defaultconf_popup \
-	"NAME SUB\n"				"CMD Direct Client-To-Client\n\n"\
-		"NAME Send File\n"	"CMD dcc send %s\n\n"\
-		"NAME Offer Chat\n"	"CMD dcc chat %s\n\n"\
-		"NAME Abort Chat\n"	"CMD dcc close chat %s\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD CTCP\n\n"\
-		"NAME Version\n"		"CMD ctcp %s VERSION\n\n"\
-		"NAME Userinfo\n"		"CMD ctcp %s USERINFO\n\n"\
-		"NAME Clientinfo\n"	"CMD ctcp %s CLIENTINFO\n\n"\
-		"NAME Ping\n"			"CMD ping %s\n\n"\
-		"NAME Time\n"			"CMD ctcp %s TIME\n\n"\
-		"NAME Finger\n"		"CMD ctcp %s FINGER\n\n"\
-		"NAME XDCC List\n"	"CMD ctcp %s XDCC LIST\n\n"\
-		"NAME CDCC List\n"	"CMD ctcp %s CDCC LIST\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD Oper\n\n"\
-		"NAME Kill this user\n""CMD quote KILL %s :die!\n\n"\
-		"NAME ENDSUB\n"		"CMD \n\n"\
-		"NAME SUB\n"			"CMD Mode\n\n"\
-		"NAME Give Voice\n"	"CMD voice %a\n\n"\
-		"NAME Take Voice\n"	"CMD devoice %a\n"\
-		"NAME SEP\n"			"CMD \n\n"\
-		"NAME Give Ops\n"		"CMD op %a\n\n"\
-		"NAME Take Ops\n"		"CMD deop %a\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD Ignore\n\n"\
-		"NAME Ignore User\n"	"CMD ignore %s!*@* ALL\n\n"\
-		"NAME UnIgnore User\n""CMD unignore %s!*@*\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD Kick/Ban\n\n"\
-		"NAME Kick\n"			"CMD kick %s\n\n"\
-		"NAME Ban\n"			"CMD ban %s\n\n"\
-		"NAME SEP\n"			"CMD \n\n"\
-		"NAME Ban *!*@*.host\n""CMD ban %s 0\n\n"\
-		"NAME Ban *!*@domain\n""CMD ban %s 1\n\n"\
-		"NAME Ban *!*user@*.host\n""CMD ban %s 2\n\n"\
-		"NAME Ban *!*user@domain\n""CMD ban %s 3\n\n"\
-		"NAME SEP\n"			"CMD \n\n"\
-		"NAME KickBan *!*@*.host\n""CMD kickban %s 0\n\n"\
-		"NAME KickBan *!*@domain\n""CMD kickban %s 1\n\n"\
-		"NAME KickBan *!*user@*.host\n""CMD kickban %s 2\n\n"\
-		"NAME KickBan *!*user@domain\n""CMD kickban %s 3\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD Info\n\n"\
-		"NAME Who\n"			"CMD quote WHO %s\n\n"\
-		"NAME Whois\n"			"CMD quote WHOIS %s\n\n"\
-		"NAME DNS Lookup\n"	"CMD dns %s\n\n"\
-		"NAME Trace\n"			"CMD quote TRACE %s\n\n"\
-		"NAME UserHost\n"		"CMD quote USERHOST %s\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME SUB\n"				"CMD External\n\n"\
-		"NAME Traceroute\n"	"CMD !"XTERM" -e /bin/sh -c \"/usr/sbin/traceroute %h ; sleep 30\"\n\n"\
-		"NAME Ping\n"			"CMD !"XTERM" -e /bin/sh -c \"ping -c 4 %h ; sleep 30\"\n\n"\
-		"NAME Telnet\n"		"CMD !"XTERM" -e telnet %h\n\n"\
-	"NAME ENDSUB\n"			"CMD \n\n"\
-	"NAME Open Dialog Window\n"		"CMD query %s\n\n"
-
-#define defaultconf_dlgbuttons \
-	"NAME Whois\n"				"CMD whois %s\n\n"\
-	"NAME Send\n"				"CMD dcc send %s\n\n"\
-	"NAME Chat\n"				"CMD dcc chat %s\n\n"\
-	"NAME Ping\n"				"CMD ping %s\n\n"\
-	"NAME Clear\n"				"CMD clear\n\n"
-
 #define defaultconf_replace \
 	"NAME teh\n"				"CMD the\n\n"
 /*	"NAME r\n"					"CMD are\n\n"\
@@ -689,6 +683,7 @@ find_away_message (struct server *serv, char *nick)
 #define defaultconf_commands \
 	"NAME ACTION\n"		"CMD me &2\n\n"\
 	"NAME AME\n"			"CMD allchan me &2\n\n"\
+	"NAME ANICK\n"			"CMD allserv nick &2\n\n"\
 	"NAME AMSG\n"			"CMD allchan say &2\n\n"\
 	"NAME BACK\n"			"CMD away\n\n"\
 	"NAME BANLIST\n"		"CMD quote MODE %c +b\n\n"\
@@ -775,6 +770,16 @@ sighup_handler (int signal)
 	}
 }
 
+/* Execute /SIGUSR2 when SIGUSR2 received */
+
+static void
+sigusr2_handler (int signal)
+{
+	session *sess = current_sess;
+
+	if (sess)
+		handle_command (sess, "SIGUSR2", FALSE);
+}
 #endif
 
 static gint
@@ -787,13 +792,22 @@ xchat_auto_connect (gpointer userdata)
 static void
 xchat_init (void)
 {
-	char buf[512];
+	char buf[2048];
 	const char *cs = NULL;
 
 #ifdef WIN32
 	WSADATA wsadata;
 
+#ifdef USE_IPV6
+	if (WSAStartup(0x0202, &wsadata) != 0)
+	{
+		MessageBox (NULL, "Cannot find winsock 2.2+", "Error", MB_OK);
+		exit (0);
+	}
+#else
 	WSAStartup(0x0101, &wsadata);
+#endif
+
 #else
 	struct sigaction act;
 
@@ -803,8 +817,9 @@ xchat_init (void)
 	sigemptyset (&act.sa_mask);
 	sigaction (SIGPIPE, &act, NULL);
 
-	/* Deal with SIGUSR1's */
+	/* Deal with SIGUSR1's & SIGUSR2's */
 	signal (SIGUSR1, sighup_handler);
+	signal (SIGUSR2, sigusr2_handler);
 #endif
 
 	if (g_get_charset (&cs))
@@ -813,6 +828,108 @@ xchat_init (void)
 	load_text_events ();
 	notify_load ();
 	ignore_load ();
+
+	snprintf (buf, sizeof (buf),
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD dcc send %%s\n\n"\
+		"NAME %s\n"				"CMD dcc chat %%s\n\n"\
+		"NAME %s\n"				"CMD dcc close chat %%s\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD CTCP\n\n"\
+		"NAME %s\n"				"CMD ctcp %%s VERSION\n\n"\
+		"NAME %s\n"				"CMD ctcp %%s USERINFO\n\n"\
+		"NAME %s\n"				"CMD ctcp %%s CLIENTINFO\n\n"\
+		"NAME %s\n"				"CMD ping %%s\n\n"\
+		"NAME %s\n"				"CMD ctcp %%s TIME\n\n"\
+		"NAME %s\n"				"CMD ctcp %%s FINGER\n\n"\
+		"NAME XDCC List\n"	"CMD ctcp %%s XDCC LIST\n\n"\
+		"NAME CDCC List\n"	"CMD ctcp %%s CDCC LIST\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD quote KILL %%s :die!\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD voice %%a\n\n"\
+		"NAME %s\n"				"CMD devoice %%a\n"\
+		"NAME SEP\n"			"CMD \n\n"\
+		"NAME %s\n"				"CMD op %%a\n\n"\
+		"NAME %s\n"				"CMD deop %%a\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD ignore %%s!*@* ALL\n\n"\
+		"NAME %s\n"				"CMD unignore %%s!*@*\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD kick %%s\n\n"\
+		"NAME %s\n"				"CMD ban %%s\n\n"\
+		"NAME SEP\n"			"CMD \n\n"\
+		"NAME %s *!*@*.host\n""CMD ban %%s 0\n\n"\
+		"NAME %s *!*@domain\n""CMD ban %%s 1\n\n"\
+		"NAME %s *!*user@*.host\n""CMD ban %%s 2\n\n"\
+		"NAME %s *!*user@domain\n""CMD ban %%s 3\n\n"\
+		"NAME SEP\n"			"CMD \n\n"\
+		"NAME %s *!*@*.host\n""CMD kickban %%s 0\n\n"\
+		"NAME %s *!*@domain\n""CMD kickban %%s 1\n\n"\
+		"NAME %s *!*user@*.host\n""CMD kickban %%s 2\n\n"\
+		"NAME %s *!*user@domain\n""CMD kickban %%s 3\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD quote WHO %%s\n\n"\
+		"NAME %s\n"				"CMD quote WHOIS %%s\n\n"\
+		"NAME %s\n"				"CMD dns %%s\n\n"\
+		"NAME %s\n"				"CMD quote TRACE %%s\n\n"\
+		"NAME %s\n"				"CMD quote USERHOST %%s\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME SUB\n"				"CMD %s\n\n"\
+		"NAME %s\n"				"CMD !"XTERM" -e /bin/sh -c \"/usr/sbin/traceroute %%h ; sleep 30\"\n\n"\
+		"NAME %s\n"				"CMD !"XTERM" -e /bin/sh -c \"ping -c 4 %%h ; sleep 30\"\n\n"\
+		"NAME %s\n"				"CMD !"XTERM" -e telnet %%h\n\n"\
+	"NAME ENDSUB\n"			"CMD \n\n"\
+	"NAME %s\n"					"CMD query %%s\n\n",
+		_("Direct client-to-client"),
+		_("Send File"),
+		_("Offer Chat"),
+		_("Abort Chat"),
+		_("Version"),
+		_("Userinfo"),
+		_("Clientinfo"),
+		_("Ping"),
+		_("Time"),
+		_("Finger"),
+		_("Oper"),
+		_("Kill this user"),
+		_("Mode"),
+		_("Give Voice"),
+		_("Take Voice"),
+		_("Give Ops"),
+		_("Take Ops"),
+		_("Ignore"),
+		_("Ignore User"),
+		_("UnIgnore User"),
+		_("Kick/Ban"),
+		_("Kick"),
+		_("Ban"),
+		_("Ban"),
+		_("Ban"),
+		_("Ban"),
+		_("Ban"),
+		_("KickBan"),
+		_("KickBan"),
+		_("KickBan"),
+		_("KickBan"),
+		_("Info"),
+		_("Who"),
+		_("WhoIs"),
+		_("DNS Lookup"),
+		_("Trace"),
+		_("UserHost"),
+		_("External"),
+		_("Traceroute"),
+		_("Ping"),
+		_("Telnet"),
+		_("Open Dialog Window")
+		);
+	list_loadconf ("popup.conf", &popup_list, buf);
 
 	snprintf (buf, sizeof (buf),
 		"NAME %s\n"				"CMD discon\n\n"
@@ -849,9 +966,20 @@ xchat_init (void)
 				_("Dialog"));
 	list_loadconf ("buttons.conf", &button_list, buf);
 
-	list_loadconf ("popup.conf", &popup_list, defaultconf_popup);
+	snprintf (buf, sizeof (buf),
+		"NAME %s\n"				"CMD whois %%s\n\n"
+		"NAME %s\n"				"CMD dcc send %%s\n\n"
+		"NAME %s\n"				"CMD dcc chat %%s\n\n"
+		"NAME %s\n"				"CMD ping %%s\n\n"
+		"NAME %s\n"				"CMD clear\n\n",
+				_("WhoIs"),
+				_("Send"),
+				_("Chat"),
+				_("Ping"),
+				_("Clear"));
+	list_loadconf ("dlgbuttons.conf", &dlgbutton_list, buf);
+
 	list_loadconf ("ctcpreply.conf", &ctcp_list, defaultconf_ctcp);
-	list_loadconf ("dlgbuttons.conf", &dlgbutton_list, defaultconf_dlgbuttons);
 	list_loadconf ("commands.conf", &command_list, defaultconf_commands);
 	list_loadconf ("replace.conf", &replace_list, defaultconf_replace);
 	list_loadconf ("urlhandlers.conf", &urlhandler_list,
@@ -869,7 +997,7 @@ xchat_init (void)
 		if (!servlist_have_auto ())	/* if no new windows open .. */
 		{
 			/* and no serverlist gui ... */
-			if (prefs.slist_skip)
+			if (prefs.slist_skip || connect_url)
 				/* we'll have to open one. */
 				new_ircwindow (NULL, NULL, SESS_SERVER);
 		} else
@@ -963,7 +1091,3 @@ main (int argc, char *argv[])
 
 	return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,7 +1,9 @@
+#ifndef _XCHAT_NOTIFY_H
+#define _XCHAT_NOTIFY_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 struct notify
 {
@@ -39,6 +41,10 @@ int notify_isnotify (session *sess, char *name);
 void notify_markonline (server *serv, char *word[]);
 int notify_checklist (void);
 
+
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

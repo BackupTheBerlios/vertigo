@@ -28,11 +28,6 @@
 #define snprintf g_snprintf
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 /* globals */
 static struct chiper_info chiper_info;		/* static buffer for _SSL_get_cipher_info() */
 static char err_buf[256];			/* generic error buffer */
@@ -106,8 +101,8 @@ ASN1_TIME_snprintf (char *buf, int buf_len, ASN1_TIME * tm)
 	buf[0] = 0;
 	if (expires != NULL)
 	{
-		strncpy (buf, expires, buf_len);
-		buf[buf_len - 1] = 0;
+		memset (buf, 0, buf_len);
+		strncpy (buf, expires, 24);
 	}
 	BIO_free (inMem);
 }
@@ -324,7 +319,3 @@ _SSL_close (SSL * ssl)
 	SSL_free (ssl);
 	ERR_remove_state (0);		  /* free state buffer */
 }
-
-#ifdef __cplusplus
-}
-#endif

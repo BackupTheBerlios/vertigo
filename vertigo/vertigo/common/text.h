@@ -1,3 +1,12 @@
+#ifndef _XCHAT_TEXT_H
+#define _XCHAT_TEXT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
 #include "textenums.h"
 
 #define EMIT_SIGNAL(i, sess, a, b, c, d, e) text_emit(i, sess, a, b, c, d)
@@ -7,11 +16,6 @@
 #define WORD_HOST    4
 #define WORD_EMAIL   5
 #define WORD_DIALOG  -1
-
-#ifdef __cplusplus
-extern "C" {
-#pragma once
-#endif
 
 struct text_event
 {
@@ -23,7 +27,7 @@ struct text_event
 };
 
 int text_word_check (char *word);
-void PrintText (session *sess, unsigned char *text);
+void PrintText (session *sess, char *text);
 void PrintTextf (session *sess, char *format, ...);
 void log_close (session *sess);
 void log_open (session *sess);
@@ -35,7 +39,10 @@ void pevent_make_pntevts (void);
 void text_emit (int index, session *sess, char *a, char *b, char *c, char *d);
 int text_emit_by_name (char *name, session *sess, char *a, char *b, char *c, char *d);
 char *text_validate (char **text, int *len);
+int get_stamp_str (char *fmt, time_t tim, char **ret);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -66,6 +66,7 @@ struct _xchat_list
 	int type;			/* LIST_* */
 	GSList *pos;		/* current pos */
 	GSList *next;		/* next pos */
+	GSList *head;
 };
 
 typedef int (xchat_cmd_cb) (char *word[], char *word_eol[], void *user_data);
@@ -196,6 +197,14 @@ xchat_dummy (xchat_plugin *ph)
 {
 }
 
+#ifdef WIN32
+static int
+xchat_read_fd (xchat_plugin *ph, GIOChannel *source, char *buf, int *len)
+{
+	return g_io_channel_read (source, buf, *len, len);
+}
+#endif
+
 /* Load a static plugin */
 
 void
@@ -240,7 +249,11 @@ plugin_add (session *sess, char *filename, void *handle, void *init_func,
 		pl->xchat_plugingui_remove = xchat_plugingui_remove;
 		pl->xchat_emit_print = xchat_emit_print;
 		/* incase new plugins are loaded on older xchat */
+#ifdef WIN32
+		pl->xchat_dummy8 = (void *) xchat_read_fd;
+#else
 		pl->xchat_dummy8 = xchat_dummy;
+#endif
 		pl->xchat_dummy7 = xchat_dummy;
 		pl->xchat_dummy6 = xchat_dummy;
 		pl->xchat_dummy5 = xchat_dummy;
@@ -342,6 +355,15 @@ plugin_load (session *sess, char *filename, char *arg)
 
 #else
 	char *error;
+
+/* OpenBSD lacks this! */
+#ifndef RTLD_GLOBAL
+#define RTLD_GLOBAL 0
+#endif
+
+#ifndef RTLD_NOW
+#define RTLD_NOW 0
+#endif
 
 	/* load the plugin */
 	handle = dlopen (filename, RTLD_GLOBAL | RTLD_NOW);
@@ -568,6 +590,7 @@ static gboolean
 plugin_fd_cb (GIOChannel *source, GIOCondition condition, xchat_hook *hook)
 {
 	int flags = 0;
+	typedef int (xchat_fd_cb2) (int fd, int flags, void *user_data, GIOChannel *);
 
 	if (condition & G_IO_IN)
 		flags |= XCHAT_FD_READ;
@@ -576,7 +599,7 @@ plugin_fd_cb (GIOChannel *source, GIOCondition condition, xchat_hook *hook)
 	if (condition & G_IO_PRI)
 		flags |= XCHAT_FD_EXCEPTION;
 
-	return ((xchat_fd_cb *)hook->callback) (hook->pri, flags, hook->userdata);
+	return ((xchat_fd_cb2 *)hook->callback) (hook->pri, flags, hook->userdata, source);
 }
 
 /* allocate and add a hook to our list. Used for all 4 types */
@@ -941,7 +964,7 @@ xchat_list_get (xchat_plugin *ph, const char *name)
 		if (is_session (ph->context))
 		{
 			list->type = LIST_USERS;
-			list->next = ph->context->userlist;
+			list->head = list->next = userlist_flat_list (ph->context);
 			break;
 		}	/* fall through */
 
@@ -956,6 +979,8 @@ xchat_list_get (xchat_plugin *ph, const char *name)
 void
 xchat_list_free (xchat_plugin *ph, xchat_list *xlist)
 {
+	if (xlist->type == LIST_USERS)
+		g_slist_free (xlist->head);
 	free (xlist);
 }
 
@@ -980,19 +1005,19 @@ xchat_list_fields (xchat_plugin *ph, const char *name)
 	};
 	static const char *channels_fields[] =
 	{
-		"schannel",	"pcontext",	"sserver",	NULL
+		"schannel",	"pcontext", "snetwork", "sserver",	"itype",	NULL
 	};
 	static const char *ignore_fields[] =
 	{
-		"smask",		"iflags",	NULL
+		"iflags", "smask", NULL
 	};
 	static const char *users_fields[] =
 	{
-		"snick",		"shost",		"sprefix",	NULL
+		"shost", "snick", "sprefix", NULL
 	};
 	static const char *list_of_lists[] =
 	{
-		"channels",	"dcc",		"ignore",	"users",		NULL
+		"channels",	"dcc", "ignore", "users", NULL
 	};
 
 	switch (str_hash (name))
@@ -1029,6 +1054,8 @@ xchat_list_str (xchat_plugin *ph, xchat_list *xlist, const char *name)
 			return data;	/* this is a session * */
 		case 0xca022f43: /* server */
 			return ((session *)data)->server->servername;
+		case 0x6de15a2e:        /* network */
+			return ((session *)data)->server->networkname;
 		}
 		break;
 
@@ -1105,6 +1132,15 @@ xchat_list_int (xchat_plugin *ph, xchat_list *xlist, const char *name)
 			return ((struct ignore *)data)->type;
 		}
 		break;
+
+	case LIST_CHANNELS:
+		switch (hash)
+		{
+		case 0x368f3a:	/* type */
+			return ((struct session *)data)->type;
+		}
+		break;
+
 	}
 
 	return -1;
@@ -1135,7 +1171,7 @@ int
 xchat_emit_print (xchat_plugin *ph, char *event_name, ...)
 {
 	va_list args;
-	char *argv[4];
+	char *argv[4] = {NULL, NULL, NULL, NULL};
 	int i = 0;
 
 	memset (&argv, 0, sizeof (argv));

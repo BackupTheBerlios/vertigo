@@ -22,6 +22,8 @@
  * Jim Seymour (jseymour@LinxNet.com)
  */
 
+/* we only use 32 bits, but without this define, you get only 31! */
+#define _FILE_OFFSET_BITS 64
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,11 +48,6 @@
 #include "text.h"
 #include "url.h"
 #include "xchatc.h"
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 static char *dcctypes[] = { "SEND", "RECV", "CHAT", "CHAT" };
@@ -96,22 +93,43 @@ dcc_unthrottle (struct DCC *dcc)
 		dcc_send_data (NULL, 0, dcc);
 }
 
+#ifdef WIN32
+#include <windows.h>
+
+/* g_get_current_time is giving bad CPS results, let's try this instead */
+static void
+g_get_current_time_win32 (GTimeVal *tv)
+{
+	SYSTEMTIME current;
+
+	GetLocalTime (&current);
+	tv->tv_sec = current.wSecond;
+	tv->tv_usec = current.wMilliseconds * 1000;
+}
+#endif
+
 static void
 dcc_calc_cps (struct DCC *dcc)
 {
 	GTimeVal now;
-	int pos, posdiff, oldcps;
+	int oldcps;
 	double timediff, startdiff;
 	int glob_throttle_bit, wasthrottled;
 	int *cpssum, glob_limit;
+	unsigned int pos, posdiff;
 
+#ifdef WIN32
+	g_get_current_time_win32 (&now);
+#else
 	g_get_current_time (&now);
+#endif
 
 	/* the pos we use for sends is an average
 		between pos and ack */
 	if (dcc->type == TYPE_SEND)
 	{
-		pos = (dcc->pos + dcc->ack) / 2;
+		/* carefull to avoid 32bit overflow */
+		pos = dcc->pos - ((dcc->pos - dcc->ack) / 2);
 		glob_throttle_bit = 0x1;
 		cpssum = &dcc_sendcpssum;
 		glob_limit = prefs.dcc_global_max_send_cps;
@@ -203,15 +221,7 @@ dcc_check_timeouts (void)
 		{
 		case STAT_ACTIVE:
 			dcc_calc_cps (dcc);
-			switch (dcc->type)
-			{
-			case TYPE_SEND:
-				fe_dcc_update_send (dcc);
-				break;
-			case TYPE_RECV:
-				fe_dcc_update_recv (dcc);
-				break;
-			}
+			fe_dcc_update (dcc);
 
 			if (dcc->type == TYPE_SEND || dcc->type == TYPE_RECV)
 			{
@@ -221,7 +231,7 @@ dcc_check_timeouts (void)
 						&& tim - dcc->lasttime > prefs.dccstalltimeout)
 					{
 						EMIT_SIGNAL (XP_TE_DCCSTALL, dcc->serv->front_session,
-										 dcctypes[(int) dcc->type],
+										 dcctypes[dcc->type],
 										 file_part (dcc->file), dcc->nick, NULL, 0);
 						dcc_close (dcc, STAT_ABORTED, FALSE);
 					}
@@ -236,7 +246,7 @@ dcc_check_timeouts (void)
 					if (prefs.dcctimeout > 0)
 					{
 						EMIT_SIGNAL (XP_TE_DCCTOUT, dcc->serv->front_session,
-										 dcctypes[(int) dcc->type],
+										 dcctypes[dcc->type],
 										 file_part (dcc->file), dcc->nick, NULL, 0);
 						dcc_close (dcc, STAT_ABORTED, FALSE);
 					}
@@ -276,28 +286,8 @@ dcc_connect_sok (struct DCC *dcc)
 }
 
 static void
-update_dcc_window (int type)
-{
-	switch (type)
-	{
-	case TYPE_SEND:
-		fe_dcc_update_send_win ();
-		break;
-	case TYPE_RECV:
-		fe_dcc_update_recv_win ();
-		break;
-	case TYPE_CHATRECV:
-	case TYPE_CHATSEND:
-		fe_dcc_update_chat_win ();
-		break;
-	}
-}
-
-static void
 dcc_close (struct DCC *dcc, int dccstat, int destroy)
 {
-	char type = dcc->type;
-
 	if (dcc->wiotag)
 	{
 		fe_input_remove (dcc->wiotag);
@@ -329,8 +319,10 @@ dcc_close (struct DCC *dcc, int dccstat, int destroy)
 			/* completed file to the completed directory */
 			if(dcc->type == TYPE_RECV)
 			{			
+				/* mgl: change this to use destfile_fs for correctness and to */
+				/* handle the case where dccwithnick is set */
 				download_move_to_completed_dir(prefs.dccdir, prefs.dcc_completed_dir, 
-					dcc->file, prefs.dccpermissions);
+					dcc->destfile_fs, prefs.dccpermissions);
 			}
 
 		}
@@ -346,6 +338,7 @@ dcc_close (struct DCC *dcc, int dccstat, int destroy)
 	if (destroy)
 	{
 		dcc_list = g_slist_remove (dcc_list, dcc);
+		fe_dcc_remove (dcc);
 		if (dcc->file)
 			free (dcc->file);
 		if (dcc->destfile)
@@ -354,21 +347,10 @@ dcc_close (struct DCC *dcc, int dccstat, int destroy)
 			g_free (dcc->destfile_fs);
 		free (dcc->nick);
 		free (dcc);
-		update_dcc_window (type);
 		return;
 	}
 
-	switch (type)
-	{
-	case TYPE_SEND:
-		fe_dcc_update_send (dcc);
-		break;
-	case TYPE_RECV:
-		fe_dcc_update_recv (dcc);
-		break;
-	default:
-		update_dcc_window (type);
-	}
+	fe_dcc_update (dcc);
 }
 
 void
@@ -390,12 +372,12 @@ dcc_abort (session *sess, struct DCC *dcc)
 								 NULL, 0);
 				break;
 			case TYPE_SEND:
-				EMIT_SIGNAL (XP_TE_DCCSENDABORT, sess, file_part (dcc->file),
-								 dcc->nick, NULL, NULL, 0);
+				EMIT_SIGNAL (XP_TE_DCCSENDABORT, sess, dcc->nick,
+								 file_part (dcc->file), NULL, NULL, 0);
 				break;
 			case TYPE_RECV:
-				EMIT_SIGNAL (XP_TE_DCCRECVABORT, sess, dcc->file,
-								 dcc->nick, NULL, NULL, 0);
+				EMIT_SIGNAL (XP_TE_DCCRECVABORT, sess, dcc->nick,
+								 dcc->file, NULL, NULL, 0);
 			}
 			break;
 		default:
@@ -432,7 +414,7 @@ dcc_write_chat (char *nick, char *text)
 	if (dcc && dcc->dccstat == STAT_ACTIVE)
 	{
 		char *locale;
-		int loc_len;
+		gsize loc_len;
 		int len;
 
 		len = strlen (text);
@@ -456,7 +438,7 @@ dcc_write_chat (char *nick, char *text)
 		dcc->size += len;
 		send (dcc->sok, text, len, 0);
 		send (dcc->sok, "\n", 1, 0);
-		fe_dcc_update_chat_win ();
+		fe_dcc_update (dcc);
 		if (locale)
 			g_free (locale);
 		return dcc;
@@ -476,7 +458,8 @@ dcc_chat_line (struct DCC *dcc, char *line, char *tbuf)
 	char *utf;
 	char *conv;
 	int ret, i;
-	int len, utf_len;
+	int len;
+	gsize utf_len;
 
 	len = strlen (line);
 
@@ -537,10 +520,10 @@ dcc_chat_line (struct DCC *dcc, char *line, char *tbuf)
 		po = strchr (line + 8, '\001');
 		if (po)
 			po[0] = 0;
-		inbound_action (sess, tbuf, dcc->serv->nick, dcc->nick, line + 8, FALSE);
+		inbound_action (sess, dcc->serv->nick, dcc->nick, line + 8, FALSE);
 	} else
 	{
-		inbound_privmsg (dcc->serv, tbuf, dcc->nick, "", line);
+		inbound_privmsg (dcc->serv, dcc->nick, "", line);
 	}
 	if (utf)
 		g_free (utf);
@@ -555,7 +538,7 @@ dcc_read_chat (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 	int i, len, dead;
 	char tbuf[1226];
 	char lbuf[1026];
-	unsigned char *temp;
+	char *temp;
 
 	while (1)
 	{
@@ -605,12 +588,12 @@ dcc_read_chat (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 					dead = dcc_chat_line (dcc, dcc->dccchat->linebuf, tbuf);
 				}
 
-				if (dead) /* the dcc has been closed, don't use (DCC *)! */
+				if (dead || !dcc->dccchat) /* the dcc has been closed, don't use (DCC *)! */
 					return TRUE;
 
 				dcc->pos += dcc->dccchat->pos;
 				dcc->dccchat->pos = 0;
-				fe_dcc_update_chat_win ();
+				fe_dcc_update (dcc);
 				break;
 			default:
 				dcc->dccchat->linebuf[dcc->dccchat->pos] = lbuf[i];
@@ -757,10 +740,10 @@ dcc_connect_finished (GIOChannel *source, GIOCondition condition, struct DCC *dc
 		len = sizeof (er);
 		getsockopt (dcc->sok, SOL_SOCKET, SO_ERROR, (char *)&er, &len);
 		EMIT_SIGNAL (XP_TE_DCCCONFAIL, dcc->serv->front_session,
-						 dcctypes[(int) dcc->type], dcc->nick, errorstring (er),
+						 dcctypes[dcc->type], dcc->nick, errorstring (er),
 						 NULL, 0);
 		dcc->dccstat = STAT_FAILED;
-		update_dcc_window (dcc->type);
+		fe_dcc_update (dcc);
 		return TRUE;
 	}
 
@@ -781,10 +764,10 @@ dcc_connect_finished (GIOChannel *source, GIOCondition condition, struct DCC *dc
 #endif
 		{
 			EMIT_SIGNAL (XP_TE_DCCCONFAIL, dcc->serv->front_session,
-							 dcctypes[(int) dcc->type], dcc->nick, errorstring (er),
+							 dcctypes[dcc->type], dcc->nick, errorstring (er),
 							 NULL, 0);
 			dcc->dccstat = STAT_FAILED;
-			update_dcc_window (dcc->type);
+			fe_dcc_update (dcc);
 			return TRUE;
 		}
 	}
@@ -809,9 +792,9 @@ dcc_connect_finished (GIOChannel *source, GIOCondition condition, struct DCC *dc
 						 dcc->nick, host, NULL, NULL, 0);
 		break;
 	}
-	update_dcc_window (dcc->type);
 	dcc->starttime = time (0);
 	dcc->lasttime = dcc->starttime;
+	fe_dcc_update (dcc);
 
 	return TRUE;
 }
@@ -855,16 +838,13 @@ dcc_connect (struct DCC *dcc)
 		if (dcc->sok == -1)
 		{
 			dcc->dccstat = STAT_FAILED;
-			update_dcc_window (dcc->type);
+			fe_dcc_update (dcc);
 			return;
 		}
 		dcc->iotag = fe_input_add (dcc->sok, FIA_WRITE|FIA_EX, dcc_connect_finished, dcc);
 	}
 	
-	if (dcc->type == TYPE_RECV)
-		fe_dcc_update_recv (dcc);
-	else
-		fe_dcc_update_chat_win ();
+	fe_dcc_update (dcc);
 }
 
 static gboolean
@@ -1048,7 +1028,7 @@ dcc_accept (GIOChannel *source, GIOCondition condition, struct DCC *dcc)
 		break;
 	}
 
-	update_dcc_window (dcc->type);
+	fe_dcc_update (dcc);
 
 	return TRUE;
 }
@@ -1197,6 +1177,12 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 
 	if (stat (file_fs, &st) != -1)
 	{
+		if (sizeof (st.st_size) > 4 && st.st_size > 4294967295U)
+		{
+			PrintText (sess, "Cannot send files larger than 4 GB.\n");
+			goto noaxs;
+		}
+
 		if (*file_part (file_fs) && !S_ISDIR (st.st_mode))
 		{
 			if (st.st_size > 0)
@@ -1227,9 +1213,11 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 						}
 						dcc->nick = strdup (to);
 						if (prefs.autoopendccsendwindow)
-							fe_dcc_open_send_win (TRUE);
-						else
-							fe_dcc_update_send_win ();
+						{
+							if (fe_dcc_open_send_win (TRUE))	/* already open? add */
+								fe_dcc_add (dcc);
+						} else
+							fe_dcc_add (dcc);
 
 						snprintf (outbuf, sizeof (outbuf), (havespaces) ? 
 								"DCC SEND \"%s\" %lu %d %u" :
@@ -1249,8 +1237,9 @@ dcc_send (struct session *sess, char *tbuf, char *to, char *file, int maxcps)
 			}
 		}
 	}
-	g_free (file_fs);
 	PrintTextf (sess, _("Cannot access %s\n"), dcc->file);
+noaxs:
+	g_free (file_fs);
 	dcc_close (dcc, 0, TRUE);
 }
 
@@ -1426,9 +1415,11 @@ dcc_chat (struct session *sess, char *nick)
 	if (dcc_listen_init (dcc, sess))
 	{
 		if (prefs.autoopendccchatwindow)
-			fe_dcc_open_chat_win (TRUE);
-		else
-			fe_dcc_update_chat_win ();
+		{
+			if (fe_dcc_open_chat_win (TRUE))	/* already open? add only */
+				fe_dcc_add (dcc);
+		} else
+			fe_dcc_add (dcc);
 		snprintf (outbuf, sizeof (outbuf), "DCC CHAT chat %lu %d",
 						dcc->addr, dcc->port);
 		dcc->serv->p_ctcp (dcc->serv, nick, outbuf);
@@ -1445,7 +1436,7 @@ dcc_malformed (struct session *sess, char *nick, char *data)
 	EMIT_SIGNAL (XP_TE_MALFORMED, sess, nick, data, NULL, NULL, 0);
 }
 
-void
+int
 dcc_resume (struct DCC *dcc)
 {
 	char tbuf[500];
@@ -1462,11 +1453,14 @@ dcc_resume (struct DCC *dcc)
  			sprintf (tbuf + strlen (tbuf), " %d", dcc->pasvid);
 
 		dcc->serv->p_ctcp (dcc->serv, dcc->nick, tbuf);
+		return 1;
 	}
+
+	return 0;
 }
 
 void
-handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
+handle_dcc (struct session *sess, char *nick, char *word[],
 				char *word_eol[])
 {
 	char tbuf[512];
@@ -1483,7 +1477,7 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 		if (port == 0)
 			pasvid = atoi (word[9]);
 
-		if (!addr || (port < 1024 && port != 0)
+		if (!addr /*|| (port < 1024 && port != 0)*/
 			|| port > 0xffff || (port == 0 && pasvid == 0))
 		{
 			dcc_malformed (sess, nick, word_eol[4] + 2);
@@ -1511,10 +1505,14 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 
 			EMIT_SIGNAL (XP_TE_DCCCHATOFFER, sess->server->front_session, nick,
 							 NULL, NULL, NULL, 0);
+
 			if (prefs.autoopendccchatwindow)
-				fe_dcc_open_chat_win (TRUE);
-			else
-				fe_dcc_update_chat_win ();
+			{
+				if (fe_dcc_open_chat_win (TRUE))	/* already open? add only */
+					fe_dcc_add (dcc);
+			} else
+				fe_dcc_add (dcc);
+
 			if (prefs.autodccchat)
 				dcc_connect (dcc);
 		}
@@ -1542,9 +1540,9 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 							file_part (dcc->file), port, dcc->resumable);
 				dcc->serv->p_ctcp (dcc->serv, dcc->nick, tbuf);
 			}
-			sprintf (outbuf, "%u", dcc->pos);
+			sprintf (tbuf, "%u", dcc->pos);
 			EMIT_SIGNAL (XP_TE_DCCRESUMEREQUEST, sess, nick,
-							 file_part (dcc->file), outbuf, NULL, 0);
+							 file_part (dcc->file), tbuf, NULL, 0);
 		}
 		return;
 	}
@@ -1569,7 +1567,7 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 		if (port == 0)
 			pasvid = atoi (word[10]);
 
-		if (!addr || !size || (port < 1024 && port != 0)
+		if (!addr || !size /*|| (port < 1024 && port != 0)*/
 			|| port > 0xffff || (port == 0 && pasvid == 0))
 		{
 			dcc_malformed (sess, nick, word_eol[4] + 2);
@@ -1610,10 +1608,23 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 			dcc->destfile_fs = g_filename_from_utf8 (dcc->destfile, -1, 0, 0, 0);
 
 			dcc->resumable = 0;
-			if (stat (dcc->destfile_fs, &st) != -1)
+			if (access (dcc->destfile_fs, W_OK) == 0)
 			{
-				if (st.st_size < size)
-					dcc->resumable = st.st_size;
+				if (stat (dcc->destfile_fs, &st) != -1)
+				{
+					if (st.st_size < size)
+						dcc->resumable = st.st_size;
+					else
+						dcc->resume_error = 2;
+				} else
+				{
+					dcc->resume_errno = errno;
+					dcc->resume_error = 1;
+				}
+			} else
+			{
+				dcc->resume_errno = errno;
+				dcc->resume_error = 1;
 			}
 
 			dcc->pos = dcc->resumable;
@@ -1648,27 +1659,30 @@ handle_dcc (struct session *sess, char *outbuf, char *nick, char *word[],
 				} else
 				{
 dontresume:
+					dcc->resume_error = 3;
 					dcc->resumable = 0;
 					dcc->pos = 0;
 					dcc_connect (dcc);
 				}
 			}
 			if (prefs.autoopendccrecvwindow)
-				fe_dcc_open_recv_win (TRUE);
-			else
-				fe_dcc_update_recv_win ();
+			{
+				if (fe_dcc_open_recv_win (TRUE))	/* was already open? just add*/
+					fe_dcc_add (dcc);
+			} else
+				fe_dcc_add (dcc);
 		}
-		sprintf (outbuf, "%lu", size);
-		snprintf (outbuf + 24, 300, "%s:%d", net_ip (dcc->addr), dcc->port);
+		sprintf (tbuf, "%lu", size);
+		snprintf (tbuf + 24, 300, "%s:%d", net_ip (dcc->addr), dcc->port);
 		EMIT_SIGNAL (XP_TE_DCCSENDOFFER, sess->server->front_session, nick,
-						 file, outbuf, outbuf + 24, 0);
+						 file, tbuf, tbuf + 24, 0);
 	} else
 		EMIT_SIGNAL (XP_TE_DCCGENERICOFFER, sess->server->front_session,
 						 word_eol[4] + 2, nick, NULL, NULL, 0);
 }
 
 void
-dcc_show_list (struct session *sess, char *outbuf)
+dcc_show_list (struct session *sess)
 {
 	int i = 0;
 	struct DCC *dcc;
@@ -1680,15 +1694,11 @@ dcc_show_list (struct session *sess, char *outbuf)
 		dcc = (struct DCC *) list->data;
 		i++;
 		PrintTextf (sess, " %s  %-10.10s %-7.7s %-7u %-7u %s\n",
-					 dcctypes[(int) dcc->type], dcc->nick,
-					 _(dccstat[(int) dcc->dccstat].name), dcc->size, dcc->pos,
+					 dcctypes[dcc->type], dcc->nick,
+					 _(dccstat[dcc->dccstat].name), dcc->size, dcc->pos,
 					 file_part (dcc->file));
 		list = list->next;
 	}
 	if (!i)
 		PrintText (sess, _("No active DCCs\n"));
 }
-
-#ifdef __cplusplus
-}
-#endif

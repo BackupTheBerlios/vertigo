@@ -19,20 +19,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../config.h"
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
+
 #include "xchat.h"
 #include "modes.h"
 #include "fe.h"
 #include "notify.h"
+#include "tree.h"
 #include "xchatc.h"
 #include "util.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 static int
@@ -59,7 +53,13 @@ nick_cmp_az_ops (server *serv, struct User *user1, struct User *user2)
 }
 
 static int
-nick_cmp (server *serv, struct User *user1, struct User *user2)
+nick_cmp_alpha (struct User *user1, struct User *user2, server *serv)
+{
+	return serv->p_cmp (user1->nick, user2->nick);
+}
+
+static int
+nick_cmp (struct User *user1, struct User *user2, server *serv)
 {
 	switch (prefs.userlist_sort)
 	{
@@ -76,63 +76,70 @@ nick_cmp (server *serv, struct User *user1, struct User *user2)
 	}
 }
 
+/*
+ insert name in appropriate place in linked list. Returns row number or:
+  -1: duplicate
+*/
+
 static int
 userlist_insertname (session *sess, struct User *newuser)
 {
-	int row = 0;
-	struct User *user;
-	GSList *list = sess->userlist;
-
-	while (list)
+	if (!sess->usertree)
 	{
-		user = (struct User *) list->data;
-		if (nick_cmp (sess->server, newuser, user) < 1)
-		{
-			sess->userlist = g_slist_insert (sess->userlist, newuser, row);
-			return row;
-		}
-		row++;
-		list = list->next;
+		sess->usertree = tree_new ((tree_cmp_func *)nick_cmp, sess->server);
+		sess->usertree_alpha = tree_new ((tree_cmp_func *)nick_cmp_alpha, sess->server);
 	}
-	sess->userlist = g_slist_append (sess->userlist, newuser);
-	return -1;
+
+	tree_insert (sess->usertree_alpha, newuser);
+	return tree_insert (sess->usertree, newuser);
 }
 
-static void
-update_entry (struct session *sess, struct User *user)
-{
-	int row;
-
-	sess->userlist = g_slist_remove (sess->userlist, user);
-	row = userlist_insertname (sess, user);
-
-	fe_userlist_move (sess, user, row);
-	fe_userlist_numbers (sess);
-}
-
-int
-userlist_add_hostname (struct session *sess, char *nick, char *hostname,
-							  char *realname, char *servername)
+void
+userlist_set_away (struct session *sess, char *nick, unsigned int away)
 {
 	struct User *user;
 
 	user = find_name (sess, nick);
-	if (user && !user->hostname)
+	if (user)
 	{
-		user->hostname = strdup (hostname);
-		if (!user->realname)
+		if (user->away != away)
+		{
+			user->away = away;
+			/* rehash GUI */
+			fe_userlist_rehash (sess, user);
+		}
+	}
+}
+
+int
+userlist_add_hostname (struct session *sess, char *nick, char *hostname,
+							  char *realname, char *servername, unsigned int away)
+{
+	struct User *user;
+
+	user = find_name (sess, nick);
+	if (user)
+	{
+		if (!user->hostname && hostname)
+			user->hostname = strdup (hostname);
+		if (!user->realname && realname)
 			user->realname = strdup (realname);
-		if (!user->servername)
+		if (!user->servername && servername)
 			user->servername = strdup (servername);
-		if (prefs.showhostname_in_userlist)
-			update_entry (sess, user);
+
+		if (prefs.showhostname_in_userlist || user->away != away)
+		{
+			user->away = away;
+			fe_userlist_rehash (sess, user);
+		}
+		user->away = away;
 		return 1;
 	}
 	return 0;
 }
 
-static void
-free_user (struct User *user, GSList **list)
+static int
+free_user (struct User *user, gpointer data)
 {
 	if (user->realname)
 		free (user->realname);
@@ -141,19 +148,20 @@ free_user (struct User *user, GSList **list)
 	if (user->servername)
 		free (user->servername);
 	free (user);
-	*list = g_slist_remove (*list, user);
+
+	return TRUE;
 }
 
 void
 free_userlist (session *sess)
 {
-	struct User *user;
+	tree_foreach (sess->usertree, (tree_traverse_func *)free_user, NULL);
+	tree_destroy (sess->usertree);
+	tree_destroy (sess->usertree_alpha);
 
-	while (sess->userlist)
-	{
-		user = (struct User *) sess->userlist->data;
-		free_user (user, &sess->userlist);
-	}
+	sess->usertree = NULL;
+	sess->usertree_alpha = NULL;
+
 	sess->ops = 0;
 	sess->hops = 0;
 	sess->voices = 0;
@@ -168,21 +176,22 @@ clear_user_list (session *sess)
 	fe_userlist_numbers (sess);
 }
 
+static int
+find_cmp (const char *name, struct User *user, server *serv)
+{
+	return serv->p_cmp ((char *)name, user->nick);
+}
+
 struct User *
 find_name (struct session *sess, char *name)
 {
-	struct User *user;
-	GSList *list;
+	int pos;
 
-	list = sess->userlist;
-	while (list)
-	{
-		user = (struct User *) list->data;
-		if (!sess->server->p_cmp (user->nick, name))
-			return user;
-		list = list->next;
-	}
-	return FALSE;
+	if (sess->usertree_alpha)
+		return tree_find (sess->usertree_alpha, name,
+								(tree_cmp_func *)find_cmp, sess->server, &pos);
+
+	return NULL;
 }
 
 struct User *
@@ -232,12 +241,17 @@ ul_update_entry (session *sess, char *name, char mode, char sign)
 	int access;
 	int offset = 0;
 	int level;
+	int pos;
 	char prefix;
 	struct User *user;
 
 	user = find_name (sess, name);
 	if (!user)
 		return;
+
+	/* remove from binary trees, before we loose track of it */
+	tree_remove (sess->usertree, user, &pos);
+	tree_remove (sess->usertree_alpha, user, &pos);
 
 	/* which bit number is affected? */
 	access = mode_access (sess->server, mode, &prefix);
@@ -266,24 +280,44 @@ ul_update_entry (session *sess, char *name, char mode, char sign)
 	/* update the various counts using the CHANGED prefix only */
 	update_counts (sess, user, prefix, level, offset);
 
-	update_entry (sess, user);
+	/* insert it back into its new place */
+	tree_insert (sess->usertree_alpha, user);
+	pos = tree_insert (sess->usertree, user);
+
+	/* let GTK move it too */
+	fe_userlist_move (sess, user, pos);
+	fe_userlist_numbers (sess);
 }
 
-void
+int
 change_nick (struct session *sess, char *oldname, char *newname)
 {
 	struct User *user = find_name (sess, oldname);
+	int pos;
+
 	if (user)
 	{
+		tree_remove (sess->usertree, user, &pos);
+		tree_remove (sess->usertree_alpha, user, &pos);
+
 		safe_strcpy (user->nick, newname, NICKLEN);
-		update_entry (sess, user);
+
+		tree_insert (sess->usertree_alpha, user);
+
+		fe_userlist_move (sess, user, tree_insert (sess->usertree, user));
+		fe_userlist_numbers (sess);
+
+		return 1;
 	}
+
+	return 0;
 }
 
 int
 sub_name (struct session *sess, char *name)
 {
 	struct User *user;
+	int pos;
 
 	user = find_name (sess, name);
 	if (!user)
@@ -299,7 +333,12 @@ sub_name (struct session *sess, char *name)
 	fe_userlist_numbers (sess);
 	fe_userlist_remove (sess, user);
 
-	free_user (user, &sess->userlist);
+	if (user == sess->me)
+		sess->me = NULL;
+
+	tree_remove (sess->usertree, user, &pos);
+	tree_remove (sess->usertree_alpha, user, &pos);
+	free_user (user, NULL);
 
 	return TRUE;
 }
@@ -315,10 +354,6 @@ add_name (struct session *sess, char *name, char *hostname)
 
 	notify_set_online (sess->server, name + prefix_chars);
 
-	/* dup? */
-	if (find_name (sess, name + prefix_chars))
-		return;
-
 	user = malloc (sizeof (struct User));
 	memset (user, 0, sizeof (struct User));
 
@@ -327,6 +362,24 @@ add_name (struct session *sess, char *name, char *hostname)
 	/* assume first char is the highest level nick prefix */
 	if (prefix_chars)
 		user->prefix[0] = name[0];
+
+	/* add it to our linked list */
+	if (hostname)
+		user->hostname = strdup (hostname);
+	safe_strcpy (user->nick, name + prefix_chars, NICKLEN);
+	/* is it me? */
+	if (!sess->server->p_cmp (user->nick, sess->server->nick))
+		user->me = TRUE;
+	row = userlist_insertname (sess, user);
+
+	/* duplicate? some broken servers trigger this */
+	if (row == -1)
+	{
+		if (user->hostname)
+			free (user->hostname);
+		free (user);
+		return;
+	}
 
 	sess->total++;
 
@@ -339,29 +392,38 @@ add_name (struct session *sess, char *name, char *hostname)
 		prefix_chars--;
 	}
 
-	if (hostname)
-		user->hostname = strdup (hostname);
-	safe_strcpy (user->nick, name, NICKLEN);
-	row = userlist_insertname (sess, user);
+	if (user->me)
+		sess->me = user;
 
 	fe_userlist_insert (sess, user, row, FALSE);
 	fe_userlist_numbers (sess);
 }
 
-void
-update_all_of (char *name)
+static int
+rehash_cb (struct User *user, session *sess)
 {
-	struct User *user;
-	struct session *sess;
-	GSList *list = sess_list;
-	while (list)
-	{
-		sess = (struct session *) list->data;
-		user = find_name (sess, name);
-		if (user)
-		{
-			update_entry (sess, user);
-		}
-		list = list->next;
-	}
+	fe_userlist_rehash (sess, user);
+	return TRUE;
+}
+
+void
+userlist_rehash (session *sess)
+{
+	tree_foreach (sess->usertree_alpha, (tree_traverse_func *)rehash_cb, sess);
+}
+
+static int
+flat_cb (struct User *user, GSList **list)
+{
+	*list = g_slist_prepend (*list, user);
+	return TRUE;
+}
+
+GSList *
+userlist_flat_list (session *sess)
+{
+	GSList *list = NULL;
+
+	tree_foreach (sess->usertree_alpha, (tree_traverse_func *)flat_cb, &list);
+	return g_slist_reverse (list);
 }

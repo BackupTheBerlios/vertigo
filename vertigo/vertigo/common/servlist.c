@@ -33,9 +33,6 @@
 
 #include "servlist.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 struct defaultserver
 {
@@ -63,6 +60,19 @@ static const struct defaultserver def[] =
 	{0,			"ic5.eu.afternet.org"},
 	{0,			"baltimore.md.us.afternet.org"},
 	{0,			"boston.afternet.org"},
+
+	{"Aitvaras",	0},
+#ifdef USE_IPV6
+	{0,			"irc6.ktu.lt/7666"},
+#endif
+	{0,			"irc.delfi.lt"},
+	{0,			"irc.ktu.lt"},
+	{0,			"irc.le.lt"},
+	{0,			"irc.takas.lt"},
+	{0,			"irc.omnitel.net"},
+	{0,			"irc.5ci.net"},
+	{0,			"irc.interneka.lt"},
+	{0,			"irc.elekta.lt"},
 
 	{"AmigaNet",	0},
 	{0,			"linux.us.amiganet.org"},
@@ -131,12 +141,6 @@ static const struct defaultserver def[] =
 	{0,			"bw.d-t-net.de"},
 	{0,			"nc.d-t-net.de"},
 	{0,			"wakka.d-t-net.de"},
-
-	{"DwarfStarNet",	0},/*undersized*/
-	{0,			"IRC.dwarfstar.net"},
-	{0,			"US.dwarfstar.net"},
-	{0,			"EU.dwarfstar.net"},
-	{0,			"AU.dwarfstar.net"},
 
 	{"EFnet",	0},
 	{0,			"irc.Prison.NET"},
@@ -227,6 +231,9 @@ static const struct defaultserver def[] =
 
 	{"IRCDZone",		0},
 	{0,			"irc.ircdzone.net"},
+
+	{"ircfr",			0},
+	{0,			"irc.ircfr.org"},
 
 	{"IrcLink",	0},
 	{0,			"irc.irclink.net"},
@@ -407,6 +414,11 @@ static const struct defaultserver def[] =
 	{0,			"moo.slashnet.org"},
 	{0,			"radon.slashnet.org"},
 
+	{"SorceryNet",	0},
+	{0,			"irc.sorcery.net/9000"},
+	{0,			"irc.us.sorcery.net/9000"},
+	{0,			"irc.eu.sorcery.net/9000"},
+
 	{"Spidernet",	0},
 	{0,			"us.spidernet.org"},
 	{0,			"eu.spidernet.org"},
@@ -424,6 +436,7 @@ static const struct defaultserver def[] =
 	{0,			"irc.subcult.ch"},
 	{0,			"irc.phuncrew.ch"},
 	{0,			"irc.mgz.ch"},
+	{0,			"irc.nazgul.ch/6666"},
 
 	{"TNI3",			0},
 	{0,			"irc.tni3.com"},
@@ -803,7 +816,7 @@ servlist_net_add (char *name, char *comment)
 static void
 servlist_load_defaults (void)
 {
-	int i = 0;
+	int i = 0, j = 0;
 	ircnet *net = NULL;
 
 	while (1)
@@ -813,6 +826,9 @@ servlist_load_defaults (void)
 			net = servlist_net_add (def[i].network, def[i].host);
 			if (def[i].channel)
 				net->autojoin = strdup (def[i].channel);
+			if (!strcmp (def[i].network, "ChatJunkies"))
+				prefs.slist_select = j;
+			j++;
 		} else
 		{
 			servlist_server_add (net, def[i].host);
@@ -827,7 +843,7 @@ static int
 servlist_load (void)
 {
 	FILE *fp;
-	char buf[256];
+	char buf[258];
 	int len;
 	ircnet *net = NULL;
 
@@ -836,15 +852,15 @@ servlist_load (void)
 	if (!fp)
 		return FALSE;
 
-	while (fgets (buf, sizeof (buf) - 1, fp))
+	while (fgets (buf, sizeof (buf) - 2, fp))
 	{
 		len = strlen (buf);
+		buf[len] = 0;
 		buf[len-1] = 0;	/* remove the trailing \n */
-		switch (buf[0])
+		if (net)
 		{
-			case 'N':
-				net = servlist_net_add (buf + 2, /* comment */ "");
-				break;
+			switch (buf[0])
+			{
 			case 'I':
 				net->nick = strdup (buf + 2);
 				break;
@@ -875,7 +891,10 @@ servlist_load (void)
 			case 'S':	/* new server/hostname for this network */
 				servlist_server_add (net, buf + 2);
 				break;
+			}
 		}
+		if (buf[0] == 'N')
+			net = servlist_net_add (buf + 2, /* comment */ "");
 	}
 	fclose (fp);
 
@@ -984,8 +1003,3 @@ servlist_save (void)
 
 	fclose (fp);
 }
-
-
-#ifdef __cplusplus
-}
-#endif

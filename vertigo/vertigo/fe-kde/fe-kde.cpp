@@ -406,26 +406,20 @@ extern
 	sess->gui->view->clearUserlist();
     }
 
-    void
-     fe_dcc_update_recv_win(void) {
-	kdDebug() << "fe:fe_dcc_update_recv_win" << endl;
-    }
-    void
-     fe_dcc_update_send_win(void) {
-	kdDebug() << "fe:fe_dcc_update_send_win" << endl;
-    }
-    void
-     fe_dcc_update_chat_win(void) {
-	kdDebug() << "fe:fe_dcc_update_chat_win" << endl;
-    }
-    void
-     fe_dcc_update_send(struct DCC *dcc) {
-	kdDebug() << "fe:fe_dcc_update_send" << endl;
-    }
-    void
-     fe_dcc_update_recv(struct DCC *dcc) {
-	kdDebug() << "fe:fe_dcc_update_recv" << endl;
-    }
+void
+fe_dcc_add (struct DCC *dcc)
+{
+ kdDebug() << "fe:fe_dcc_add" << endl;
+}
+
+void
+fe_dcc_update (struct DCC *dcc)
+{
+ kdDebug() << "fe:fe_dcc_update" << endl;
+}
+
+
+
     void
      fe_clear_channel(struct session *sess) {
 	kdDebug() << "fe:fe_clear_channel" << endl;
@@ -539,15 +533,15 @@ extern
      fe_ignore_update(int level) {
 	kdDebug() << "fe:fe_ignore_update" << endl;
     }
-    void
+    int 
      fe_dcc_open_recv_win(int passive) {
 	kdDebug() << "fe:fe_dcc_open_recv_win" << endl;
     }
-    void
+   int
      fe_dcc_open_send_win(int passive) {
 	kdDebug() << "fe:fe_dcc_open_send_win" << endl;
     }
-    void
+    int
      fe_dcc_open_chat_win(int passive) {
 	kdDebug() << "fe:fe_dcc_open_chat_win" << endl;
     }
@@ -555,6 +549,11 @@ extern
      fe_userlist_hide(session * sess) {
 	kdDebug() << "fe:fe_userlist_hide" << endl;
     }
+	void
+	fe_dcc_remove (struct DCC *dcc)
+	{
+		kdDebug() << "fe:fe_dcc_remove" << endl;
+	}
     void
      fe_lastlog(session * sess, session * lastlog_sess, char *sstr) {
 	kdDebug() << "fe:fe_lastlog" << endl;
@@ -564,7 +563,6 @@ extern
 	kdDebug() << "fe:fe_set_lag :" << lag << endl;
 	GSList *list = sess_list;
 	session *sess;
-
 	while (list) {
 	    sess = (session*)list->data;
 	    if (sess->server == serv) {
@@ -609,6 +607,36 @@ extern
 	xchatapp->getInt(prompt, def, callback, ud);
     }
 
+void
+fe_ctrl_gui (session *sess, int action)
+{
+ kdDebug() << "fe:ctrl_gui" << endl;
+
+    switch (action)
+    {
+    case 0:
+        sess->gui->win->hide(); break;
+    case 1:
+        sess->gui->win->show(); break;
+    case 2:
+	{
+		sess->gui->win->show();
+		sess->gui->win->raise();
+		sess->gui->win->setActiveWindow();
+		sess->gui->win->raiseView(sess->gui->view);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void
+fe_userlist_rehash (session *sess, struct User *user)
+{
+ kdDebug() << "fe:userlist_rehash" << endl;
+ 
+}
 
     void
      fe_play_wave(const char *file) {
@@ -619,6 +647,5 @@ extern
 	kdDebug() << "fe:idle_add" << endl;
 	xchatapp->addIdleFunction(func, data);
     }
-
 
 }

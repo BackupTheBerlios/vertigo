@@ -224,7 +224,7 @@ DCC CHAT Connect
 XP_TE_DCCCONCHAT
 pevt_dccchatcon_help
 -%C10-%C11-%O$tDCC CHAT connection established to %C11$1 %C14[%O$2%C14]%O
-1
+2
 
 DCC CHAT Failed
 XP_TE_DCCCHATF
@@ -388,6 +388,12 @@ pevt_foundip_help
 -%C10-%C11-%O$tFound your IP: [$1]
 1
 
+Generic Message
+XP_TE_GENMSG
+pevt_genmsg_help
+$1$t$2
+2
+
 Ignore Add
 XP_TE_IGNOREADD
 pevt_ignoreaddremove_help
@@ -409,7 +415,7 @@ pevt_generic_none_help
 Ignore Header
 XP_TE_IGNOREHEADER
 pevt_generic_none_help
-%C08,02 Hostmask                  PRIV NOTI CHAN CTCP INVI UNIG %O
+%C08,02 Hostmask                  PRIV NOTI CHAN CTCP DCC  INVI UNIG %O
 0
 
 Ignore Remove
@@ -699,6 +705,24 @@ XP_TE_WHOIS6
 pevt_whois6_help
 -%C10-%C11-%O$t%C12[%O$1%C12] %CEnd of WHOIS list.
 1
+
+WhoIs Identified
+XP_TE_WHOIS_ID
+pevt_whoisid_help
+-%C10-%C11-%O$t%C12[%O$1%C12] %O$2
+2
+
+WhoIs Authenticated
+XP_TE_WHOIS_AUTH
+pevt_whoisauth_help
+-%C10-%C11-%O$t%C12[%O$1%C12] %O$2 %C11$3%O
+3
+
+WhoIs Real Host
+XP_TE_WHOIS_REALHOST
+pevt_whoisrealhost_help
+-%C10-%C11-%O$t%C12[%O$1%C12] %Oreal user@host %C11$2%O, real IP %C11$3%O
+4
 
 WhoIs Idle Line
 XP_TE_WHOIS4

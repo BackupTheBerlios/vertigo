@@ -1,9 +1,5 @@
 /* simple identd server for xchat under win32 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 static int identd_is_running = FALSE;
 
@@ -81,7 +77,3 @@ identd_start (void)
 						 NULL, 0, &tid));
 	}
 }
-
-#ifdef __cplusplus
-}
-#endif

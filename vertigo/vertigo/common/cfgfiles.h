@@ -1,11 +1,12 @@
+/* cfgfiles.h */
+
+#ifndef _XCHAT_CFGFILES_H
+#define _XCHAT_CFGFILES_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#pragma once	
-
-
-/* cfgfiles.h */
 
 extern char *xdir;
 
@@ -43,8 +44,8 @@ struct prefs
 #define TYPE_INT 1
 #define TYPE_BOOL 2
 
-
 #ifdef __cplusplus
 }
 #endif
 
+#endif

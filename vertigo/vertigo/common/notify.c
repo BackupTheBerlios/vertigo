@@ -18,10 +18,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "../../config.h"
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,10 +33,6 @@
 #include "text.h"
 #include "util.h"
 #include "xchatc.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 GSList *notify_list = 0;
@@ -107,7 +99,7 @@ notify_load (void)
 	{
 		while (waitline (fh, buf, sizeof buf) != -1)
 		{
-			if (*buf != '#')
+			if (buf[0] != '#' && buf[0] != 0)
 				notify_adduser (buf);
 		}
 		close (fh);
@@ -178,7 +170,15 @@ notify_announce_online (server * serv, struct notify_per_server *servnot,
 	fe_notify_update (0);
 
 	if (prefs.whois_on_notifyonline)
-		serv->p_whois (serv, nick);
+	{
+
+	    /* Let's do whois with idle time (like in /quote WHOIS %s %s) */
+
+	    char *wii_str = malloc (strlen (nick) * 2 + 2);
+	    sprintf (wii_str, "%s %s", nick, nick);
+	    serv->p_whois (serv, wii_str);
+	    free (wii_str);
+	}
 }
 
 /* handles numeric 601 */
@@ -368,7 +368,7 @@ notify_checklist (void)
 	}
 	if (i)
 	{
-		GSList *list = serv_list;
+		list = serv_list;
 		while (list)
 		{
 			serv = (struct server *) list->data;
@@ -530,7 +530,3 @@ notify_cleanup ()
 	}
 	fe_notify_update (0);
 }
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _XCHAT_PLUGIN_H
+#define _XCHAT_PLUGIN_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -115,4 +117,6 @@ int plugin_show_help (session *sess, char *cmd);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

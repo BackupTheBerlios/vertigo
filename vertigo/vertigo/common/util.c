@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
-
+#define _FILE_OFFSET_BITS 64
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -24,9 +24,10 @@
 #include <sys/stat.h>
 #ifdef WIN32
 #include <sys/timeb.h>
-#include <winsock.h>
 #include <process.h>
 #else
+#include <sys/types.h>
+#include <pwd.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
 #endif
@@ -38,6 +39,9 @@
 #include <ctype.h>
 #include "util.h"
 #include "../../config.h"
+
+#include "inet.h"
+
 #ifdef USING_FREEBSD
 #include <sys/sysctl.h>
 #endif
@@ -55,12 +59,6 @@
 #undef malloc
 #undef realloc
 #undef strdup
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 
 int current_mem_usage;
 
@@ -262,9 +260,12 @@ file_part (char *file)
 void
 path_part (char *file, char *path, int pathlen)
 {
+	unsigned char t;
 	char *filepart = file_part (file);
+	t = *filepart;
 	*filepart = 0;
 	safe_strcpy (path, file, pathlen);
+	*filepart = t;
 }
 
 char *				/* like strstr(), but nocase */
@@ -338,26 +339,46 @@ char *
 expand_homedir (char *file)
 {
 #ifndef WIN32
-	char *ret;
+	char *ret, *user;
+	struct passwd *pw;
 
 	if (*file == '~')
 	{
-		ret = malloc (strlen (file) + strlen (g_get_home_dir ()) + 1);
-		sprintf (ret, "%s%s", g_get_home_dir (), file + 1);
+		if (file[1] != '\0' && file[1] != '/')
+		{
+			user = strdup(file);
+			if (strchr(user,'/') != NULL)
+				*(strchr(user,'/')) = '\0';
+			if ((pw = getpwnam(user + 1)) == NULL)
+			{
+				free(user);
+				return strdup(file);
+			}
+			free(user);
+			user = strchr(file, '/') != NULL ? strchr(file,'/') : file;
+			ret = malloc(strlen(user) + strlen(pw->pw_dir) + 1);
+			strcpy(ret, pw->pw_dir);
+			strcat(ret, user);
+		}
+		else
+		{
+			ret = malloc (strlen (file) + strlen (g_get_home_dir ()) + 1);
+			sprintf (ret, "%s%s", g_get_home_dir (), file + 1);
+		}
 		return ret;
 	}
 #endif
 	return strdup (file);
 }
 
-unsigned char *
-strip_color (unsigned char *text)
+char *
+strip_color (char *text)
 {
 	int nc = 0;
 	int i = 0;
 	int col = 0;
 	int len = strlen (text);
-	unsigned char *new_str = malloc (len + 2);
+	char *new_str = malloc (len + 2);
 
 	while (len > 0)
 	{
@@ -681,17 +702,24 @@ tolowerStr (char *str)
 	}
 }*/
 
-/* thanks BitchX */
+/* This is originally from BitchX, but since added missing TLDs and
+   changed to a binary search */
+
+typedef struct
+{
+	char *code;
+	char *country;
+} Domain;
+
+static int
+country_compare (const void *a, const void *b)
+{
+	return strcasecmp (a, ((Domain *)b)->code);
+}
 
 char *
 country (char *hostname)
 {
-	typedef struct _domain
-	{
-		char *code;
-		char *country;
-	}
-	Domain;
 	static const Domain domain[] = {
 		{"AD", N_("Andorra") },
 		{"AE", N_("United Arab Emirates") },
@@ -704,8 +732,10 @@ country (char *hostname)
 		{"AO", N_("Angola") },
 		{"AQ", N_("Antarctica") },
 		{"AR", N_("Argentina") },
+		{"ARPA", N_("Reverse DNS") },
 		{"AS", N_("American Samoa") },
 		{"AT", N_("Austria") },
+		{"ATO", N_("Nato Fiel") },
 		{"AU", N_("Australia") },
 		{"AW", N_("Aruba") },
 		{"AZ", N_("Azerbaijan") },
@@ -717,6 +747,7 @@ country (char *hostname)
 		{"BG", N_("Bulgaria") },
 		{"BH", N_("Bahrain") },
 		{"BI", N_("Burundi") },
+		{"BIZ", N_("Businesses"), },
 		{"BJ", N_("Benin") },
 		{"BM", N_("Bermuda") },
 		{"BN", N_("Brunei Darussalam") },
@@ -739,6 +770,7 @@ country (char *hostname)
 		{"CM", N_("Cameroon") },
 		{"CN", N_("China") },
 		{"CO", N_("Colombia") },
+		{"COM", N_("Internic Commercial") },
 		{"CR", N_("Costa Rica") },
 		{"CS", N_("Former Czechoslovakia") },
 		{"CU", N_("Cuba") },
@@ -753,6 +785,7 @@ country (char *hostname)
 		{"DO", N_("Dominican Republic") },
 		{"DZ", N_("Algeria") },
 		{"EC", N_("Ecuador") },
+		{"EDU", N_("Educational Institution") },
 		{"EE", N_("Estonia") },
 		{"EG", N_("Egypt") },
 		{"EH", N_("Western Sahara") },
@@ -777,6 +810,7 @@ country (char *hostname)
 		{"GL", N_("Greenland") },
 		{"GM", N_("Gambia") },
 		{"GN", N_("Guinea") },
+		{"GOV", N_("Government") },
 		{"GP", N_("Guadeloupe") },
 		{"GQ", N_("Equatorial Guinea") },
 		{"GR", N_("Greece") },
@@ -795,6 +829,8 @@ country (char *hostname)
 		{"IE", N_("Ireland") },
 		{"IL", N_("Israel") },
 		{"IN", N_("India") },
+		{"INFO", N_("Informational") },
+		{"INT", N_("International") },
 		{"IO", N_("British Indian Ocean Territory") },
 		{"IQ", N_("Iraq") },
 		{"IR", N_("Iran") },
@@ -828,8 +864,10 @@ country (char *hostname)
 		{"MA", N_("Morocco") },
 		{"MC", N_("Monaco") },
 		{"MD", N_("Moldova") },
+		{"MED", N_("United States Medical") },
 		{"MG", N_("Madagascar") },
 		{"MH", N_("Marshall Islands") },
+		{"MIL", N_("Military") },
 		{"MK", N_("Macedonia") },
 		{"ML", N_("Mali") },
 		{"MM", N_("Myanmar") },
@@ -849,6 +887,7 @@ country (char *hostname)
 		{"NA", N_("Namibia") },
 		{"NC", N_("New Caledonia") },
 		{"NE", N_("Niger") },
+		{"NET", N_("Internic Network") },
 		{"NF", N_("Norfolk Island") },
 		{"NG", N_("Nigeria") },
 		{"NI", N_("Nicaragua") },
@@ -860,6 +899,7 @@ country (char *hostname)
 		{"NU", N_("Niue") },
 		{"NZ", N_("New Zealand") },
 		{"OM", N_("Oman") },
+		{"ORG", N_("Internic Non-Profit Organization") },
 		{"PA", N_("Panama") },
 		{"PE", N_("Peru") },
 		{"PF", N_("French Polynesia") },
@@ -876,10 +916,11 @@ country (char *hostname)
 		{"QA", N_("Qatar") },
 		{"RE", N_("Reunion") },
 		{"RO", N_("Romania") },
+		{"RPA", N_("Old School ARPAnet") },
 		{"RU", N_("Russian Federation") },
 		{"RW", N_("Rwanda") },
 		{"SA", N_("Saudi Arabia") },
-		{"Sb", N_("Solomon Islands") },
+		{"SB", N_("Solomon Islands") },
 		{"SC", N_("Seychelles") },
 		{"SD", N_("Sudan") },
 		{"SE", N_("Sweden") },
@@ -937,31 +978,24 @@ country (char *hostname)
 		{"ZM", N_("Zambia") },
 		{"ZR", N_("Zaire") },
 		{"ZW", N_("Zimbabwe") },
-		{"COM", N_("Internic Commercial") },
-		{"EDU", N_("Educational Institution") },
-		{"GOV", N_("Government") },
-		{"INT", N_("International") },
-		{"MIL", N_("Military") },
-		{"NET", N_("Internic Network") },
-		{"ORG", N_("Internic Non-Profit Organization") },
-		{"RPA", N_("Old School ARPAnet") },
-		{"ATO", N_("Nato Fiel") },
-		{"MED", N_("United States Medical") },
-		{"ARPA", N_("Reverse DNS") },
-		{NULL, NULL}
 	};
 	char *p;
-	int i;
+	Domain *dom;
+
 	if (!hostname || !*hostname || isdigit (hostname[strlen (hostname) - 1]))
 		return _("Unknown");
 	if ((p = strrchr (hostname, '.')))
 		p++;
 	else
 		p = hostname;
-	for (i = 0; domain[i].code; i++)
-		if (!strcasecmp (p, domain[i].code))
-			return domain[i].country;
-	return _("Unknown");
+
+	dom = bsearch (p, domain, sizeof (domain) / sizeof (Domain),
+						sizeof (Domain), country_compare);
+
+	if (!dom)
+		return _("Unknown");
+
+	return _(dom->country);
 }
 
 /* I think gnome1.0.x isn't necessarily linked against popt, ah well! */
@@ -1227,23 +1261,39 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 	char *output_name, int dccpermissions)
 {
 	/* Move a complete file to move_file_path */
+	/* mgl: this used to take just a filename and move it between dirs */
+	/* now it takes the full path of the target download and moves it */
 
 	char dl_src[4096];
 	char dl_dest[4096];
 	char dl_tmp[4096];
+	char *output_fname;
 	int return_tmp, return_tmp2;
-	struct stat buf;
 
 	/* if dcc_dir and dcc_completed_dir are the same then we are done */
 	if (0 == strcmp (dcc_dir, dcc_completed_dir) ||
 		 0 == dcc_completed_dir[0])
 		return;			/* Already in "completed dir" */
 
-	snprintf (dl_src, sizeof (dl_src), "%s/%s", dcc_dir, output_name);
-	snprintf (dl_dest, sizeof (dl_dest), "%s/%s", dcc_completed_dir,
-			   output_name);
-
+	/* mgl: since output_name is a full path, we just copy it */
+	strncpy (dl_src, output_name, sizeof(dl_src));
 	dl_src[sizeof(dl_src)-1] = '\0';
+
+	/* mgl: output_name being a full path, we need to extract the filename */
+	/* off the end of it before continuing */
+
+	/* no path sep or no file after pathsep?  very suspicious, bail now! */
+	if ((NULL == (output_fname = strrchr(output_name, '/')))
+			|| !*(output_fname + 1))
+		return;
+	/* get the next char after the pathsep */
+	++output_fname;
+	/* throw the filename onto the directory name of the completed directory */
+	/* FIXME: dcc_completed_dir is UTF8, not fs encoding! */
+	snprintf (dl_dest, sizeof (dl_dest), "%s/%s", dcc_completed_dir,
+			   output_fname);
+	/* the rest should continue as before, but use output_fname */
+
 	dl_dest[sizeof(dl_dest)-1] = '\0';
 
 	/*
@@ -1257,10 +1307,11 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 	 *		--RAM, 03/11/2001
 	 */
 
-	if (-1 != stat (dl_dest, &buf))
+	if (access (dl_dest, F_OK) == 0)
 	{
 		int destlen = strlen (dl_dest);
 		int i;
+		struct stat buf;
 
 		/*
 		 * There must be enough room for us to append the ".xx" extensions.
@@ -1270,7 +1321,7 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 		if (destlen >= sizeof (dl_dest) - 4)
 		{
 			fprintf(stderr, "Found '%s' in completed dir, and path already too long",
-				output_name);
+				output_fname);
 			return;
 		}
 
@@ -1291,7 +1342,7 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 		{
 			fprintf (stderr, "Found '%s' in completed dir, "
 				"and was unable to find another unique name",
-				output_name);
+				output_fname);
 			return;
 		}
 
@@ -1314,7 +1365,7 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 		if ((tmp_src = open (dl_src, O_RDONLY | OFLAGS)) == -1)
 		{
 			fprintf (stderr, "Unable to open() file '%s' (%s) !", dl_src,
-					  g_strerror (errno));
+					  strerror (errno));
 			return;
 		}
 
@@ -1368,25 +1419,3 @@ download_move_to_completed_dir (char *dcc_dir, char *dcc_completed_dir,
 			unlink (dl_src);
 	}
 }
-
-void
-play_wave (const char *file)
-{
-	char buf[512];
-
-	snprintf (buf, sizeof (buf), "%s/%s", prefs.sounddir, file);
-	if (access (buf, R_OK) == 0)
-	{
-		snprintf (buf, sizeof (buf), "%s %s/%s", prefs.soundcmd, prefs.sounddir, file);
-		buf[sizeof (buf) - 1] = '\0';
-		xchat_exec (buf);
-	} else
-	{
-		snprintf (buf, sizeof (buf), "Cannot read %s/%s", prefs.sounddir, file);
-		fe_message (buf, FALSE);
-	}
-}
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,8 +1,9 @@
+#ifndef _XCHAT_XCHAT_H
+#define _XCHAT_XCHAT_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#pragma once
 
 #include "../../config.h"
 
@@ -56,8 +57,6 @@ void *xchat_realloc (char *old, int len, char *file, int line);
 #ifdef WIN32						/* for win32 */
 #define OFLAGS O_BINARY
 #define sleep(t) _sleep(t*1000)
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
 #include <direct.h>
 #define	F_OK	0
 #define	X_OK	1
@@ -130,9 +129,6 @@ struct xchatprefs
 	char dnsprogram[72];
 	char hostname[127];
 	char cmdchar[4];
-#ifdef USE_TRANS
-	char trans_file[256];
-#endif
 	char logmask[256];
 	char stamp_format[64];
 	char timestamp_log_format[64];
@@ -148,6 +144,9 @@ struct xchatprefs
 	int tint_green;
 	int tint_blue;
 
+	int away_timeout;
+	int away_size_max;
+	int paned_pos;
 	int tabs_position;
 	int max_auto_indent;
 	int dcc_blocksize;
@@ -163,6 +162,10 @@ struct xchatprefs
 	int mainwindow_top;
 	int mainwindow_width;
 	int mainwindow_height;
+	int dialog_left;
+	int dialog_top;
+	int dialog_width;
+	int dialog_height;
 	int dccpermissions;
 	int recon_delay;
 	int bantype;
@@ -172,6 +175,7 @@ struct xchatprefs
 	unsigned long dcc_ip;
 	char dcc_ip_str[16];
 
+	unsigned int tab_dnd;
 	unsigned int mainwindow_save;
 	unsigned int perc_color;
 	unsigned int perc_ascii;
@@ -213,6 +217,7 @@ struct xchatprefs
 	unsigned int filterbeep;
 	unsigned int beepmsg;
 	unsigned int beepchans;
+	unsigned int beephilight;
 	unsigned int truncchans;
 	unsigned int privmsgtab;
 	unsigned int logging;
@@ -251,6 +256,7 @@ struct xchatprefs
 	unsigned int wait_on_exit;
 	unsigned int confmode;
 	unsigned int utf8_locale;
+	unsigned int identd;
 
 	unsigned int ctcp_number_limit;	/*flood */
 	unsigned int ctcp_time_limit;	/*seconds of floods */
@@ -258,8 +264,10 @@ struct xchatprefs
 	unsigned int msg_number_limit;	/*same deal */
 	unsigned int msg_time_limit;
 
-	unsigned int multiple_instances;
-	unsigned int systray_dock; 
+    unsigned int multiple_instances;
+	unsigned int systray_dock;
+		
+
 };
 
 /* Session types */
@@ -272,7 +280,9 @@ struct xchatprefs
 typedef struct session
 {
 	struct server *server;
-	GSList *userlist;
+	void *usertree_alpha;			/* pure alphabetical tree */
+	void *usertree;					/* ordered with Ops first */
+	struct User *me;					/* points to myself in the usertree */
 	char channel[CHANLEN];
 	char waitchannel[CHANLEN];		  /* waiting to join this channel */
 	char willjoinchannel[CHANLEN];	  /* /join done for this channel */
@@ -315,6 +325,7 @@ typedef struct session
 	int hide_join_part:1;	/* hide join & part messages? */
 	int beep:1;				/* beep enabled? */
 	int color_paste:1;
+	int done_away_check:1;	/* done checking for away status changes */
 } session;
 
 typedef struct server
@@ -340,6 +351,7 @@ typedef struct server
 	void (*p_chan_mode)(struct server *, char *channel, char *mode);
 	void (*p_nick_mode)(struct server *, char *nick, char *mode);
 	void (*p_user_list)(struct server *, char *channel);
+	void (*p_away_status)(struct server *, char *channel);
 	void (*p_whois)(struct server *, char *nicks);
 	void (*p_get_ip)(struct server *, char *nick);
 	void (*p_set_back)(struct server *);
@@ -367,9 +379,6 @@ typedef struct server
 	int childread;
 	int childwrite;
 	int childpid;
-#ifdef WIN32
-	int childhandle;
-#endif
 	int iotag;
 	int recondelay_tag;				/* reconnect delay timeout */
 	char hostname[128];				/* real ip number */
@@ -423,7 +432,7 @@ typedef struct server
 	int no_login:1;
 	int skip_next_who:1;			  /* used for "get my ip from server" */
 	int inside_whois:1;
-	int doing_who:1;				  /* /dns has been done */
+	int doing_dns:1;				  /* /dns has been done */
 	int end_of_motd:1;			  /* end of motd reached (logged in) */
 	int sent_quit:1;				  /* sent a QUIT already? */
 	int use_listargs:1;			/* undernet and dalnet need /list >0,<10000 */
@@ -432,6 +441,7 @@ typedef struct server
 	int dont_use_proxy:1;		/* to proxy or not to proxy */
 	int supports_watch:1;		/* supports the WATCH command */
 	int bad_prefix:1;				/* gave us a bad PREFIX= 005 number */
+	int have_whox:1;				/* have undernet's WHOX features */
 #ifdef USE_OPENSSL
 	int use_ssl:1;					  /* is server SSL capable? */
 	int accept_invalid_cert:1;	  /* ignore result of server's cert. verify */
@@ -468,4 +478,6 @@ struct popup
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

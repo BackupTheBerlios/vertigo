@@ -1,6 +1,10 @@
+#ifndef _XCHAT__H
+#define _XCHAT__H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 typedef struct netstore_
 {
@@ -28,4 +32,6 @@ void net_sockets (int *sok4, int *sok6);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

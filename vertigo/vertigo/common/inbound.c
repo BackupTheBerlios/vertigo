@@ -42,10 +42,6 @@
 #include "plugin.h"
 #include "xchatc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* black n white(0/1) are bad colors for nicks, and we'll use color 2 for us */
 /* also light/dark gray (14/15) */
@@ -69,6 +65,8 @@ clear_channel (session *sess)
 {
 	strcpy (sess->waitchannel, sess->channel);
 	sess->channel[0] = 0;
+	sess->doing_who = FALSE;
+	sess->done_away_check = FALSE;
 
 	log_close (sess);
 
@@ -135,7 +133,7 @@ find_session_from_nick (char *nick, server *serv)
 }
 
 void
-inbound_privmsg (server *serv, char *tbuf, char *from, char *ip, char *text)
+inbound_privmsg (server *serv, char *from, char *ip, char *text)
 {
 	session *sess;
 
@@ -159,18 +157,24 @@ inbound_privmsg (server *serv, char *tbuf, char *from, char *ip, char *text)
 			if (prefs.logging && sess->logfd != -1 &&
 				(!sess->topic || strcmp(sess->topic, ip)))
 			{
-				snprintf (tbuf, 2048, "[%s has address %s]\n", from, ip);
+				char tbuf[1024];
+				snprintf (tbuf, sizeof (tbuf), "[%s has address %s]\n", from, ip);
 				write (sess->logfd, tbuf, strlen (tbuf));
 			}
 			set_topic (sess, ip);
 		}
-		inbound_chanmsg (serv, tbuf, from, from, text, FALSE);
+		inbound_chanmsg (serv, NULL, from, text, FALSE);
 		return;
 	}
+
 	sess = find_session_from_nick (from, serv);
 	if (!sess)
 		sess = serv->front_session;
-	EMIT_SIGNAL (XP_TE_PRIVMSG, sess, from, text, NULL, NULL, 0);
+
+	if (sess->type == SESS_DIALOG)
+		EMIT_SIGNAL (XP_TE_DPRIVMSG, sess, from, text, NULL, NULL, 0);
+	else
+		EMIT_SIGNAL (XP_TE_PRIVMSG, sess, from, text, NULL, NULL, 0);
 }
 
 static int
@@ -223,8 +227,7 @@ is_hilight (char *text, session *sess, server *serv)
 }
 
 void
-inbound_action (session *sess, char *tbuf, char *chan, char *from, char *text,
-					 int fromme)
+inbound_action (session *sess, char *chan, char *from, char *text, int fromme)
 {
 	session *def = sess;
 	server *serv = sess->server;
@@ -253,8 +256,15 @@ inbound_action (session *sess, char *tbuf, char *chan, char *from, char *text,
 
 	if (sess != current_tab)
 	{
-		sess->msg_said = TRUE;
-		sess->new_data = FALSE;
+		if (fromme)
+		{
+			sess->msg_said = FALSE;
+			sess->new_data = TRUE;
+		} else
+		{
+			sess->msg_said = TRUE;
+			sess->new_data = FALSE;
+		}
 	}
 
 	if (!fromme)
@@ -271,7 +281,8 @@ inbound_action (session *sess, char *tbuf, char *chan, char *from, char *text,
 
 	if (prefs.colorednicks)
 	{
-		sprintf (tbuf, "\003%d%s", color_of (from), from);
+		char tbuf[NICKLEN + 4];
+		snprintf (tbuf, sizeof (tbuf), "\003%d%s", color_of (from), from);
 		EMIT_SIGNAL (XP_TE_CHANACTION, sess, tbuf, text, NULL, NULL, 0);
 	} else
 	{
@@ -280,17 +291,22 @@ inbound_action (session *sess, char *tbuf, char *chan, char *from, char *text,
 }
 
 void
-inbound_chanmsg (server *serv, char *tbuf, char *chan, char *from, char *text,
-					  char fromme)
+inbound_chanmsg (server *serv, char *chan, char *from, char *text, char fromme)
 {
 	struct User *user;
 	session *sess;
 	int hilight = FALSE;
 	char nickchar[2] = "\000";
 
-	sess = find_channel (serv, chan);
-	if (!sess && !is_channel (serv, chan))
-		sess = find_dialog (serv, chan);
+	if (chan)
+	{
+		sess = find_channel (serv, chan);
+		if (!sess && !is_channel (serv, chan))
+			sess = find_dialog (serv, chan);
+	} else
+	{
+		sess = find_dialog (serv, from);
+	}
 	if (!sess)
 		return;
 
@@ -320,15 +336,19 @@ inbound_chanmsg (server *serv, char *tbuf, char *chan, char *from, char *text,
 			fe_beep ();
 
 	if (is_hilight (text, sess, serv))
+	{
 		hilight = TRUE;
-
+		if (prefs.beephilight)
+			fe_beep ();
+	}
 	if (sess->type == SESS_DIALOG)
-		EMIT_SIGNAL (XP_TE_DPRIVMSG, sess, from, text, nickchar, NULL, 0);
+		EMIT_SIGNAL (XP_TE_DPRIVMSG, sess, from, text, NULL, NULL, 0);
 	else if (hilight)
 		EMIT_SIGNAL (XP_TE_HCHANMSG, sess, from, text, nickchar, NULL, 0);
 	else if (prefs.colorednicks)
 	{
-		sprintf (tbuf, "\003%d%s", color_of (from), from);
+		char tbuf[NICKLEN + 4];
+		snprintf (tbuf, sizeof (tbuf), "\003%d%s", color_of (from), from);
 		EMIT_SIGNAL (XP_TE_CHANMSG, sess, tbuf, text, nickchar, NULL, 0);
 	}
 	else
@@ -353,7 +373,7 @@ inbound_newnick (server *serv, char *nick, char *newnick, int quiet)
 		sess = list->data;
 		if (sess->server == serv)
 		{
-			if (me || find_name (sess, nick))
+			if (change_nick (sess, nick, newnick) || (me && sess->type == SESS_SERVER))
 			{
 				if (!quiet)
 				{
@@ -364,9 +384,8 @@ inbound_newnick (server *serv, char *nick, char *newnick, int quiet)
 						EMIT_SIGNAL (XP_TE_CHANGENICK, sess, nick, newnick, NULL,
 										 NULL, 0);
 				}
-				change_nick (sess, nick, newnick);
 			}
-			if (!serv->p_cmp (sess->channel, nick))
+			if (sess->type == SESS_DIALOG && !serv->p_cmp (sess->channel, nick))
 			{
 				safe_strcpy (sess->channel, newnick, CHANLEN);
 				fe_set_channel (sess);
@@ -376,7 +395,6 @@ inbound_newnick (server *serv, char *nick, char *newnick, int quiet)
 		list = list->next;
 	}
 
-	fe_change_nick (serv, nick, newnick);
 	dcc_change_nick (serv, nick, newnick);
 
 	if (me)
@@ -551,27 +569,32 @@ inbound_nameslist (server *serv, char *chan, char *names)
 void
 inbound_topic (server *serv, char *chan, char *topic_text)
 {
+	session *sess = find_channel (serv, chan);
+	char *new_topic;
+
+	if (sess)
+	{
+		new_topic = strip_color (topic_text);
+		set_topic (sess, new_topic);
+		free (new_topic);
+	} else
+		sess = serv->server_session;
+
+	EMIT_SIGNAL (XP_TE_TOPIC, sess, chan, topic_text, NULL, NULL, 0);
+}
+
+void
+inbound_topicnew (server *serv, char *nick, char *chan, char *topic)
+{
 	session *sess;
 	char *new_topic;
 
 	sess = find_channel (serv, chan);
 	if (sess)
 	{
-		/*new_topic = strip_color (topic_text);
-		//set_topic (sess, new_topic);
-		//free (new_topic);*/
-		set_topic (sess, topic_text);
-		EMIT_SIGNAL (XP_TE_TOPIC, sess, chan, topic_text, NULL, NULL, 0);
-	}
-}
-
-void
-inbound_topicnew (server *serv, char *nick, char *chan, char *topic)
-{
-	session *sess = find_channel (serv, chan);
-	if (sess)
-	{
-		set_topic (sess, topic);
+		new_topic = strip_color (topic);
+		set_topic (sess, new_topic);
+		free (new_topic);
 		EMIT_SIGNAL (XP_TE_NEWTOPIC, sess, nick, topic, chan, NULL, 0);
 	}
 }
@@ -622,6 +645,9 @@ inbound_topictime (server *serv, char *chan, char *nick, time_t stamp)
 	char *tim = ctime (&stamp);
 	session *sess = find_channel (serv, chan);
 
+	if (!sess)
+		sess = serv->server_session;
+
 	tim[19] = 0;	/* get rid of the \n */
 	EMIT_SIGNAL (XP_TE_TOPICDATE, sess, chan, nick, tim, NULL, 0);
 }
@@ -645,7 +671,13 @@ set_server_name (struct server *serv, char *name)
 	}
 	if (serv->server_session->type == SESS_SERVER)
 	{
-		safe_strcpy (serv->server_session->channel, name, CHANLEN);
+		if (serv->networkname)
+		{
+			safe_strcpy (serv->server_session->channel, serv->networkname, CHANLEN);
+		} else
+		{
+			safe_strcpy (serv->server_session->channel, name, CHANLEN);
+		}
 		fe_set_channel (serv->server_session);
 	}
 }
@@ -680,10 +712,11 @@ inbound_quit (server *serv, char *nick, char *ip, char *reason)
 }
 
 void
-inbound_ping_reply (session *sess, char *outbuf, char *timestring, char *from)
+inbound_ping_reply (session *sess, char *timestring, char *from)
 {
 	unsigned long tim, nowtim, dif;
 	int lag = 0;
+	char outbuf[64];
 
 	if (strncmp (timestring, "LAG", 3) == 0)
 	{
@@ -700,7 +733,7 @@ inbound_ping_reply (session *sess, char *outbuf, char *timestring, char *from)
 	if (lag)
 	{
 		sess->server->lag_sent = 0;
-		sprintf (outbuf, "%ld.%ld", dif / 100000, (dif / 10000) % 100);
+		snprintf (outbuf, sizeof (outbuf), "%ld.%ld", dif / 100000, (dif / 10000) % 100);
 		fe_set_lag (sess->server, (int)((float)atof (outbuf)));
 		return;
 	}
@@ -713,7 +746,7 @@ inbound_ping_reply (session *sess, char *outbuf, char *timestring, char *from)
 			EMIT_SIGNAL (XP_TE_PINGREP, sess, from, "?", NULL, NULL, 0);
 	} else
 	{
-		sprintf (outbuf, "%ld.%ld%ld", dif / 1000000, (dif / 100000) % 10, dif % 10);
+		snprintf (outbuf, sizeof (outbuf), "%ld.%ld%ld", dif / 1000000, (dif / 100000) % 10, dif % 10);
 		EMIT_SIGNAL (XP_TE_PINGREP, sess, from, outbuf, NULL, NULL, 0);
 	}
 }
@@ -734,8 +767,7 @@ find_session_from_type (int type, server *serv)
 }
 
 void
-inbound_notice (server *serv, char *outbuf, char *to, char *nick, char *msg,
-					 char *ip)
+inbound_notice (server *serv, char *to, char *nick, char *msg, char *ip)
 {
 	char *po,*ptr=to;
 	session *sess = 0;
@@ -764,7 +796,7 @@ inbound_notice (server *serv, char *outbuf, char *to, char *nick, char *msg,
 		ptr = 0;
 		if (prefs.notices_tabs)
 		{
-			int stype = server_notice ? SESS_NOTICES : SESS_SNOTICES;
+			int stype = server_notice ? SESS_SNOTICES : SESS_NOTICES;
 			sess = find_session_from_type (stype, serv);
 			if (!sess)
 			{
@@ -803,7 +835,7 @@ inbound_notice (server *serv, char *outbuf, char *to, char *nick, char *msg,
 		msg++;
 		if (!strncmp (msg, "PING", 4))
 		{
-			inbound_ping_reply (sess, outbuf, msg + 5, nick);
+			inbound_ping_reply (sess, msg + 5, nick);
 			return;
 		}
 	}
@@ -824,6 +856,7 @@ inbound_away (server *serv, char *nick, char *msg)
 {
 	struct away_msg *away = find_away_message (serv, nick);
 	session *sess = NULL;
+	GSList *list;
 
 	if (away && !strcmp (msg, away->message))	/* Seen the msg before? */
 	{
@@ -837,9 +870,18 @@ inbound_away (server *serv, char *nick, char *msg)
 	if (!serv->inside_whois)
 		sess = find_session_from_nick (nick, serv);
 	if (!sess)
-		sess = serv->front_session;
+		sess = serv->server_session;
 
 	EMIT_SIGNAL (XP_TE_WHOIS5, sess, nick, msg, NULL, NULL, 0);
+
+	list = sess_list;
+	while (list)
+	{
+		sess = list->data;
+		if (sess->server == serv)
+			userlist_set_away (sess, nick, TRUE);
+		list = list->next;
+	}
 }
 
 int
@@ -925,15 +967,16 @@ inbound_next_nick (session *sess, char *nick)
 }
 
 void
-do_dns (session *sess, char *tbuf, char *nick, char *host)
+do_dns (session *sess, char *nick, char *host)
 {
 	char *po;
+	char tbuf[1024];
 
 	po = strrchr (host, '@');
 	if (po)
 		host = po + 1;
 	EMIT_SIGNAL (XP_TE_RESOLVINGUSER, sess, nick, host, NULL, NULL, 0);
-	sprintf (tbuf, "exec -d %s %s", prefs.dnsprogram, host);
+	snprintf (tbuf, sizeof (tbuf), "exec -d %s %s", prefs.dnsprogram, host);
 	handle_command (sess, tbuf, FALSE);
 }
 
@@ -973,12 +1016,30 @@ inbound_login_start (session *sess, char *nick, char *servname)
 	}
 }
 
+static void
+inbound_set_all_away_status (server *serv, char *nick, unsigned int status)
+{
+	GSList *list;
+	session *sess;
+
+	list = sess_list;
+	while (list)
+	{
+		sess = list->data;
+		if (sess->server == serv)
+			userlist_set_away (sess, nick, status);
+		list = list->next;
+	}
+}
+
 void
 inbound_uaway (server *serv)
 {
 	serv->is_away = TRUE;
 	serv->away_time = time (NULL);
 	fe_set_away (serv);
+
+	inbound_set_all_away_status (serv, serv->nick, 1);
 }
 
 void
@@ -987,6 +1048,8 @@ inbound_uback (server *serv)
 	serv->is_away = FALSE;
 	serv->reconnect_away = FALSE;
 	fe_set_away (serv);
+
+	inbound_set_all_away_status (serv, serv->nick, 0);
 }
 
 void
@@ -1004,27 +1067,52 @@ inbound_foundip (session *sess, char *ip)
 	}
 }
 
+void
+inbound_user_info_start (session *sess, char *nick)
+{
+	/* set away to FALSE now, 301 may turn it back on */
+	inbound_set_all_away_status (sess->server, nick, 0);
+}
+
 int
-inbound_user_info (session *sess, char *outbuf, char *chan, char *user,
-						 char *host, char *servname, char *nick, char *realname)
+inbound_user_info (session *sess, char *chan, char *user, char *host,
+						 char *servname, char *nick, char *realname,
+						 unsigned int away)
 {
 	server *serv = sess->server;
 	session *who_sess;
+	char *uhost;
 
 	who_sess = find_channel (serv, chan);
 	if (who_sess)
 	{
-		sprintf (outbuf, "%s@%s", user, host);
-		if (!userlist_add_hostname (who_sess, nick, outbuf, realname, servname))
+		if (user && host)
 		{
-			if (!who_sess->doing_who)
-				return 0;
+			uhost = malloc (strlen (user) + strlen (host) + 2);
+			sprintf (uhost, "%s@%s", user, host);
+			if (!userlist_add_hostname (who_sess, nick, uhost, realname, servname, away))
+			{
+				if (!who_sess->doing_who)
+				{
+					free (uhost);
+					return 0;
+				}
+			}
+			free (uhost);
+		} else
+		{
+			if (!userlist_add_hostname (who_sess, nick, NULL, realname, servname, away))
+			{
+				if (!who_sess->doing_who)
+					return 0;
+			}
 		}
 	} else
 	{
-		if (!serv->doing_who)
+		if (!serv->doing_dns)
 			return 0;
-		do_dns (sess, outbuf, nick, host);
+		if (nick && host)
+			do_dns (sess, nick, host);
 	}
 	return 1;
 }
@@ -1078,7 +1166,3 @@ inbound_login_end (session *sess, char *text)
 	EMIT_SIGNAL (XP_TE_MOTD, serv->server_session, text, NULL,
 					 NULL, NULL, 0);
 }
-
-#ifdef __cplusplus
-}
-#endif

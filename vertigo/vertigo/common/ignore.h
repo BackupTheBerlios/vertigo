@@ -1,6 +1,10 @@
+#ifndef _XCHAT_IGNORE_H
+#define _XCHAT_IGNORE_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 extern GSList *ignore_list;
 
@@ -17,13 +21,15 @@ extern int ignored_invi;
 #define IG_INVI	16
 #define IG_UNIG	32
 #define IG_NOSAVE	64
+#define IG_DCC		128
 
 struct ignore
 {
-	unsigned char *mask;
+	char *mask;
 	unsigned int type;	/* one of more of IG_* ORed together */
 };
 
+struct ignore *ignore_exists (char *mask);
 int ignore_add (char *mask, int type);
 void ignore_showlist (session *sess);
 int ignore_del (char *mask, struct ignore *ig);
@@ -34,6 +40,10 @@ void ignore_gui_open (void);
 void ignore_gui_update (int level);
 int flood_check (char *nick, char *ip, server *serv, session *sess, int what);
 
+
+
 #ifdef __cplusplus
 }
+#endif
+
 #endif
