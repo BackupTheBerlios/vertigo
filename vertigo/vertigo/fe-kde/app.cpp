@@ -428,16 +428,16 @@ kdDebug() << "   ===  remove socket notifier: id="<< id <<endl;
 	if(dat->id == id) {
 		kdDebug() << "  found dat!"<<endl;
 	    if(dat->readn)
-			dat->readn->setEnabled(false);
-		//delete dat->readn;
+			//dat->readn->setEnabled(false);
+		delete dat->readn;
 
 	    if(dat->writen)
-			dat->writen->setEnabled(false);
-		//delete dat->writen;
+			//dat->writen->setEnabled(false);
+		delete dat->writen;
 
 	    if(dat->excen)
-			dat->excen->setEnabled(false);
-		//delete dat->excen;
+			//dat->excen->setEnabled(false);
+		delete dat->excen;
 
 	    m_socketList->remove(dat);
 	}
@@ -467,10 +467,9 @@ void XChatApp::socketReady(int fd)
 	if(cond != 0) {
 	    kdDebug() << "readReady found" << endl;
 	    SocketFunc fn = dat->func;
-		int n;
-	    n=(*fn) (NULL, cond, dat->args);
+	    (*fn) (NULL, cond, dat->args);
 		
-	    kdDebug() << "return from func==" << n << endl;
+	    //kdDebug() << "return from func==" << n << endl;
 	    break;
 
 	}
