@@ -61,7 +61,14 @@ XChatMainView::XChatMainView(XChatMainWindow * w, session * sess)
   topicEdit->
       setSizePolicy(QSizePolicy
                     (QSizePolicy::Minimum, QSizePolicy::Maximum, false));
-    //topicLabel->setMinimumWidth(1);
+
+
+   m_oldTopicParaPos=0;
+   m_oldTopicIndexPos=0;
+	   
+
+
+//topicLabel->setMinimumWidth(1);
     //topicLabel->setMinimumHeight(1);
     //  topicStack->setMinimumHeight(1);
 
@@ -179,7 +186,7 @@ layout1->addWidget(topicEdit);
 
     //pushButton10_2_2->setText(i18n("pushButton10"));
 
-    //connect(topicEdit, SIGNAL(returnPressed()), this, SLOT(topicEnter()));
+    connect(topicEdit, SIGNAL(returnPressed()), this, SLOT(topicEnter()));
 
     //connect(topicEdit, SIGNAL(textChanged(const QString &)), topicLabel, SLOT(slotTextChanged(const QString &)));
 
@@ -309,6 +316,7 @@ QString escapeText(QString t)
 
 QString unescapeText(QString t)
 {
+	kdDebug () << "unescape "<< t<<endl;
     t.replace("%B", "\x02");
     t.replace("%C", "\x03");
     t.replace("%I", "\x09");
@@ -318,13 +326,23 @@ QString unescapeText(QString t)
 
 void XChatMainView::topicEnter()
 {
-    //if(m_session)
-	//set_topic(m_session, unescapeText(topicLineEdit->text()).latin1());
+	kdDebug() << "topicEnter"<<endl;
+	
+    if(m_session)
+	{
+		topicEdit->getCursorPosition(&m_oldTopicParaPos, &m_oldTopicIndexPos);
+		kdDebug() << "topic: |"<<unescapeText(topicEdit->text()).latin1()<<"|"<<endl;
+		set_topic(m_session, unescapeText(topicEdit->text()).latin1());
+	}
 }
 
 void XChatMainView::setTopic(QString t)
 {
+	kdDebug() << "setting topic: "<<t<<endl;
     topicEdit->setTopicText(t);
+	topicEdit->setCursorPosition(m_oldTopicParaPos, m_oldTopicIndexPos);
+	m_oldTopicParaPos=0;
+	m_oldTopicIndexPos=0;
 	//topicLabel->setText(convertText(t));
     //topicLineEdit->setText(escapeText(t));
     /*if(topicStack->isHidden()) {
@@ -557,11 +575,23 @@ QSize XChatTopicEdit::minimumSizeHint() const
 
 
 
+
 void XChatTopicEdit::setTopicText(QString s)
 {
 	m_topicText=s;
 	setText(convertText(s));
 	QToolTip::add(this, "<b></b>"+text());
+}
+
+void XChatTopicEdit::keyPressEvent( QKeyEvent *e )
+{
+ if (( e->key()==Key_Enter ) || (e->key()==Key_Return)) {
+	emit returnPressed();
+	return;
+ }
+ QTextEdit::keyPressEvent( e );
+ 
+ 
 }
 
 void XChatTopicEdit::focusInEvent ( QFocusEvent * )

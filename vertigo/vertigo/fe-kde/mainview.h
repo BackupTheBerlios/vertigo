@@ -116,6 +116,10 @@ XChatMainWindow *window();
     QWidget *m_userlistPanel;
     XChatTopicEdit *topicEdit;
     session *m_session;
+   int m_oldTopicParaPos;
+       int m_oldTopicIndexPos;
+	   
+
 };
 
 /*
@@ -136,6 +140,8 @@ class XChatTopicEdit:public QTextEdit {
 	void focusOutEvent ( QFocusEvent * );
 QSize sizeHint() const;
 QSize minimumSizeHint() const;
+	void keyPressEvent( QKeyEvent *e );
+	
 	private:
 	QString m_topicText;
 };

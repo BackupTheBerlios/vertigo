@@ -272,7 +272,7 @@ extern
 
     void
      fe_set_topic(struct session *sess, char *topic) {
-	kdDebug() << "fe:fe_set_topic" << endl;
+	kdDebug() << "fe:fe_set_topic: " << topic<< endl;
 	sess->gui->view->setTopic(topic);
     }
     void
