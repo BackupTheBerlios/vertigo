@@ -4,8 +4,9 @@
 #include <kmainwindow.h>
 #include "mainview.h"
 
-#include "kmdimainfrm.h"
 #include "../common/xchat.h"
+
+#include "kmdimainfrm.h"
 
 class KProgress;
 

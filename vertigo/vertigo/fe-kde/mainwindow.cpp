@@ -209,7 +209,7 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     move(prefs.mainwindow_left, prefs.mainwindow_top);
 
 
-switchToTabPageMode();
+//switchToTabPageMode();
     if (m_MDIMode==0)
 	{
 switchToTabPageMode();

@@ -52,7 +52,7 @@ extern GSList *plugin_list;
 
 
 ConfigureDialog::ConfigureDialog(QWidget * parent)
-:  KDialogBase(IconList, i18n("Configure"), Help | Default | Ok | Apply | Cancel, Ok, parent, 0, false)
+:  KDialogBase(TreeList, i18n("Configure"), Help | Default | Ok | Apply | Cancel, Ok, parent, 0, false)
 {
     QStringList tree;
     QFrame *frame;
@@ -333,7 +333,7 @@ m_popCheckbox->setChecked(true);
     }
 
     setRootIsDecorated(false);
-    setTreeListAutoResize(false);
+    //setTreeListAutoResize(false);
     //unfoldTreeList(true);
 
     resize(minimumSize());

@@ -14,6 +14,7 @@ INCLUDES         = -I./backport $(GLIB_CFLAGS) $(all_includes)
 # the library search path.
 vertigo_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 
+
 # the libraries to link against.
 vertigo_LDADD   = ../common/libxchatcommon.a backport/libbackport.a $(GLIB_LIBS) $(LIB_KFILE) $(LIB_KPARTS) -Lbackport -lbackport
 
