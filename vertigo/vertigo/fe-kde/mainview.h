@@ -1,42 +1,22 @@
 #ifndef MainView_H
 #define MainView_H
 
-#include <qvariant.h>
-#include <klistview.h>
-#include <qlabel.h>
-#include <qwidgetstack.h>
-#include <qlineedit.h>
-#include <qtextedit.h>
-
-#include <ksqueezedtextlabel.h>
-
-#include <qdialog.h>
-class QVBoxLayout;
-class QHBoxLayout;
-class QGridLayout;
-class QWidgetStack;
-class QTabWidget;
-class QWidget;
-class QLabel;
-class QPixmap;
-class QPushButton;
-class QSplitter;
-class QGrid;
-class QLineEdit;
-class QTextEdit;
-class KListBox;
-class QListBoxItem;
 
 #include <dcopobject.h>
 
+#include "mainview.h"
 #include "containerview.h"
-
 
 #include "../common/xchat.h"
 #include "../common/userlist.h"
 
+class KListView;
+class QPushButton;
+class QSplitter;
+class QVBoxLayout;
+class QHBoxLayout;
+
 class MainView;
-class UserlistView;
 class TopicEdit;
 class InputLineEdit;
 class TextView;
@@ -59,7 +39,7 @@ k_dcop:
 
 class MainView: public ContainerView, virtual public MainViewIface {
   Q_OBJECT public:
-     MainView(MainWindow * s, session * s);
+     MainView(QWidget * s, session * s);
     ~MainView();
 
 MainWindow *window();
@@ -77,7 +57,7 @@ MainWindow *window();
     void setTopic(QString t);
 
     TextView *getTextView() {
-	return textEdit1;
+	return m_textView;
     }
 
     void setSession(session * s) {
@@ -97,112 +77,26 @@ MainWindow *window();
     void completionMatches(const QStringList &);
 
   protected:
-    QVBoxLayout * Form1Layout;
-    QVBoxLayout *tabLayout;
-    QHBoxLayout *layout1;
-    QVBoxLayout *layout5;
-    QHBoxLayout *layout3;
 
-    QVBoxLayout *layout4;
+	session *m_session;
 
-    // bool m_used;
-    QGridLayout *gridLayout;
-    QPushButton *pushButton5;
-    QSplitter *splitter1;
-    TextView *textEdit1;
-    InputLineEdit *m_inputLine;
-    QPushButton *pushButton1;
-    UserlistView *m_userList;
-    QPushButton *pushButton10_2_2;
-    QWidget *m_textPanel;
-    QWidget *m_userlistPanel;
-    TopicEdit *topicEdit;
-    session *m_session;
+    KListView *m_userList;
    int m_oldTopicParaPos;
        int m_oldTopicIndexPos;
 
-
-};
-
-/*
-class WidgetStack:public QWidgetStack {
-  Q_OBJECT public:
-     WidgetStack(QWidget * parent);
-    ~WidgetStack();
-QSize sizeHint () const;
-};*/
-
-class TopicEdit:public QTextEdit {
-  Q_OBJECT public:
-     TopicEdit(QWidget * parent);
-    ~TopicEdit();
-	//QSize sizeHint() const;
-	void setTopicText(QString s);
-	void focusInEvent ( QFocusEvent * );
-	void focusOutEvent ( QFocusEvent * );
-QSize sizeHint() const;
-QSize minimumSizeHint() const;
-	void keyPressEvent( QKeyEvent *e );
-	
-	private:
-	QString m_topicText;
-};
-
-class InputLineEdit:public QLineEdit {
-  Q_OBJECT public:
-     InputLineEdit(QWidget * parent);
-    ~InputLineEdit();
-    bool eventFilter(QObject * o, QEvent * e);
-    
-     signals:void tabPressed();
-    void upPressed();
-    void downPressed();
-
+TopicEdit* m_topicEdit;
+    QPushButton* channelButton;
+    QSplitter* m_splitter;
+    TextView* m_textView;
+    InputLineEdit* m_inputEdit;
+    QPushButton* textButton;
+    QWidget* m_userlistPanel;
+        QVBoxLayout* Form1Layout;
+    QHBoxLayout* layout1;
+    QVBoxLayout* layout5;
+    QHBoxLayout* layout3;
 };
 
 
 
-class UserlistView:public KListView {
-  Q_OBJECT public:
-     UserlistView(QWidget * parent);
-    ~UserlistView();
-//QSize minimumSizeHint() const;
-	
-  //private:
-    // QColor m_alternateBackground;
-    //void resizeEvent(QResizeEvent * r);
-};
-
-
-class UserlistItem:public KListViewItem {
-  public:
-    UserlistItem(UserlistView * list, QPixmap * pix, User * u);
-    ~UserlistItem();
-
- //   bool isAlternate();
-QPixmap *getPixmap();
-
-    User *getUser() {
-	return m_user;
-    }
-
-	void setUser(User *user);
-
-int compare ( QListViewItem * i, int col, bool ascending ) const;
-void paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int align );
-
-   // void paint(QPainter * painter);
-    //int height(const QListBox * lb) const;
-    //int width(const QListBox * lb) const;
-
-    //bool m_known;
-    //bool m_odd;
-
-
-  private:
-    User * m_user;
-	QPixmap *m_pixmap;
-};
-
-
-#endif				// MainView_H
+#endif	
