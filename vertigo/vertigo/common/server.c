@@ -474,11 +474,11 @@ server_connected (server * serv)
 static void
 server_stopconnecting (server * serv)
 {
-/*	if (serv->iotag)
-	{*/
+	if (serv->iotag)
+	{
 		fe_input_remove (serv->iotag);
 		serv->iotag = 0;
-/*	}*/
+	}
 
 #ifndef WIN32
 	/* kill the child process trying to connect */

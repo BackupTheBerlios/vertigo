@@ -36,7 +36,7 @@ XChatApp::XChatApp():KApplication()
     m_socketList->setAutoDelete(true);
 
 
-m_nextSocketID=0;
+m_nextSocketID=1;
 
     m_mainWindowCount = 0;
     m_otherWindowCount = 0;
