@@ -583,7 +583,7 @@ bool XChatInputLineEdit::eventFilter(QObject * o, QEvent * e)
 
 XChatUserlistView::XChatUserlistView(QWidget * parent):KListView(parent)
 {
-addColumn ( " ");
+addColumn ( "");
 addColumn ( "User");
 addColumn ( "Host");
 setFullWidth(true);
@@ -654,7 +654,7 @@ int XChatUserlistItem::compare ( QListViewItem * i, int col, bool ascending ) co
 		{
 			return KListViewItem::compare(i,1, ascending);
 		}
-		else if (my>1){
+		else if (my>l){
 			return -1;
 		}
 		else{
@@ -664,6 +664,17 @@ int XChatUserlistItem::compare ( QListViewItem * i, int col, bool ascending ) co
 	else{
 		return KListViewItem::compare(i,col, ascending);
 	}
+}
+
+void XChatUserlistItem::paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int align )
+{
+	    if (col==0)
+		{
+		KListViewItem::paintCell(p, cg, col, width, AlignCenter);
+		}
+		else{
+			KListViewItem::paintCell(p, cg, col, width, align);
+		}
 }
 
 /*void XChatUserlistItem::paint(QPainter * painter)

@@ -174,6 +174,7 @@ QPixmap *getPixmap();
 	void setUser(User *user);
 
 int compare ( QListViewItem * i, int col, bool ascending ) const;
+void paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int align );
 
    // void paint(QPainter * painter);
     //int height(const QListBox * lb) const;
