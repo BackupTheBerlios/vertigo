@@ -6,15 +6,13 @@
 
 #include "../common/xchat.h"
 
-#include "kmdimainfrm.h"
-
 class KProgress;
 
 class TabWidget;
 class ContainerView;
 class StatusBarWidget;
 
-class MainWindow:public KMdiMainFrm {
+class MainWindow:public KMainWindow {
   Q_OBJECT public:
      MainWindow(QWidget * parent = 0);
     ~MainWindow();
@@ -111,7 +109,6 @@ void forwardLoop();
 
     private:
        TabWidget *m_tabWidget;
-       int m_MDIMode;
 };
 
 /*

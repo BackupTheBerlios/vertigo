@@ -3,7 +3,7 @@
 
 #include "tabwidget.h"
 
-#include "ktabwidget.h"
+#include <ktabwidget.h>
 
 
     class TabWidget:public KTabWidget

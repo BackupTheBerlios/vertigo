@@ -2,8 +2,8 @@
 
 #include "tabwidget.h"
 
-#include "backport/ktabwidget.h"
-#include "backport/ktabbar.h"
+#include <ktabwidget.h>
+#include <ktabbar.h>
 
 #include "../common/xchat.h"
 #include "../common/xchatc.h"

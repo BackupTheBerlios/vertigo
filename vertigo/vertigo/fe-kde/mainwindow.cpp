@@ -48,17 +48,13 @@
 #include "configure.h"
 #include "extraview.h"
 
-#include "backport/kmdimainfrm.h"
-
-
 
 MainWindow::MainWindow(QWidget * parent)
-:  KMdiMainFrm(parent, "MainWindow")
+:  KMainWindow(parent, "MainWindow")
 {
 
 //m_statusBarWidget= new StatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
-m_MDIMode=1;
 	m_progressBar=new KProgress(statusBar(),"progressBar");
 m_progressBar->setFormat("Connecting...");
 m_progressBar->setTotalSteps(5);
@@ -176,8 +172,8 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     KStdAction::preferences(this, SLOT(slotPreferences()), actionCollection());
     KStdAction::configureToolbars(this, SLOT(slotConfigureToolbars()), actionCollection());
     KStdAction::configureNotifications(this, SLOT(slotConfigureNotifications()), actionCollection());
-  setXMLFile("vertigo.rc");
-    createGUI(0);
+ // setXMLFile("vertigo.rc");
+    createGUI("vertigo.rc");
 
     KConfig *config = KGlobal::config();
 
@@ -208,12 +204,7 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     resize(prefs.mainwindow_width, prefs.mainwindow_height);
     move(prefs.mainwindow_left, prefs.mainwindow_top);
 
-
-//switchToTabPageMode();
-    if (m_MDIMode==0)
-	{
-switchToTabPageMode();
-    //MainWindowLayout = new QVBoxLayout(this, 12, 6, "MainWindowLayout");
+    MainWindowLayout = new QVBoxLayout(this, 12, 6, "MainWindowLayout");
 
     m_tabWidget = new TabWidget(this, "m_tabWidget");
     m_tabWidget->setTabPosition(QTabWidget::Top);
@@ -240,11 +231,9 @@ switchToTabPageMode();
     tabNew->hide();
     connect(m_tabWidget, SIGNAL(currentChanged(QWidget *)), this, SLOT(slotTabChanged(QWidget *)));
 
-addWindow(createWrapper(m_tabWidget,"(none)","(none)"));
-   //MainWindowLayout->addWidget(m_tabWidget);
-  // setCentralWidget(m_tabWidget);
+   MainWindowLayout->addWidget(m_tabWidget);
+ setCentralWidget(m_tabWidget);
 
-    }
 
     m_mainViewList = new QPtrList < MainView > ();
 
@@ -258,9 +247,6 @@ MainView *MainWindow::getMainView(session * sess)
 
  v = new MainView(this, sess);
     m_mainViewList->append(v);
-
-       if (m_MDIMode==0)
-{
 
 
     int lastTab = -1;
@@ -277,12 +263,6 @@ MainView *ov=v;
 v=ov;
     m_tabWidget->insertTab(v, "(none)", lastTab);
 
-
-    }
-else{
-	addWindow(createWrapper(v,"(none)","(none)"));
-
-	}
 	kdDebug() << "added view" << endl;
    	 return v;
 
@@ -448,7 +428,6 @@ void MainWindow::slotNewChannelTab()
 void MainWindow::slotDetachTab()
 {
 
-if(m_MDIMode==0){
     QWidget *t = m_tabWidget->currentPage();
 
     if(viewCount() != 1) {
@@ -470,17 +449,14 @@ else{
 	w->addView((ContainerView*)t, label, -1);
     }
 }
-}
 
 
 void MainWindow::closeView(ContainerView *v)
 {
 	v->closeView();
 
-	if (m_MDIMode==0){
 	if(!m_tabWidget->count()) {
 	    close();
-	}
 	}
 
 	 if(v->isA("MainView")) {
@@ -490,11 +466,8 @@ void MainWindow::closeView(ContainerView *v)
 
 void MainWindow::slotCloseTab()
 {
-   if (m_MDIMode==0)
-   {
     	QWidget *t = m_tabWidget->currentPage();
     	closeView((ContainerView *)t);
-}
 }
 
 void MainWindow::slotQuit()
@@ -505,8 +478,6 @@ void MainWindow::slotQuit()
 
 int MainWindow::lastSameServerTabIndex()
 {
-   if (m_MDIMode==0)
-   {
 int lastTab = -1;
 session *s;
 MainView *v;
@@ -518,43 +489,27 @@ lastTab = QMAX(m_tabWidget->indexOf(v) + 1, lastTab);
         }
 return lastTab;
 }
-return 0;
-}
 
 void MainWindow::setViewLabel(ContainerView *l, QString label)
 {
-	if (m_MDIMode==0)
-	{
 		m_tabWidget->setTabLabel(l, label);
-	}
 }
 
 
 void MainWindow::setViewToolTip(ContainerView *l, QString label)
 {
-	if (m_MDIMode==0)
-	{
 		m_tabWidget->setTabToolTip(l, label);
-	}
 }
 
 void MainWindow::setViewColor(ContainerView *l, QColor c)
 {
-	if (m_MDIMode==0)
-	{
 		m_tabWidget->setTabColor(l, c);
-	}
 }
 
 
 void MainWindow::addView(ContainerView *l, QString name, int index)
 {
-	if (m_MDIMode==0)
-	{
 		m_tabWidget->insertTab(l, name, index);
-	}
-	else
-	addWindow(createWrapper(l,name,name));
 }
 
 
@@ -782,63 +737,49 @@ void MainWindow::slotTab9()
 
 void MainWindow::slotNextTab()
 {
-	if (m_MDIMode==0){
 	int i=m_tabWidget->currentPageIndex()+1;
 	if (i== m_tabWidget->count())
 		i=0;
 	m_tabWidget->setCurrentPage(i);
-	}
 }
 
 
 void MainWindow::slotPreviousTab()
 {
-if (m_MDIMode==0){
 	int i=m_tabWidget->currentPageIndex()-1;
 	if (i==-1)
 		i=m_tabWidget->count()-1;
 	m_tabWidget->setCurrentPage(i);
-	}
 }
 
 
 
 void MainWindow::showView(ContainerView *v)
 {
-	if (m_MDIMode==0){
 	m_tabWidget->showPage(v);
-	}
 }
 
 int MainWindow::viewCount()
 {
-if (m_MDIMode==0){
     return m_tabWidget->count();
-}
-return 99;
 }
 
 void MainWindow::focusInEvent(QFocusEvent *)
 {
     kdDebug() << "focusinwindow" << endl;
-    if (m_MDIMode==0){
     slotTabChanged(m_tabWidget->currentPage());
-	}
 }
 
 void MainWindow::windowActivationChange(bool oldActive)
 {
     kdDebug() << caption() << "::windowActivationChange :: " << oldActive << endl;
-if (m_MDIMode==0){
     if(!oldActive) {
 	slotTabChanged(m_tabWidget->currentPage());
-    }
     }
 }
 
 bool MainWindow::isCurrent(session *sess)
 {
-if (m_MDIMode==0){
 	    QWidget *t = m_tabWidget->currentPage();
 
 		    if(t&&t->isA("MainView")) {
@@ -849,8 +790,6 @@ if (m_MDIMode==0){
 				}
 				}
 				return false;
-	}
-	return false;
 }
 
 void MainWindow::closeEvent(QCloseEvent * e)

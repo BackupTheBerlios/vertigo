@@ -1,5 +1,3 @@
-
-
 #include <qvariant.h>
 #include <qlabel.h>
 #include <qlineedit.h>

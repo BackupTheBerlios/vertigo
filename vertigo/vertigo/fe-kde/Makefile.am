@@ -2,21 +2,21 @@
 
 # this has all of the subdirectories that make will recurse into.  if
 # there are none, comment this out
-SUBDIRS = backport . pics
+SUBDIRS = . pics
 
 # this is the program that gets installed.  it's name is used for all
 # of the other Makefile.am variables
 bin_PROGRAMS = vertigo
 
 # set the include path for X, qt and KDE
-INCLUDES         = -I./backport $(GLIB_CFLAGS) $(all_includes)
+INCLUDES         = $(GLIB_CFLAGS) $(all_includes)
 
 # the library search path.
 vertigo_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 
 
 # the libraries to link against.
-vertigo_LDADD   = ../common/libxchatcommon.a backport/libbackport.a $(GLIB_LIBS) $(LIB_KFILE) $(LIB_KPARTS) -Lbackport -lbackport
+vertigo_LDADD   = ../common/libxchatcommon.a $(GLIB_LIBS) $(LIB_KFILE) $(LIB_KPARTS)
 
 # which sources should be compiled for vertigo
 vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp containerview.cpp rawlogbase.ui chanlistbase.ui extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
