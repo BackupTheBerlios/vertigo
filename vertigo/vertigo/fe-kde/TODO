@@ -1,6 +1,6 @@
 Channel List:
 + buddy check
-- focus on text line on switch
++ focus on text line on switch
 + implement filtering
 + on reload don't disable whole widget, just reload button
 + disable stop by default
@@ -13,6 +13,7 @@ Channel List:
 - save config/reload on switch
 - non-auto column resizing
 - richtext tooltips of topics
+- highlight tab on data
 
 Character chart:
 - designerize

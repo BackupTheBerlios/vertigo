@@ -67,7 +67,6 @@ MainWindow *window();
     session *getSession() {
 	return m_session;
     }
-    void giveInputFocus();
 
     public slots:void topicEnter();
     void entryEnter();
@@ -76,6 +75,10 @@ MainWindow *window();
     void entryUp();
     void completionMatches(const QStringList &);
 
+	private slots:
+	    void setActiveView();
+
+    
   protected:
 
 	session *m_session;

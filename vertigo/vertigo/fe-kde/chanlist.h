@@ -28,6 +28,10 @@ public slots:
     void slotJoinButtonClicked();
     void slotRefreshButtonClicked();
 
+private slots:    
+    void setActiveView();
+		
+    
 private:
 	void insertItem ( QListViewItem * i );
 	void takeItem ( QListViewItem * i );

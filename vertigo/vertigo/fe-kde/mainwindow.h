@@ -98,7 +98,7 @@ void slotNextTab();
 void slotPreviousTab();
 
 void forwardLoop();
-    
+
   protected:
     QVBoxLayout * MainWindowLayout;
     QPtrList < MainView > *m_mainViewList;

@@ -26,6 +26,10 @@ void ContainerView::closeView()
         close();
 }
 
+void ContainerView::setActiveView()
+{
+	;	
+}
 
 MainWindow* ContainerView::window()
 {

@@ -182,11 +182,10 @@ void MainView::setTopic(QString t)
 	m_oldTopicIndexPos=0;
 }
 
-void MainView::giveInputFocus()
+void MainView::setActiveView()
 {
+    kdDebug()<< "mainview:setActiveView"<<endl;
     m_inputEdit->setFocus();
-    //topicStack->raiseWidget(1);
-    //topicStack->update();
 }
 
 void MainView::entryDown()

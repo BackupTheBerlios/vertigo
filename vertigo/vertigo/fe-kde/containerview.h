@@ -23,7 +23,8 @@ class ContainerView: public QWidget
     public slots:
         virtual void showView();
         virtual void closeView();
-
+	virtual void setActiveView();
+		
     private:
         MainWindow *m_window;
         server *m_server;

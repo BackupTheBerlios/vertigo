@@ -295,7 +295,12 @@ void MainWindow::slotTabChanged(QWidget * t)
     kdDebug() << "slotTabChanged" << endl;
     if(!t)
 	return;
+
+    ContainerView *cv=(ContainerView*)t;
+    cv->setActiveView();
+    
     if(t->isA("MainView")) {
+	/* TODO: move to MainView::setActiveChange */ 
 	MainView *v = (MainView *) t;
 
 	current_sess = v->getSession();
@@ -318,7 +323,6 @@ void MainWindow::slotTabChanged(QWidget * t)
 	    current_sess->new_data = 0;
 	    m_tabWidget->setTabColor(t, Qt::black);
 	}
-	v->giveInputFocus();
     }
 }
 
@@ -436,19 +440,13 @@ void MainWindow::slotDetachTab()
 	MainWindow *w = xchatapp->createNewWindow();
 	QWidget *t = m_tabWidget->currentPage();
 
-if(t->isA("MainView")) {
-MainView *v = (MainView *) t;
-v->setWindow(w);
-}
-else{
     ContainerView *v=(ContainerView *)t;
     v->setWindow(w);
-}
 
 	QString label = m_tabWidget->tabLabel(t);
-
+	t->disconnect(this);
 	t->reparent(w, QPoint(0, 0), false);
-	w->addView((ContainerView*)t, label, -1);
+	w->addView(v, label, -1);
     }
 }
 
@@ -511,14 +509,13 @@ void MainWindow::setViewColor(ContainerView *l, QColor c)
 
 void MainWindow::addView(ContainerView *l, QString name, int index)
 {
-		m_tabWidget->insertTab(l, name, index);
+	m_tabWidget->insertTab(l, name, index);
 }
 
 
 void MainWindow::slotChanlist()
 {
 if(!current_sess->server->gui->chanlist) {
-
         ChanlistView *l = new ChanlistView(this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;

@@ -20,6 +20,8 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
 	setServer(s);
 	enableItems(true);
 
+	setFocusProxy(m_chanlistView);
+	
 	KConfig *c=new KConfig("vertigorc");
 	m_minSpin->setValue(c->readNumEntry("minUsers",0));
 	m_maxSpin->setValue(c->readNumEntry("maxUsers",0));
@@ -27,7 +29,7 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
 	c->sync();
 	delete c;
 	setMatchSettings();
-
+	
 	m_chanList.setAutoDelete(false);
 }
 
@@ -61,6 +63,11 @@ void ChanlistView::setMatchSettings()
 	if (m_maxUsers < m_minUsers)
 		m_maxUsers=9999;
         m_regExp.setPattern(m_textEdit->text());
+}
+
+void ChanlistView::setActiveView()
+{
+	m_textEdit->setFocus();
 }
 
 void ChanlistView::slotApplyButtonClicked()
