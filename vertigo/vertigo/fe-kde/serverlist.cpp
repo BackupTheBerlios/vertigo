@@ -34,8 +34,6 @@
 #include "../common/servlist.h"
 #include "../common/cfgfiles.h"
 
-using namespace Vertigo;
-
 Serverlist::Serverlist(QWidget * parent, const char *name)
 :KMainWindow(parent, name)
 {

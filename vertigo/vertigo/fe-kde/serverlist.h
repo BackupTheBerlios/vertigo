@@ -28,7 +28,6 @@ class QCheckBox;
 class QPushButton;
 
 
-namespace Vertigo{
 class UserOptionsDialog;
 
 class Serverlist:public KMainWindow {
@@ -41,7 +40,7 @@ class Serverlist:public KMainWindow {
 
     void setSession(session * sess);
 
-Vertigo::UserOptionsDialog *m_optionsDialog;
+UserOptionsDialog *m_optionsDialog;
     
     QSplitter *m_mainSplitter;
     QFrame *m_networkFrame;
@@ -127,7 +126,7 @@ Vertigo::UserOptionsDialog *m_optionsDialog;
 class ServerlistNetworkItem:public KListViewItem {
   public:
     ServerlistNetworkItem(QListView * list,
-			       Vertigo::ServerlistNetworkItem * after,
+			       ServerlistNetworkItem * after,
 			       ircnet * net);
     ~ServerlistNetworkItem();
 
@@ -141,8 +140,7 @@ class UserOptionsDialog:public KDialogBase {
     UserOptionsDialog(QWidget * parent);
     ~UserOptionsDialog();
     private:
-    Vertigo::UserOptionsView *m_userOptionsView;
+    UserOptionsView *m_userOptionsView;
 };
 
-};
-#endif				// Vertigo::Serverlist_H
+#endif				// Serverlist_H

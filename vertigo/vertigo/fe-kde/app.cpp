@@ -40,9 +40,7 @@
 #include "serverlist.h"
 #include "textwidget.h"
 
-using namespace Vertigo;
-
-App():KApplication()
+App::App():KApplication()
 {
 
 	KGlobal::locale()->insertCatalogue("xchat-common");
@@ -95,10 +93,10 @@ MainWindow *App::getMainWindow(bool forceWindow)
     return current_sess->gui->win;
 }
 
-ServerList *App::serverList()
+Serverlist *App::serverList()
 {
     if(!m_serverList)
-		m_serverList = new ServerList(0);
+		m_serverList = new Serverlist(0);
     return m_serverList;
 }
 
@@ -702,3 +700,5 @@ void InputDialog::cancelledClicked()
     m_cancelled = true;
     emit dialogDone();
 }
+
+

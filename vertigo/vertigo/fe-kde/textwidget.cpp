@@ -28,9 +28,6 @@
 
 #define NoSelection -1
 
-using namespace Vertigo;
-
-
 int myabs(int a)
 {
     if (a < 0)

@@ -47,8 +47,6 @@
 #include "serverlist.h"
 #include "configure.h"
 
-using namespace Vertigo;
-
 MainWindow::MainWindow(QWidget * parent)
 :  KMainWindow(parent, "MainWindow", WType_TopLevel)
 {

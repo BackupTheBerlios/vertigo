@@ -9,8 +9,6 @@
 #include "../common/fe.h"
 #include "../common/cfgfiles.h"
 
-using namespace Vertigo;
-
 TabWidget::TabWidget(QWidget * parent, const char *name)
 :KTabWidget(parent, name)
 {

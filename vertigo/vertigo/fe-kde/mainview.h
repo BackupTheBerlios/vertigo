@@ -35,8 +35,6 @@ class QListBoxItem;
 #include "../common/xchat.h"
 #include "../common/userlist.h"
 
-namespace Vertigo{
-
 class MainView;
 class UserlistView;
 class TopicEdit;
@@ -58,13 +56,13 @@ k_dcop:
 };
 
 
-class MainView:public QWidget, public Vertigo::ContainerView, virtual public Vertigo::MainViewIface {
+class MainView:public QWidget, public ContainerView, virtual public MainViewIface {
   Q_OBJECT public:
-     MainView(Vertigo::MainWindow * s, session * s);
+     MainView(MainWindow * s, session * s);
     ~MainView();
 
-Vertigo::MainWindow *window();
-    void setWindow(Vertigo::MainWindow *w);
+MainWindow *window();
+    void setWindow(MainWindow *w);
 
     void clearUserlist();
     void showUserlist();
@@ -76,7 +74,7 @@ Vertigo::MainWindow *window();
 
     void setTopic(QString t);
 
-    Vertigo::TextView *getTextView() {
+    TextView *getTextView() {
 	return textEdit1;
     }
     void setSession(session * s) {
@@ -108,14 +106,14 @@ Vertigo::MainWindow *window();
     QGridLayout *gridLayout;
     QPushButton *pushButton5;
     QSplitter *splitter1;
-    Vertigo::TextView *textEdit1;
-    Vertigo::InputLineEdit *m_inputLine;
+    TextView *textEdit1;
+    InputLineEdit *m_inputLine;
     QPushButton *pushButton1;
-    Vertigo::UserlistView *m_userList;
+    UserlistView *m_userList;
     QPushButton *pushButton10_2_2;
     QWidget *m_textPanel;
     QWidget *m_userlistPanel;
-    Vertigo::TopicEdit *topicEdit;
+    TopicEdit *topicEdit;
     session *m_session;
    int m_oldTopicParaPos;
        int m_oldTopicIndexPos;
@@ -126,8 +124,8 @@ Vertigo::MainWindow *window();
 /*
 class WidgetStack:public QWidgetStack {
   Q_OBJECT public:
-     Vertigo::WidgetStack(QWidget * parent);
-    ~Vertigo::WidgetStack();
+     WidgetStack(QWidget * parent);
+    ~WidgetStack();
 QSize sizeHint () const;
 };*/
 
@@ -175,7 +173,7 @@ class UserlistView:public KListView {
 
 class UserlistItem:public KListViewItem {
   public:
-    UserlistItem(Vertigo::UserlistView * list, QPixmap * pix, User * u);
+    UserlistItem(UserlistView * list, QPixmap * pix, User * u);
     ~UserlistItem();
 
  //   bool isAlternate();
@@ -203,6 +201,5 @@ void paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int a
 	QPixmap *m_pixmap;
 };
 
-};
 
-#endif				// Vertigo::MainView_H
+#endif				// MainView_H

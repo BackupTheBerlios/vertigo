@@ -25,26 +25,24 @@ class QSplitter;
 class QCheckBox;
 class QSpinBox;
 
-namespace Vertigo {
-
 class MainWindow;
 
 class ContainerView{
     public:
-        ContainerView (Vertigo::MainWindow *w);
-        virtual void setWindow(Vertigo::MainWindow *w);
-        virtual Vertigo::MainWindow* window();
+        ContainerView (MainWindow *w);
+        virtual void setWindow(MainWindow *w);
+        virtual MainWindow* window();
     private:
-        Vertigo::MainWindow *m_window;
+        MainWindow *m_window;
 };
 
 
-class ChanlistView : public QWidget, public Vertigo::ContainerView
+class ChanlistView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    ChanlistView( QWidget* parent = 0, Vertigo::MainWindow * w=0, server * s=0, const char* name = 0, WFlags fl = 0 );
+    ChanlistView( QWidget* parent = 0, MainWindow * w=0, server * s=0, const char* name = 0, WFlags fl = 0 );
     ~ChanlistView();
 
     KListView* m_chanlistView;
@@ -76,7 +74,7 @@ public slots:
     virtual void slotRefreshButtonClicked();
     virtual void slotSaveButtonClicked();
 protected:
-    Vertigo::MainWindow * m_window;
+    MainWindow * m_window;
     server *m_server;
     QGridLayout* ChanlistViewLayout;
     QGridLayout* m_limitGroupBoxLayout;
@@ -92,23 +90,23 @@ int compare ( QListViewItem * i, int col, bool ascending ) const;
 
 
 
-class RawlogView : public QWidget, public Vertigo::ContainerView
+class RawlogView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    RawlogView( QWidget* parent ,  Vertigo::MainWindow *w, server *s, const char* name = 0, WFlags fl = 0 );
+    RawlogView( QWidget* parent ,  MainWindow *w, server *s, const char* name = 0, WFlags fl = 0 );
     ~RawlogView();
 
     void appendText(QString s);
 
     
-    Vertigo::TextView *m_rawlogView;
+    TextView *m_rawlogView;
     QPushButton* m_clearButton;
     QPushButton* m_saveButton;
 
-//Vertigo::MainWindow *window(){return m_window;}
-//void setWindow(Vertigo::MainWindow *w){m_window=w;}
+//MainWindow *window(){return m_window;}
+//void setWindow(MainWindow *w){m_window=w;}
 
 server *getServer(){return m_server;}
 void setServer(server *s){m_server=s;}
@@ -119,18 +117,18 @@ public slots:
 
 protected:
     QGridLayout* RawlogViewLayout;
-  //  Vertigo::MainWindow *m_window;
+  //  MainWindow *m_window;
  server *m_server;
  
 
 };
 
-class BanListView : public QWidget, public Vertigo::ContainerView
+class BanListView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    BanListView( QWidget* parent = 0,Vertigo::MainWindow * w=0, const char* name = 0, WFlags fl = 0 );
+    BanListView( QWidget* parent = 0,MainWindow * w=0, const char* name = 0, WFlags fl = 0 );
     ~BanListView();
 
     QPushButton* m_clearButton;
@@ -148,19 +146,19 @@ public slots:
      void slotRefreshButtonClicked();
 
 protected:
-     Vertigo::MainWindow * m_window;
+     MainWindow * m_window;
     QGridLayout* BanlistViewLayout;
 
 
 };
 
 
-class ChatListView : public QWidget, public Vertigo::ContainerView
+class ChatListView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    ChatListView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ChatListView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
     ~ChatListView();
 
     QPushButton* m_cancelButton;
@@ -173,18 +171,18 @@ void showSelf();
     
 protected:
     QGridLayout* ChatListViewLayout;
-    Vertigo::MainWindow * m_window;
+    MainWindow * m_window;
 
 };
 
 
 
-class NotifyListView : public QWidget, public Vertigo::ContainerView
+class NotifyListView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    NotifyListView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    NotifyListView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
     ~NotifyListView();
 
     KListView* m_notifyView;
@@ -200,18 +198,18 @@ public slots:
     void slotRemoveButtonClicked();
 
 protected:
-    Vertigo::MainWindow * m_window;
+    MainWindow * m_window;
     QGridLayout* NotifyViewLayout;
 
 
 };
 
-class XferView : public QWidget, public Vertigo::ContainerView
+class XferView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    XferView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    XferView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
     ~XferView();
 
     QSplitter* m_splitter;
@@ -243,16 +241,16 @@ protected:
     QVBoxLayout* FileXferViewLayout;
     QGridLayout* m_downloadLayout;
     QGridLayout* m_uploadLayout;
-    Vertigo::MainWindow * m_window;
+    MainWindow * m_window;
 
 };
 
-class URLGrabberView : public QWidget, public Vertigo::ContainerView
+class URLGrabberView : public QWidget, public ContainerView
 {
     Q_OBJECT
 
 public:
-    URLGrabberView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    URLGrabberView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
     ~URLGrabberView();
 
     QPushButton* m_saveButton;
@@ -267,7 +265,7 @@ public slots:
 
 protected:
     QGridLayout* URLViewLayout;
-    Vertigo::MainWindow * m_window;
+    MainWindow * m_window;
 
 };
 
@@ -308,7 +306,6 @@ public:
 protected:
     QGridLayout* UserOptionsViewLayout;
 
-};
 };
 
 #endif

@@ -9,8 +9,6 @@
 
 class KProgress;
 
-namespace Vertigo {
-
 class TabWidget;
 class StatusBarWidget;
 
@@ -19,8 +17,8 @@ class MainWindow:public KMainWindow {
      MainWindow(QWidget * parent = 0);
     ~MainWindow();
 
-Vertigo::MainView *getMainView(session * sess);
-    Vertigo::TabWidget *m_tabWidget;
+MainView *getMainView(session * sess);
+    TabWidget *m_tabWidget;
 
 
     
@@ -41,10 +39,10 @@ int lastSameServerTabIndex();
 	void setLag(int lag);
     void setNumbers(int ops, int total);
 
-	void raiseView(Vertigo::MainView *v);
+	void raiseView(MainView *v);
 
 	
-    Vertigo::TabWidget *tabWidget() {
+    TabWidget *tabWidget() {
 	return m_tabWidget;
     }
     public slots:void slotTabChanged(QWidget *);
@@ -94,8 +92,8 @@ void forwardLoop();
     
   protected:
     QVBoxLayout * MainWindowLayout;
-    QPtrList < Vertigo::MainView > *m_mainViewList;
-    Vertigo::StatusBarWidget *m_statusBarWidget;
+    QPtrList < MainView > *m_mainViewList;
+    StatusBarWidget *m_statusBarWidget;
 	KProgress *m_progressBar;
 
     // bool m_detached;
@@ -111,8 +109,8 @@ class StatusBarWidget : public QWidget
     Q_OBJECT
 
 public:
-    Vertigo::StatusBarWidget( QWidget* parent = 0, const char* name = 0);
-    ~Vertigo::StatusBarWidget();
+    StatusBarWidget( QWidget* parent = 0, const char* name = 0);
+    ~StatusBarWidget();
 
     QLabel* messageLabel;
     QLabel* lagLabel;
@@ -120,7 +118,7 @@ public:
     QLabel* nameLabel;
 
 protected:
-    QHBoxLayout* Vertigo::StatusBarWidgetLayout;
+    QHBoxLayout* StatusBarWidgetLayout;
     QHBoxLayout* nameFrameLayout;
 
 
@@ -129,6 +127,4 @@ protected:
 */
 
 
-};
-
-#endif				// Vertigo::MainWin_H
+#endif				// MainWin_H

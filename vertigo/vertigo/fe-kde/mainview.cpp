@@ -38,8 +38,6 @@
 
 #include "fe-kde.h"
 
-using namespace Vertigo;
-
 
 MainView::MainView(MainWindow * w, session * sess)
 :  QWidget(w, "MainView"), MainViewIface("MainView"),  ContainerView(w)

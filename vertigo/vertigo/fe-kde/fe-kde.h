@@ -8,25 +8,16 @@
 #include "extraview.h"
 #include "textwidget.h"
 
-namespace Vertigo
-{
-	class RawlogView;
-	class ChanlistView;
-	class MainView;
-	class MainWindow;
-}
-
-
 extern
  "C" {
     typedef struct server_gui {
-    	Vertigo::RawlogView *rawlog;
-		Vertigo::ChanlistView  *chanlist;
+    	RawlogView *rawlog;
+		ChanlistView  *chanlist;
     } server_gui;
 
     typedef struct session_gui {
-	Vertigo::MainView *view;
-	Vertigo::MainWindow *win;
+	MainView *view;
+	MainWindow *win;
 	KCompletion *comp;
 	KCompletion *cmdcomp;
 	int lag;

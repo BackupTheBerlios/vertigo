@@ -22,12 +22,10 @@
 class QScrollView;
 
 
-namespace Vertigo{
-
 typedef QIntDict<QColor> Palette;
 
 typedef struct TextEntry {
-    Vertigo::TextEntry *next;
+    TextEntry *next;
     QString timeStamp;
     QString rightText;
     QString leftText;
@@ -69,13 +67,13 @@ typedef struct TextBuffer {
 	bool layoutEnabled;
 	int layoutTimerId;
 
-    Vertigo::TextEntry *startEnt;
-    Vertigo::TextEntry *endEnt;
+    TextEntry *startEnt;
+    TextEntry *endEnt;
 
-    Vertigo::TextEntry *lastStartEnt;
-    Vertigo::TextEntry *lastEndEnt;
-    Vertigo::TextEntry *pageTopEnt;
-    Vertigo::TextEntry *pageBottomEnt;
+    TextEntry *lastStartEnt;
+    TextEntry *lastEndEnt;
+    TextEntry *pageTopEnt;
+    TextEntry *pageBottomEnt;
     uint lastStartOffset;
     uint lastEndOffset;
 
@@ -89,7 +87,7 @@ typedef struct TextBuffer {
     QPixmap *pixmap;
     bool paintDirty;
 
-    Vertigo::TextRenderState *renderState;
+    TextRenderState *renderState;
 };
 
 #define isReverseLayout() QApplication::reverseLayout()
@@ -122,9 +120,9 @@ class TextView:public QScrollView {
   protected:
     void viewportResizeEvent(QResizeEvent * pe);
     void clearRenderState(bool attribs = false);
-    int recalcEntryLayout(Vertigo::TextEntry * ent, bool resizeCols = false);
+    int recalcEntryLayout(TextEntry * ent, bool resizeCols = false);
     void paintArea(QPainter * p);
-    int paintEntry(Vertigo::TextEntry * ent,
+    int paintEntry(TextEntry * ent,
 		   QPainter * p, int y = -1,
 		   int selStart = -1, int selEnd = -1, bool onlysel =
 		   false);
@@ -147,12 +145,12 @@ class TextView:public QScrollView {
     void scrollDown();
     int textWidth(QString text);
     int charWidth(QChar c);
-    Vertigo::TextEntry *findEntAt(int x, int y, bool exact = false);
-    int findOffsetAt(Vertigo::TextEntry * ent, int x, int y);
+    TextEntry *findEntAt(int x, int y, bool exact = false);
+    int findOffsetAt(TextEntry * ent, int x, int y);
     int findCharAtX(QString text, int x);
     void updateSelection();
-    void drawSelection(Vertigo::TextEntry * startEnt, int startOffset,
-		       Vertigo::TextEntry * endEnt, int endOffset);
+    void drawSelection(TextEntry * startEnt, int startOffset,
+		       TextEntry * endEnt, int endOffset);
     bool clearSelection();
 
 
@@ -179,13 +177,11 @@ class TextView:public QScrollView {
     bool m_styledSep;
     QString m_timeStampFormat;
 
-    Vertigo::TextBuffer *m_buffer;
-    Vertigo::Palette m_palette;
+    TextBuffer *m_buffer;
+    Palette m_palette;
 
     QCursor *m_cursorSplit;
     QCursor *m_cursorIbeam;
-
-};
 
 };
 

@@ -24,7 +24,7 @@ class QLineEdit;
 class KListView;
 class KListViewItem;
 
-namespace Vertigo{
+class ColorButton;
 
 class ConfigureDialog:public KDialogBase {
   Q_OBJECT public:
@@ -122,33 +122,33 @@ class ConfigureDialog:public KDialogBase {
     QCheckBox *m_popCheckbox;
     QCheckBox *m_groupCheckbox;
     QGroupBox *m_colorsGroupBox;
-    Vertigo::ColorButton *m_ircColorButton13;
-    Vertigo::ColorButton *m_ircColorButton10;
-    Vertigo::ColorButton *m_ircColorButton9;
-    Vertigo::ColorButton *m_ircColorButton14;
-    Vertigo::ColorButton *m_ircColorButton12;
-    Vertigo::ColorButton *m_ircColorButton11;
-    Vertigo::ColorButton *m_ircColorButton15;
-    Vertigo::ColorButton *m_ircColorButton8;
-    Vertigo::ColorButton *m_ircColorButton4;
-    Vertigo::ColorButton *m_ircColorButton6;
-    Vertigo::ColorButton *m_ircColorButton3;
-    Vertigo::ColorButton *m_ircColorButton5;
-    Vertigo::ColorButton *m_ircColorButton2;
-    Vertigo::ColorButton *m_ircColorButton7;
-    Vertigo::ColorButton *m_ircColorButton1;
-    Vertigo::ColorButton *m_ircColorButton0;
-    Vertigo::ColorButton *m_msgColorButton;
-    Vertigo::ColorButton *m_highlightColorButton;
+    ColorButton *m_ircColorButton13;
+    ColorButton *m_ircColorButton10;
+    ColorButton *m_ircColorButton9;
+    ColorButton *m_ircColorButton14;
+    ColorButton *m_ircColorButton12;
+    ColorButton *m_ircColorButton11;
+    ColorButton *m_ircColorButton15;
+    ColorButton *m_ircColorButton8;
+    ColorButton *m_ircColorButton4;
+    ColorButton *m_ircColorButton6;
+    ColorButton *m_ircColorButton3;
+    ColorButton *m_ircColorButton5;
+    ColorButton *m_ircColorButton2;
+    ColorButton *m_ircColorButton7;
+    ColorButton *m_ircColorButton1;
+    ColorButton *m_ircColorButton0;
+    ColorButton *m_msgColorButton;
+    ColorButton *m_highlightColorButton;
     QLabel *textLabel1_3;
     QLabel *textLabel1_3_2_2;
     QLabel *textLabel1_3_2_2_2;
-    Vertigo::ColorButton *m_selForeColorButton;
-    Vertigo::ColorButton *m_backColorButton;
-    Vertigo::ColorButton *m_dataColorButton;
-    Vertigo::ColorButton *m_selBackColorButton;
+    ColorButton *m_selForeColorButton;
+    ColorButton *m_backColorButton;
+    ColorButton *m_dataColorButton;
+    ColorButton *m_selBackColorButton;
     QLabel *textLabel1_3_2_2_2_2;
-    Vertigo::ColorButton *m_foreColorButton;
+    ColorButton *m_foreColorButton;
     QLabel *textLabel1_3_3;
     QLabel *textLabel1_3_2_2_2_2_2;
     QLabel *textLabel1_3_2;
@@ -165,7 +165,7 @@ class ConfigureDialog:public KDialogBase {
     QLabel *textLabel2_2_3;
     QComboBox *m_bgCombo;
     QCheckBox *m_tintCheck;
-    Vertigo::ColorButton *m_tintColorButton;
+    ColorButton *m_tintColorButton;
     QLabel *textLabel2_2;
     QLineEdit *m_imageEdit;
     QPushButton *m_imageChooseButton;
@@ -180,7 +180,7 @@ class ConfigureDialog:public KDialogBase {
     QCheckBox *m_hostnameCheck;
     QGroupBox *groupBox8;
     QCheckBox *m_userlistButtonCheck;
-    Vertigo::EditListView *m_userlistView;
+    EditListView *m_userlistView;
     // QListView *m_userlistView;
     //  QPushButton *m_newUserlistButton;
     //  QPushButton *m_deleteUserlistButton;
@@ -219,7 +219,7 @@ void slotEventListViewCurrentChanged(QListViewItem * it);
 void slotUploadLimitCheckClicked();
     
   protected:
-     QVBoxLayout * Vertigo::ConfigureDialogLayout;
+     QVBoxLayout * ConfigureDialogLayout;
     QVBoxLayout *WStackPageLayout;
     QGridLayout *layout8;
     QGridLayout *layout19;
@@ -268,6 +268,5 @@ class EventlistItem:public KListViewItem {
     QString helpText;
 };
 
-};
 
-#endif				// Vertigo::ConfigureDialog_H
+#endif				// ConfigureDialog_H

@@ -29,8 +29,6 @@
 #include "extraview.h"
 
 
-namespace Vertigo {
-
 #define xchatapp (static_cast<App*>(kapp))
 class Serverlist;
 class URLGrabberView;
@@ -39,6 +37,8 @@ class XferView;
 class NotifyListView;
 class IgnoreListView;
 class BanListView;
+class MainWindow;
+class MainView;
 
 typedef int (*TimerFunc) (void *data);
 typedef int (*SocketFunc) (void *source, int con, void *data);
@@ -67,19 +67,19 @@ class App:public KApplication {
   Q_OBJECT public:
      App();
 
-    Vertigo::Serverlist *serverList();
+    Serverlist *serverList();
 	KCharSelect *charChart();
-	Vertigo::URLGrabberView *urlGrabber();
-	Vertigo::ChatListView *chatList();
-	Vertigo::XferView *transfers();
-	Vertigo::NotifyListView *notifyList();
-	Vertigo::IgnoreListView *ignoreList();
-	Vertigo::BanListView *banList();
+	URLGrabberView *urlGrabber();
+	ChatListView *chatList();
+	XferView *transfers();
+	NotifyListView *notifyList();
+	IgnoreListView *ignoreList();
+	BanListView *banList();
 
 	void loadDefaultPalette();
 	void loadPalette();
    
-	Vertigo::Palette palette();
+	Palette palette();
 	
 	int getUserLevel(QPixmap *p);
 
@@ -95,18 +95,18 @@ class App:public KApplication {
     void loadUserIcons();
     QPixmap *getUserIcon(server * serv, User * user);
 
-    Vertigo::MainWindow *createNewWindow();
-    Vertigo::MainWindow *getMainWindow(bool force);
+    MainWindow *createNewWindow();
+    MainWindow *getMainWindow(bool force);
     void removeMainWindow();
     void removeServerlistWindow();
 
     int windowCount();
 
-	void setUrlGrabber(Vertigo::URLGrabberView* v);
-	void setChatList(Vertigo::ChatListView*v);
-	void setTransfers(Vertigo::XferView*v);
-	void setNotifyList(Vertigo::NotifyListView* nl);
-	void setBanList(Vertigo::BanListView* v);
+	void setUrlGrabber(URLGrabberView* v);
+	void setChatList(ChatListView*v);
+	void setTransfers(XferView*v);
+	void setNotifyList(NotifyListView* nl);
+	void setBanList(BanListView* v);
     
 	public slots:void execTimeoutFunction();
     void execIdleFunction();
@@ -128,15 +128,15 @@ class App:public KApplication {
     QPixmap *m_redPix;
     QPixmap *m_purplePix;
 
-    Vertigo::Serverlist *m_serverList;
-	Vertigo::Palette m_palette;
+    Serverlist *m_serverList;
+	Palette m_palette;
 	KCharSelect *m_charChart;
-    Vertigo::URLGrabberView *m_urlGrabber;
-    Vertigo::ChatListView *m_chatList;
-    Vertigo::XferView *m_transfers;
-    Vertigo::NotifyListView *m_notifyList;
-    Vertigo::IgnoreListView *m_ignoreList;
-    Vertigo::BanListView *m_banList;
+    URLGrabberView *m_urlGrabber;
+    ChatListView *m_chatList;
+    XferView *m_transfers;
+    NotifyListView *m_notifyList;
+    IgnoreListView *m_ignoreList;
+    BanListView *m_banList;
 
 };
 
@@ -220,6 +220,5 @@ class InputDialog:public QDialog {
 
 };
 
-
-
 #endif
+

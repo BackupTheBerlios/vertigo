@@ -156,13 +156,12 @@ extern "C"
 
     int fe_args(int argc, char *argv[])
     {
-        KAboutData *about =
-            new KAboutData("vertigo", "Vertigo", VERSION,
-                           "An IRC Client for KDE",
-                           KAboutData::License_GPL,
-                           "(C) 2003 vertigo developers",
-                           "smt@inbox.lv", QString::null,
-                           "http://vertigo.berlios.de");
+        KAboutData *about = new KAboutData("vertigo", "Vertigo", VERSION,
+                                           "An IRC Client for KDE",
+                                           KAboutData::License_GPL,
+                                           "(C) 2003 vertigo developers",
+                                           "smt@inbox.lv", QString::null,
+                                           "http://vertigo.berlios.de");
 
 
         kdDebug() << "fe_args" << endl;
@@ -175,7 +174,7 @@ extern "C"
     void fe_init(void)
     {
         kdDebug() << "fe:fe_init" << endl;
-        Vertigo::App * a = new Vertigo::App();
+        App * a = new App();
         //static App a;
 //tmp=&a;
         KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
@@ -213,7 +212,7 @@ extern "C"
         kdDebug() << "fe:fe_main---out of main loop" << endl;
         if (prefs.wait_on_exit) {
             ;
-            Vertigo::CleanupHandler * h = new Vertigo::CleanupHandler();
+            CleanupHandler * h = new CleanupHandler();
             h->cleanup();
             //sleep(3);         // everything GUI is hidden
         }
@@ -595,7 +594,7 @@ extern "C"
     void fe_serverlist_open(session * sess)
     {
         kdDebug() << "fe:serverlistopen" << endl;
-        Vertigo::Serverlist * l = xchatapp->serverList();
+        Serverlist * l = xchatapp->serverList();
 
         l->setSession(sess);
         l->show();
@@ -657,4 +656,5 @@ extern "C"
         kdDebug() << "fe:idle_add" << endl;
         xchatapp->addIdleFunction(func, data);
     }
-};
+}
+

@@ -49,8 +49,6 @@ extern struct text_event te[];
 extern char *pntevts_text[];
 extern GSList *plugin_list;
 
-using namespace Vertigo;
-
 
 ConfigureDialog::ConfigureDialog(QWidget * parent)
 :  KDialogBase(TreeList, i18n("Configure"), Help | Default | Ok | Apply | Cancel, Ok, parent, 0, false)

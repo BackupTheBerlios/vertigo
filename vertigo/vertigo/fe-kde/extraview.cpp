@@ -27,8 +27,6 @@
 
 #include "tabwidget.h"
 
-using namespace Vertigo;
-
 
 ContainerView::ContainerView (MainWindow *w)
 {

@@ -3,9 +3,6 @@
 
 #include <ktabwidget.h>
 
-namespace Vertigo
-{
-
     class TabWidget:public KTabWidget
     {
       Q_OBJECT public:
@@ -16,7 +13,5 @@ namespace Vertigo
                        -1);
         void removePage(QWidget * w);
     };
-
-};
 
 #endif
