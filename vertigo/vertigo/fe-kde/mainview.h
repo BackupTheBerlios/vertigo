@@ -4,8 +4,8 @@
 #include <qvariant.h>
 #include <klistview.h>
 #include <qlabel.h>
-#include <qlineedit.h>
 #include <qwidgetstack.h>
+#include <qlineedit.h>
 #include <qtextedit.h>
 
 #include <ksqueezedtextlabel.h>
@@ -24,6 +24,7 @@ class QPushButton;
 class QSplitter;
 class QGrid;
 class QLineEdit;
+class QTextEdit;
 class KListBox;
 class QListBoxItem;
 
@@ -125,12 +126,18 @@ class XChatWidgetStack:public QWidgetStack {
 QSize sizeHint () const;
 };*/
 
-class XChatTopicEdit:public QLineEdit {
+class XChatTopicEdit:public QTextEdit {
   Q_OBJECT public:
      XChatTopicEdit(QWidget * parent);
     ~XChatTopicEdit();
 	//QSize sizeHint() const;
-
+	void setTopicText(QString s);
+	void focusInEvent ( QFocusEvent * );
+	void focusOutEvent ( QFocusEvent * );
+QSize sizeHint() const;
+QSize minimumSizeHint() const;
+	private:
+	QString m_topicText;
 };
 
 class XChatInputLineEdit:public QLineEdit {

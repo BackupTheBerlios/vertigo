@@ -136,7 +136,7 @@ layout1->addWidget(topicEdit);
        m_userList->setSelectionMode(QListView::Extended); */
     //m_userList->addColumn("User");
     //m_userList->setColumnWidthMode(0, QListView::Manual);
-    m_userList->setHScrollBarMode(QScrollView::AlwaysOff);
+    //m_userList->setHScrollBarMode(QScrollView::AlwaysOff);
 
     layout4->addWidget(m_userList);
 
@@ -324,13 +324,14 @@ void XChatMainView::topicEnter()
 
 void XChatMainView::setTopic(QString t)
 {
-    //topicLabel->setText(convertText(t));
+    topicEdit->setTopicText(t);
+	//topicLabel->setText(convertText(t));
     //topicLineEdit->setText(escapeText(t));
     /*if(topicStack->isHidden()) {
 	topicStack->show();
 	//pushButton5->show();
     }*/
-    //QToolTip::add(topicStack, topicLabel->text());
+    //QToolTip::add(topicLineEdit, topicLabel->text());
 }
 
 void XChatMainView::giveInputFocus()
@@ -521,15 +522,59 @@ QSize XChatWidgetStack::sizeHint() const
 */
 
 
-XChatTopicEdit::XChatTopicEdit(QWidget * parent):QLineEdit(parent)
+XChatTopicEdit::XChatTopicEdit(QWidget * parent):QTextEdit(parent)
 {
+	setVScrollBarMode(QScrollView::AlwaysOff);
+	setHScrollBarMode(QScrollView::AlwaysOff);
     setFocusPolicy(QWidget::WheelFocus);
-//setWordWrap(QLineEdit::NoWrap);
+	setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+	setWordWrap(QTextEdit::NoWrap);
 }
 
 XChatTopicEdit::~XChatTopicEdit()
 {
 }
+QSize XChatTopicEdit::sizeHint() const
+{
+  /*  QFontMetrics fm( font() );
+    int h = QMAX(fm.lineSpacing(), 14) + 2*1;
+    int w = fm.width( 'x' ) * 17; // "some"
+    int m = frameWidth() * 2;
+    return (style().sizeFromContents(QStyle::CT_LineEdit, this,
+                     QSize( w + m, h + m ).
+                     expandedTo(QApplication::globalStrut())));*/
+					 return minimumSizeHint();
+}
+
+QSize XChatTopicEdit::minimumSizeHint() const
+{
+    QFontMetrics fm = fontMetrics();
+    int h = fm.height() + QMAX( 2*1, fm.leading() );
+    int w = fm.maxWidth();
+    int m = frameWidth() * 2;
+    return QSize( w + m, h + m );
+}
+
+
+
+void XChatTopicEdit::setTopicText(QString s)
+{
+	m_topicText=s;
+	setText(convertText(s));
+	QToolTip::add(this, text());
+}
+
+void XChatTopicEdit::focusInEvent ( QFocusEvent * )
+{
+	setText(escapeText(m_topicText));
+}
+
+void XChatTopicEdit::focusOutEvent ( QFocusEvent * )
+{
+	setText(convertText(m_topicText));
+}
+
+
 /*
 QSize XChatTopicEdit::sizeHint() const
 {
