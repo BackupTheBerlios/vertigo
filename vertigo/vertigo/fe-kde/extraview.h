@@ -32,12 +32,20 @@ class ContainerView: public QWidget
     Q_OBJECT
 
     public:
-        ContainerView (QWidget* parent = 0, const char* name = 0,  MainWindow *w=0);
+        ContainerView (QWidget* parent = 0, const char* name = 0,  MainWindow *w=0, server*s=0);
         virtual void setWindow(MainWindow *w);
         virtual MainWindow* window();
-	virtual void showSelf();
+
+	server *getServer(){return m_server;}
+	void setServer(server *s){m_server=s;}
+
+    public slots:
+    	virtual void showView();
+	virtual void closeView();
+
     private:
         MainWindow *m_window;
+	server *m_server;
 };
 
 
@@ -78,7 +86,6 @@ public slots:
     virtual void slotSaveButtonClicked();
 protected:
 
-    server *m_server;
     QGridLayout* ChanlistViewLayout;
     QGridLayout* m_limitGroupBoxLayout;
 };
@@ -103,27 +110,18 @@ public:
 
     void appendText(QString s);
 
-    
     TextView *m_rawlogView;
     QPushButton* m_clearButton;
     QPushButton* m_saveButton;
 
-//MainWindow *window(){return m_window;}
-//void setWindow(MainWindow *w){m_window=w;}
-
-server *getServer(){return m_server;}
-void setServer(server *s){m_server=s;}
 
 public slots:
     void slotClearButtonClicked();
     void slotSaveButtonClicked();
+    void closeView();
 
 protected:
     QGridLayout* RawlogViewLayout;
-
- server *m_server;
- 
-
 };
 
 class BanListView :  public ContainerView
@@ -257,8 +255,6 @@ protected:
 
 
 };
-
-
 
 
 class EditListView : public QWidget

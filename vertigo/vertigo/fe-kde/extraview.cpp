@@ -26,11 +26,12 @@
 #include "../common/util.h"
 
 #include "tabwidget.h"
+#include "fe-kde.h"
 
-
-ContainerView::ContainerView (QWidget * parent, const char *name, MainWindow *w)
+ContainerView::ContainerView (QWidget * parent, const char *name, MainWindow *w, server *s) : QWidget (parent, name, WDestructiveClose)
 {
     setWindow(w);
+	setServer(s);
 }
 
 void ContainerView::setWindow(MainWindow *w)
@@ -39,22 +40,29 @@ void ContainerView::setWindow(MainWindow *w)
     m_window=w;
 }
 
-void ContainerView::showSelf()
+void ContainerView::showView()
 {
 	if (window())
 		window()->showView(this);
 }
+
+void ContainerView::closeView()
+{
+	close();
+}
+
 
 MainWindow* ContainerView::window()
 {
     return m_window;
 }
 
+
+
 ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "ChanList", w)
+    :  ContainerView(parent, "ChanList", w, s)
 {
-	//m_window=w;
-	m_server=s;
+
     ChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "ChanlistViewLayout");
 
     m_chanlistView = new KListView( this, "m_chanlistView" );
@@ -64,7 +72,7 @@ ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s)
 
 m_chanlistView->setColumnWidthMode(0, QListView::Manual);
 m_chanlistView->setFullWidth(true);
-    
+
     ChanlistViewLayout->addMultiCellWidget( m_chanlistView, 1, 4, 0, 0 );
 
     m_refreshButton = new QPushButton( this, "m_refreshButton" );
@@ -208,10 +216,10 @@ void ChanlistView::slotApplyButtonClicked()
 }
 
  void ChanlistView::slotRefreshButtonClicked(){
-	if (m_server->connected)
+	if (getServer()->connected)
         {
 		m_chanlistView->clear();
-		handle_command (m_server->server_session, "list", FALSE);
+		handle_command (getServer()->server_session, "list", FALSE);
 		enableItems(false);
 	}
 	else
@@ -284,7 +292,7 @@ int ChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
 
 
 BanListView::BanListView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "BanList", w)
+    :  ContainerView(parent, "BanList", w, s)
 {
     BanlistViewLayout = new QGridLayout(this, 1, 1, 12, 6, "BanlistViewLayout");
 
@@ -355,7 +363,7 @@ void BanListView::slotRefreshButtonClicked()
 }
 
 ChatListView::ChatListView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "ChatList", w)
+    :  ContainerView(parent, "ChatList", w, s)
 {
     ChatListViewLayout = new QGridLayout(this, 1, 1, 12, 6, "ChatListViewLayout");
 
@@ -390,7 +398,7 @@ ChatListView::~ChatListView()
 }
 
 NotifyListView::NotifyListView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "NotifyList", w)
+    :  ContainerView(parent, "NotifyList", w, s)
 {
 
     NotifyViewLayout = new QGridLayout(this, 1, 1, 12, 6, "NotifyViewLayout");
@@ -438,7 +446,7 @@ void NotifyListView::slotRemoveButtonClicked()
 }
 
 RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "Rawlog", w)
+    :  ContainerView(parent, "Rawlog", w, s)
 {
     setServer(s);
     RawlogViewLayout = new QGridLayout(this, 1, 1, 12, 6, "RawlogViewLayout");
@@ -485,9 +493,16 @@ void RawlogView::appendText(QString s)
     m_rawlogView->appendText(s, true);
 }
 
+void RawlogView::closeView()
+{
+	ContainerView::closeView();
+	getServer()->gui->rawlog = 0;
+}
+
+
 
 URLGrabberView::URLGrabberView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "URLGrabber", w)
+    :  ContainerView(parent, "URLGrabber", w, s)
 {
     URLViewLayout = new QGridLayout(this, 1, 1, 12, 6, "URLViewLayout");
     m_saveButton = new QPushButton(this, "m_saveButton");
@@ -531,7 +546,7 @@ void URLGrabberView::slotClearButtonClicked()
 
 
 XferView::XferView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "XferView", w)
+    :  ContainerView(parent, "XferView", w, s)
 {
     FileXferViewLayout = new QVBoxLayout(this, 1, 1, "FileXferViewLayout");
 

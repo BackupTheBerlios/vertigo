@@ -48,7 +48,7 @@
 #include "configure.h"
 
 MainWindow::MainWindow(QWidget * parent)
-:  KMainWindow(parent, "MainWindow", WType_TopLevel)
+:  KMainWindow(parent, "MainWindow", WType_TopLevel|WDestructiveClose)
 {
 
 //m_statusBarWidget= new StatusBarWidget(statusBar(), "Progress Bar");
@@ -488,24 +488,23 @@ else{
     //}
 }
 
+
+void MainWindow::closeView(ContainerView *v)
+{
+	v->closeView();
+	if(!m_tabWidget->count()) {
+	    close();
+	}
+
+	 if(v->isA("MainView")) {
+		m_mainViewList->remove((MainView*)v);
+    	}
+}
+
 void MainWindow::slotCloseTab()
 {
     QWidget *t = m_tabWidget->currentPage();
-
-    if(t->isA("MainView")) {
-	MainView *m = (MainView *) t;
-
-	m_mainViewList->remove(m);
-	fe_close_window(current_sess);
-    } else if(t->isA("RawlogView")) {
-	RawlogView *m = (RawlogView *) t;
-
-	m->getServer()->gui->rawlog = 0;
-	t->close(true);
-	if(!m_tabWidget->count()) {
-	    close(true);
-	}
-    }
+    closeView((ContainerView *)t);
 }
 
 void MainWindow::slotQuit()
@@ -533,13 +532,13 @@ return lastTab;
 void MainWindow::slotChanlist()
 {
 if(!current_sess->server->gui->chanlist) {
-	
+
         ChanlistView *l = new ChanlistView(this, this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;
         m_tabWidget->insertTab(l, "channels", lastSameServerTabIndex());
     } else {
-        current_sess->server->gui->chanlist->showSelf();
+        current_sess->server->gui->chanlist->showView();
     }
 }
 
@@ -550,7 +549,7 @@ if(!xchatapp->urlGrabber()) {
         xchatapp->setUrlGrabber(l);
         m_tabWidget->insertTab(l, "urls", -1);
     } else {
-        xchatapp->urlGrabber()->showSelf();
+        xchatapp->urlGrabber()->showView();
     }
 }
 
@@ -561,7 +560,7 @@ if(!xchatapp->chatList()) {
         xchatapp->setChatList(l);
         m_tabWidget->insertTab(l, "chats", -1);
     } else {
-        xchatapp->chatList()->showSelf();
+        xchatapp->chatList()->showView();
     }
 }
 
@@ -572,7 +571,7 @@ if(!xchatapp->transfers()) {
         xchatapp->setTransfers(l);
         m_tabWidget->insertTab(l, "transfers", -1);
     } else {
-        xchatapp->transfers()->showSelf();
+        xchatapp->transfers()->showView();
     }
 }
 
@@ -583,7 +582,7 @@ if(!xchatapp->notifyList()) {
         xchatapp->setNotifyList(l);
         m_tabWidget->insertTab(l, "notify", -1);
     } else {
-        xchatapp->notifyList()->showSelf();
+        xchatapp->notifyList()->showView();
     }
 }
 
@@ -595,7 +594,7 @@ if(!xchatapp->ignoreList()) {
         xchatapp->setIgnoreList(l);
         m_tabWidget->insertTab(l, "ignores", -1);
     } else {
-        xchatapp->ignoreList()->showSelf();
+        xchatapp->ignoreList()->showView();
     }*/
 }
 
@@ -606,7 +605,7 @@ if(!xchatapp->banList()) {
         xchatapp->setBanList(l);
         m_tabWidget->insertTab(l, "bans", -1);
     } else {
-        xchatapp->banList()->showSelf();
+        xchatapp->banList()->showView();
     }
 }
 

@@ -63,7 +63,8 @@ class MainView: public ContainerView, virtual public MainViewIface {
 
 MainWindow *window();
     void setWindow(MainWindow *w);
-
+	void closeView();
+	
     void clearUserlist();
     void showUserlist();
     void hideUserlist();
@@ -117,7 +118,7 @@ MainWindow *window();
     session *m_session;
    int m_oldTopicParaPos;
        int m_oldTopicIndexPos;
-	   
+
 
 };
 

@@ -10,6 +10,7 @@
 class KProgress;
 
 class TabWidget;
+class ContainerView;
 class StatusBarWidget;
 
 class MainWindow:public KMainWindow {
@@ -20,8 +21,8 @@ class MainWindow:public KMainWindow {
 MainView *getMainView(session * sess);
     TabWidget *m_tabWidget;
 
+void closeView(ContainerView *v);
 
-    
     void showProgressBar();
     void hideProgressBar();
 

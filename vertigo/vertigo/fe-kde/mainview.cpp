@@ -40,7 +40,7 @@
 
 
 MainView::MainView(MainWindow * w, session * sess)
-:  MainViewIface("MainView"),  ContainerView(w,"MainView",w)
+:  MainViewIface("MainView"),  ContainerView(w,"MainView",w, sess->server)
 {
     Form1Layout = new QVBoxLayout(this, 1, 1, "Form1Layout");
 
@@ -218,10 +218,19 @@ MainWindow *MainView::window(){
 
 void MainView::setWindow(MainWindow *w){
     kdDebug() << "mainview::set Window"<<endl;
-m_session->gui->win=w;
+    ContainerView::setWindow(w);
+	m_session->gui->win=w;
 }
 
-
+void MainView::closeView()
+{
+	ContainerView::closeView();
+	delete m_session->gui->comp;
+        delete m_session->gui->cmdcomp;
+        delete m_session->gui;
+        m_session->gui = 0;
+        kill_session_callback(m_session);
+}
 
 
 //following taken from konversation

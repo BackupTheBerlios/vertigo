@@ -249,6 +249,8 @@ extern "C"
     void fe_close_window(struct session *sess)
     {
         kdDebug() << "fe:fe_close_window" << endl;
+	sess->gui->win->closeView(sess->gui->view);
+	/*
         sess->gui->view->close(true);
         if (!sess->gui->win->viewCount())
             sess->gui->win->close(true);
@@ -257,7 +259,7 @@ extern "C"
         delete sess->gui;
 
         sess->gui = 0;
-        kill_session_callback(sess);
+        kill_session_callback(sess);*/
     }
 
     void fe_beep(void)
