@@ -1648,6 +1648,8 @@ text_emit (int index, session *sess, char *a, char *b, char *c, char *d)
 	if (te[index].sound)
 		play_wave (te[index].sound);
 
+	fe_event_emitted(te[index].name);
+
 	display_event (pntevts[index], sess, te[index].num_args, word);
 }
 

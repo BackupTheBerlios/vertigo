@@ -39,6 +39,7 @@ int fe_is_banwindow (struct session *sess);
 void fe_add_ban_list (struct session *sess, char *mask, char *who, char *when);
 void fe_ban_list_end (struct session *sess);
 void fe_notify_update (char *name);
+void fe_event_emitted (char *name);
 void fe_text_clear (struct session *sess);
 void fe_close_window (struct session *sess);
 void fe_progressbar_start (struct session *sess);
