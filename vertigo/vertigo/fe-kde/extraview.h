@@ -27,22 +27,26 @@ class QSpinBox;
 
 class MainWindow;
 
-class ContainerView{
+class ContainerView: public QWidget
+{
+    Q_OBJECT
+
     public:
-        ContainerView (MainWindow *w);
+        ContainerView (QWidget* parent = 0, const char* name = 0,  MainWindow *w=0);
         virtual void setWindow(MainWindow *w);
         virtual MainWindow* window();
+	virtual void showSelf();
     private:
         MainWindow *m_window;
 };
 
 
-class ChanlistView : public QWidget, public ContainerView
+class ChanlistView : public ContainerView
 {
     Q_OBJECT
 
 public:
-    ChanlistView( QWidget* parent = 0, MainWindow * w=0, server * s=0, const char* name = 0, WFlags fl = 0 );
+    ChanlistView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~ChanlistView();
 
     KListView* m_chanlistView;
@@ -63,7 +67,6 @@ public:
 
 
     void enableItems(bool yes);
-void showSelf();
 
  void appendChannel(QString chan,QString users,QString topic);
  bool isMatch(QString chan,QString users,QString topic);
@@ -74,7 +77,7 @@ public slots:
     virtual void slotRefreshButtonClicked();
     virtual void slotSaveButtonClicked();
 protected:
-    MainWindow * m_window;
+
     server *m_server;
     QGridLayout* ChanlistViewLayout;
     QGridLayout* m_limitGroupBoxLayout;
@@ -90,12 +93,12 @@ int compare ( QListViewItem * i, int col, bool ascending ) const;
 
 
 
-class RawlogView : public QWidget, public ContainerView
+class RawlogView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    RawlogView( QWidget* parent ,  MainWindow *w, server *s, const char* name = 0, WFlags fl = 0 );
+    RawlogView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~RawlogView();
 
     void appendText(QString s);
@@ -117,18 +120,18 @@ public slots:
 
 protected:
     QGridLayout* RawlogViewLayout;
-  //  MainWindow *m_window;
+
  server *m_server;
  
 
 };
 
-class BanListView : public QWidget, public ContainerView
+class BanListView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    BanListView( QWidget* parent = 0,MainWindow * w=0, const char* name = 0, WFlags fl = 0 );
+    BanListView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~BanListView();
 
     QPushButton* m_clearButton;
@@ -137,8 +140,7 @@ public:
     QPushButton* m_refreshButton;
     QPushButton* m_cropButton;
 
-void showSelf();
-    
+
 public slots:
      void slotUnbanButtonClicked();
      void slotCropButtonClicked();
@@ -146,70 +148,63 @@ public slots:
      void slotRefreshButtonClicked();
 
 protected:
-     MainWindow * m_window;
+
     QGridLayout* BanlistViewLayout;
 
 
 };
 
 
-class ChatListView : public QWidget, public ContainerView
+class ChatListView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    ChatListView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ChatListView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~ChatListView();
 
     QPushButton* m_cancelButton;
     KListView* m_chatListView;
     QPushButton* m_acceptButton;
 
-void showSelf();
-
-
     
 protected:
     QGridLayout* ChatListViewLayout;
-    MainWindow * m_window;
+
 
 };
 
 
 
-class NotifyListView : public QWidget, public ContainerView
+class NotifyListView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    NotifyListView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    NotifyListView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~NotifyListView();
 
     KListView* m_notifyView;
     QPushButton* m_addButton;
     QPushButton* m_removeButton;
 
-void showSelf();
-
-
-    
 public slots:
     void slotAddButtonClicked();
     void slotRemoveButtonClicked();
 
 protected:
-    MainWindow * m_window;
+
     QGridLayout* NotifyViewLayout;
 
 
 };
 
-class XferView : public QWidget, public ContainerView
+class XferView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    XferView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    XferView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~XferView();
 
     QSplitter* m_splitter;
@@ -224,11 +219,7 @@ public:
     QPushButton* m_ulCancelButton;
     KListView* m_uploadsView;
 
-void showSelf();
 
-
-
-    
 public slots:
     void slotStartButtonClicked();
     void slotDlCancelButtonClicked();
@@ -241,23 +232,21 @@ protected:
     QVBoxLayout* FileXferViewLayout;
     QGridLayout* m_downloadLayout;
     QGridLayout* m_uploadLayout;
-    MainWindow * m_window;
+
 
 };
 
-class URLGrabberView : public QWidget, public ContainerView
+class URLGrabberView :  public ContainerView
 {
     Q_OBJECT
 
 public:
-    URLGrabberView( QWidget* parent = 0, MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    URLGrabberView( QWidget* parent = 0, MainWindow * w=0, server * s=0);
     ~URLGrabberView();
 
     QPushButton* m_saveButton;
     QPushButton* m_clearButton;
     KListView* m_urlView;
-void showSelf();
-
 
 public slots:
     void slotSaveButtonClicked();
@@ -265,7 +254,7 @@ public slots:
 
 protected:
     QGridLayout* URLViewLayout;
-    MainWindow * m_window;
+
 
 };
 

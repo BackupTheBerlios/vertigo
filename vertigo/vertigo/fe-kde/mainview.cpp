@@ -40,7 +40,7 @@
 
 
 MainView::MainView(MainWindow * w, session * sess)
-:  QWidget(w, "MainView"), MainViewIface("MainView"),  ContainerView(w)
+:  MainViewIface("MainView"),  ContainerView(w,"MainView",w)
 {
     Form1Layout = new QVBoxLayout(this, 1, 1, "Form1Layout");
 
@@ -54,7 +54,7 @@ MainView::MainView(MainWindow * w, session * sess)
 */
     //topicLabel = new TopicLabel(topicStack, 2);
 	topicEdit = new TopicEdit(this);
-	
+
 	
   topicEdit->
       setSizePolicy(QSizePolicy

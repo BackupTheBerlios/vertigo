@@ -39,7 +39,7 @@ int lastSameServerTabIndex();
 	void setLag(int lag);
     void setNumbers(int ops, int total);
 
-	void raiseView(MainView *v);
+	void showView(ContainerView *v);
 
 	
     TabWidget *tabWidget() {

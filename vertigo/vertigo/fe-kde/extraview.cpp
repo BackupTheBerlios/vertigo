@@ -28,7 +28,7 @@
 #include "tabwidget.h"
 
 
-ContainerView::ContainerView (MainWindow *w)
+ContainerView::ContainerView (QWidget * parent, const char *name, MainWindow *w)
 {
     setWindow(w);
 }
@@ -39,19 +39,23 @@ void ContainerView::setWindow(MainWindow *w)
     m_window=w;
 }
 
+void ContainerView::showSelf()
+{
+	if (window())
+		window()->showView(this);
+}
+
 MainWindow* ContainerView::window()
 {
     return m_window;
 }
 
-ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s, const char *name, WFlags fl)
-    : QWidget( parent, name, fl ), ContainerView(w)
+ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "ChanList", w)
 {
-	m_window=w;
+	//m_window=w;
 	m_server=s;
-    if ( !name )
-	setName( "ChanlistView" );
-    ChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "ChanlistViewLayout"); 
+    ChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "ChanlistViewLayout");
 
     m_chanlistView = new KListView( this, "m_chanlistView" );
     m_chanlistView->addColumn( tr( "Channel" ) , m_chanlistView->fontMetrics().width("#halohalohalo"));
@@ -191,13 +195,9 @@ void ChanlistView::enableItems(bool yes){
 	else{
 	setEnabled(false);
 	}
-	
+
 }
 
-void ChanlistView::showSelf()
-{
-	m_window->tabWidget()->showPage(this);
-}
 
 void ChanlistView::slotApplyButtonClicked()
 {
@@ -283,16 +283,9 @@ int ChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
 }
 
 
-
-
-
-
-BanListView::BanListView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
+BanListView::BanListView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "BanList", w)
 {
-	m_window=w;
-    if(!name)
-	setName("BanlistView");
     BanlistViewLayout = new QGridLayout(this, 1, 1, 12, 6, "BanlistViewLayout");
 
     m_clearButton = new QPushButton(this, "m_clearButton");
@@ -340,10 +333,6 @@ BanListView::~BanListView()
 {
 }
 
-void BanListView::showSelf()
-{
-	        m_window->tabWidget()->showPage(this);
-}
 
 void BanListView::slotUnbanButtonClicked()
 {
@@ -365,12 +354,9 @@ void BanListView::slotRefreshButtonClicked()
 
 }
 
-ChatListView::ChatListView(QWidget * parent, MainWindow * w,const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
+ChatListView::ChatListView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "ChatList", w)
 {
-	m_window=w;
-    if(!name)
-	setName("ChatListView");
     ChatListViewLayout = new QGridLayout(this, 1, 1, 12, 6, "ChatListViewLayout");
 
     m_cancelButton = new QPushButton(this, "m_cancelButton");
@@ -403,17 +389,10 @@ ChatListView::~ChatListView()
 {
 }
 
-void ChatListView::showSelf()
+NotifyListView::NotifyListView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "NotifyList", w)
 {
-	        m_window->tabWidget()->showPage(this);
-}
 
-NotifyListView::NotifyListView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
-{
-	m_window=w;
-    if(!name)
-	setName("NotifyView");
     NotifyViewLayout = new QGridLayout(this, 1, 1, 12, 6, "NotifyViewLayout");
 
     m_notifyView = new KListView(this, "m_notifyView");
@@ -447,10 +426,6 @@ NotifyListView::~NotifyListView()
 {
 }
 
-void NotifyListView::showSelf()
-{
-	        m_window->tabWidget()->showPage(this);
-}
 
 void NotifyListView::slotAddButtonClicked()
 {
@@ -462,13 +437,9 @@ void NotifyListView::slotRemoveButtonClicked()
     qWarning("NotifyView::slotRemoveButtonClicked(): Not implemented yet");
 }
 
-RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s, const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
+RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "Rawlog", w)
 {
-    if(!name)
-	setName("RawlogView");
-
-    //setWindow(w);
     setServer(s);
     RawlogViewLayout = new QGridLayout(this, 1, 1, 12, 6, "RawlogViewLayout");
 
@@ -514,12 +485,10 @@ void RawlogView::appendText(QString s)
     m_rawlogView->appendText(s, true);
 }
 
-URLGrabberView::URLGrabberView(QWidget * parent, MainWindow * w,const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
+
+URLGrabberView::URLGrabberView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "URLGrabber", w)
 {
-	m_window=w;
-    if(!name)
-	setName("URLView");
     URLViewLayout = new QGridLayout(this, 1, 1, 12, 6, "URLViewLayout");
     m_saveButton = new QPushButton(this, "m_saveButton");
     URLViewLayout->addWidget(m_saveButton, 0, 1);
@@ -549,11 +518,6 @@ URLGrabberView::~URLGrabberView()
 {
 }
 
-void URLGrabberView::showSelf()
-{
-	        m_window->tabWidget()->showPage(this);
-}
-
 void URLGrabberView::slotSaveButtonClicked()
 {
     qWarning("URLView::slotSaveButtonClicked(): Not implemented yet");
@@ -564,12 +528,11 @@ void URLGrabberView::slotClearButtonClicked()
     qWarning("URLView::slotClearButtonClicked(): Not implemented yet");
 }
 
-XferView::XferView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), ContainerView(w)
+
+
+XferView::XferView(QWidget * parent, MainWindow * w, server * s)
+    :  ContainerView(parent, "XferView", w)
 {
-	m_window=w;
-    if(!name)
-	setName("FileXferView");
     FileXferViewLayout = new QVBoxLayout(this, 1, 1, "FileXferViewLayout");
 
     m_splitter = new QSplitter(this, "m_splitter");
@@ -679,10 +642,6 @@ XferView::~XferView()
 {
 }
 
-void XferView::showSelf()
-{
-	        m_window->tabWidget()->showPage(this);
-}
 
 void XferView::slotStartButtonClicked()
 {

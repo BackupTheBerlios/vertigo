@@ -771,7 +771,7 @@ void MainWindow::slotPreviousTab()
 
 
 
-void MainWindow::raiseView(MainView *v)
+void MainWindow::showView(ContainerView *v)
 {
 	m_tabWidget->showPage(v);
 }

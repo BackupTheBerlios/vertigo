@@ -635,7 +635,7 @@ extern "C"
                 sess->gui->win->show();
                 sess->gui->win->raise();
                 sess->gui->win->setActiveWindow();
-                sess->gui->win->raiseView(sess->gui->view);
+                sess->gui->win->showView(sess->gui->view);
                 break;
             }
         default:

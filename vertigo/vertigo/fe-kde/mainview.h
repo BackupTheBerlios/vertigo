@@ -56,7 +56,7 @@ k_dcop:
 };
 
 
-class MainView:public QWidget, public ContainerView, virtual public MainViewIface {
+class MainView: public ContainerView, virtual public MainViewIface {
   Q_OBJECT public:
      MainView(MainWindow * s, session * s);
     ~MainView();
