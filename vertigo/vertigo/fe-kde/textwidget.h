@@ -5,6 +5,7 @@
 #include <qscrollview.h>
 #include <qptrlist.h>
 #include <qstringlist.h>
+#include <qpainter.h>
 
 class QString;
 class QCursor;
@@ -68,7 +69,7 @@ typedef struct TextBuffer {
 
 
     QPixmap *pixmap;
-    QPainter *painter;
+    QPainter painter;
 
     QRegion sepRegion;
     TextRenderState *renderState;
@@ -109,16 +110,18 @@ void scheduleLayout();
 void timerEvent ( QTimerEvent *e );
 void viewportResizeEvent(QResizeEvent * pe);
 void resizeView(int h);
+void drawSeperator(QPainter &p, int y, int h);
 
 void paintText(int x, int y, int w, int h, QString text,
-			  QPainter *p);
+			  QPainter &p);
 QColor convColor(ushort col);
-void paintTextChunk(QString text, int x, int y, QPainter * p,
+void paintTextChunk(QString text, int x, int y, QPainter &p,
 			       bool clearState=true);
 
 void contentsMousePressEvent(QMouseEvent * e);
 void contentsMouseMoveEvent(QMouseEvent * e);
 void contentsMouseReleaseEvent(QMouseEvent * e);
+
   private:
   	QPtrList<TextEntry> m_entryList;
 	TextBuffer *m_buffer;
