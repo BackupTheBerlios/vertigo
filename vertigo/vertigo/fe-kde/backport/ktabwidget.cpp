@@ -146,6 +146,7 @@ void KTabWidget::moveTab( int from, int to )
     QString tabtooltip = tabToolTip( w );
     bool current = ( w == currentPage() );
     bool enabled = isTabEnabled( w );
+    blockSignals(true);
     removePage( w );
 
     insertTab( w, tablabel, to );
@@ -156,6 +157,7 @@ void KTabWidget::moveTab( int from, int to )
     if ( current )
         showPage( w );
     setTabEnabled( w, enabled );
+    blockSignals(false);
 
     emit ( movedTab( from, to ) );
 }
@@ -205,3 +207,4 @@ void KTabWidget::closeRequest( int index )
     emit( closeRequest( page( index ) ) );
 }
 
+#include "ktabwidget.moc"
