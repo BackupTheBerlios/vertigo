@@ -3,7 +3,7 @@
 #include <dcopclient.h>
 #include <kstandarddirs.h>
 #include <qvbox.h>
-
+#include <klocale.h>
 #include <kdebug.h>
 #include <kpassivepopup.h>
 #include <qcolor.h>
@@ -25,6 +25,8 @@
 
 XChatApp::XChatApp():KApplication()
 {
+
+KGlobal::locale()->insertCatalogue("xchat-common");
     loadUserIcons();
     m_idleList = new QPtrList < TimerData > ();
     m_timeoutList = new QPtrList < TimerData > ();

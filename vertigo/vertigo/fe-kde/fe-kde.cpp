@@ -139,6 +139,18 @@ extern
 
 	return (tag);
     }
+static KCmdLineOptions options[] =
+{
+    { "d", 0, 0 },
+	{ "cfgdir <directory>", I18N_NOOP("Use directory as the configuration directory."),         0 },
+	{ "a", 0, 0 },
+    { "noauto",          I18N_NOOP("Do not automatically connect to servers."), 0 },
+    { "+[URL]",          I18N_NOOP("Server/Channel to Open. example: irc://server:port/channel"),     0 },
+	{ 0, 0, 0}
+};
+
+
+
 
     int
      fe_args(int argc, char *argv[]) {
@@ -148,38 +160,28 @@ extern
 			   "(C) 2003 vertigo developers", 
 			   "smt@inbox.lv",QString::null, "http://vertigo.berlios.de");
 
-	static const KCmdLineOptions cmdoptions[] = {
-	    {"a", 0, 0},
-	    {"auto",
-	     I18N_NOOP("Automatically connect to servers."),
-	     1},
-	    {"d", 0, 0},
-	    {"cfgdir <directory>",
-	     I18N_NOOP("Set configuration directory to <directory>."), 0},
-	    {"+[url]",
-	     I18N_NOOP("Connect to url of form irc://server:port/channel"),
-	     0},
-	    KCmdLineLastOption	// End of options.
-	};
-
 
 	kdDebug() << "fe_args" << endl;
 	KCmdLineArgs::init(argc, argv, about);
-	KCmdLineArgs::addCmdLineOptions(cmdoptions);
-	KApplication::addCmdLineOptions();
+	KCmdLineArgs::addCmdLineOptions(options);
+	XChatApp::addCmdLineOptions();
 	return 1;
     }
-
-    void
+   
+   static XChatApp *tmp;
+	void
      fe_init(void) {
 	kdDebug() << "fe:fe_init" << endl;
-	//XChatApp *a = new XChatApp();
 	XChatApp *a = new XChatApp();
-
+	//static XChatApp a;
+//tmp=&a;
 	KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 
 	   if (args->isSet("auto")) {
 	   auto_connect = 1;
+	   }
+	   else{
+		auto_connect=0;
 	   }
 	   QCString dir = args->getOption("cfgdir");
 
