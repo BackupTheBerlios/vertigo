@@ -134,6 +134,8 @@ void contentsMouseReleaseEvent(QMouseEvent * e);
     QCursor *m_cursorIbeam;
 	QCursor *m_currentCursor;
 	bool m_relayoutBeforePaint;
+	bool  m_updateSepOnly;
+
 };
 
 #endif
