@@ -34,12 +34,14 @@
 #include "../common/servlist.h"
 #include "../common/cfgfiles.h"
 
-XChatServerlist::XChatServerlist(QWidget * parent, const char *name)
+using namespace Vertigo;
+
+Serverlist::Serverlist(QWidget * parent, const char *name)
 :KMainWindow(parent, name)
 {
     if(!name)
-	setName("XChatServerlist");
-    XChatServerlistLayout = new QVBoxLayout(this, 4, 3, "XChatServerlistLayout");
+	setName("Serverlist");
+    ServerlistLayout = new QVBoxLayout(this, 4, 3, "ServerlistLayout");
 
     m_mainSplitter = new QSplitter(this, "m_mainSplitter");
     m_mainSplitter->setOrientation(QSplitter::Horizontal);
@@ -251,7 +253,7 @@ XChatServerlist::XChatServerlist(QWidget * parent, const char *name)
 
     layout9->addWidget(m_invalidCheckbox, 1, 2);
     m_settingsGroupBoxLayout->addLayout(layout9);
-    XChatServerlistLayout->addWidget(m_mainSplitter);
+    ServerlistLayout->addWidget(m_mainSplitter);
 
     layout24 = new QHBoxLayout(0, 0, 6, "layout24");
 
@@ -277,7 +279,7 @@ XChatServerlist::XChatServerlist(QWidget * parent, const char *name)
     layout24->addWidget(m_userOptionsButton);
     m_closeButton = new QPushButton(loader->loadIconSet("cancel", KIcon::Small), tr("C&lose"), this, "m_closeButton");
     layout24->addWidget(m_closeButton);
-    XChatServerlistLayout->addLayout(layout24);
+    ServerlistLayout->addLayout(layout24);
     languageChange();
     resize(QSize(704, 434).expandedTo(minimumSizeHint()));
     clearWState(WState_Polished);
@@ -342,12 +344,12 @@ XChatServerlist::XChatServerlist(QWidget * parent, const char *name)
     }
 
     i = 0;
-    XChatServerlistNetworkItem *v;
-    XChatServerlistNetworkItem *lastItem = 0;
+    ServerlistNetworkItem *v;
+    ServerlistNetworkItem *lastItem = 0;
 
     while(netlist) {
 	net = (ircnet *) netlist->data;
-	v = new XChatServerlistNetworkItem(m_networkListView, lastItem, net);
+	v = new ServerlistNetworkItem(m_networkListView, lastItem, net);
 	lastItem = v;
 	if(i == prefs.slist_select) {
 	    m_networkListView->setCurrentItem(v);
@@ -366,7 +368,7 @@ XChatServerlist::XChatServerlist(QWidget * parent, const char *name)
 /*
  *  Destroys the object and frees any allocated resources
  */
-XChatServerlist::~XChatServerlist()
+Serverlist::~Serverlist()
 {
     // no need to delete child widgets, Qt does it all for us
 }
@@ -375,7 +377,7 @@ XChatServerlist::~XChatServerlist()
  *  Sets the strings of the subwidgets using the current
  *  language.
  */
-void XChatServerlist::languageChange()
+void Serverlist::languageChange()
 {
     setCaption(tr("Server List"));
     textLabel1->setText(tr("Network"));
@@ -421,7 +423,7 @@ void XChatServerlist::languageChange()
     //m_closeButton->setAccel(QKeySequence(tr("Alt+L")));
 }
 
-void XChatServerlist::closeEvent(QCloseEvent * e)
+void Serverlist::closeEvent(QCloseEvent * e)
 {
     servlist_save();
     m_closeButton->animateClick();
@@ -436,20 +438,20 @@ void XChatServerlist::closeEvent(QCloseEvent * e)
     //   KMainWindow::closeEvent(e);
 }
 
-void XChatServerlist::slotDelayedDestruct()
+void Serverlist::slotDelayedDestruct()
 {
     delete this;
 }
 
-void XChatServerlist::setSession(session * sess)
+void Serverlist::setSession(session * sess)
 {
     m_session = sess;
 }
 
-void XChatServerlist::slotNetworkButtonClicked()
+void Serverlist::slotNetworkButtonClicked()
 {
     ircnet *net = servlist_net_add(_("New Network"), "");
-    XChatServerlistNetworkItem *v = new XChatServerlistNetworkItem(m_networkListView, (XChatServerlistNetworkItem *) m_networkListView->lastItem(),
+    ServerlistNetworkItem *v = new ServerlistNetworkItem(m_networkListView, (ServerlistNetworkItem *) m_networkListView->lastItem(),
 	net);
 
     //m_serverListView->setSelected(m_serverListView->selectedItem (), false);
@@ -458,61 +460,61 @@ void XChatServerlist::slotNetworkButtonClicked()
     m_networkListView->ensureItemVisible(v);
 }
 
-void XChatServerlist::slotServerAddButtonClicked()
+void Serverlist::slotServerAddButtonClicked()
 {
 
 }
 
-void XChatServerlist::slotNickLineEditTextChanged(const QString &)
+void Serverlist::slotNickLineEditTextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotUserLineEdittextChanged(const QString &)
+void Serverlist::slotUserLineEdittextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotRealLineEditTextChanged(const QString &)
+void Serverlist::slotRealLineEditTextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotPwdLineEditTextChanged(const QString &)
+void Serverlist::slotPwdLineEditTextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotChansLineEditTextChanged(const QString &)
+void Serverlist::slotChansLineEditTextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotCmdLineEditTextChanged(const QString &)
+void Serverlist::slotCmdLineEditTextChanged(const QString &)
 {
 
 }
 
-void XChatServerlist::slotCharComboBoxActivated(const QString &)
+void Serverlist::slotCharComboBoxActivated(const QString &)
 {
 
 }
 
-void XChatServerlist::slotCloseButtonClicked()
+void Serverlist::slotCloseButtonClicked()
 {
     close();
 }
 
-void XChatServerlist::slotUserOptionsButtonClicked()
+void Serverlist::slotUserOptionsButtonClicked()
 {
     if(!m_optionsDialog)
-	m_optionsDialog = new XChatUserOptionsDialog(this);
+	m_optionsDialog = new UserOptionsDialog(this);
     m_optionsDialog->show();
 }
 
-void XChatServerlist::slotConnectButtonClicked()
+void Serverlist::slotConnectButtonClicked()
 {
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
     ircnet *i = ni->getNetwork();
 
     kdDebug() << "connecting to: " << i->name << endl;
@@ -531,12 +533,12 @@ void XChatServerlist::slotConnectButtonClicked()
     close();
 }
 
-void XChatServerlist::slotNewTabCheckboxToggled(bool)
+void Serverlist::slotNewTabCheckboxToggled(bool)
 {
 
 }
 
-void XChatServerlist::slotEditCheckboxToggled(bool tog)
+void Serverlist::slotEditCheckboxToggled(bool tog)
 {
     kdDebug() << "editBoxToggled:" << tog << endl;
     if(tog) {
@@ -554,7 +556,7 @@ m_networkFrame->show();*/
     }
 }
 
-void XChatServerlist::slotNetworkListViewContextMenuRequested(QListViewItem *, const QPoint & p, int)
+void Serverlist::slotNetworkListViewContextMenuRequested(QListViewItem *, const QPoint & p, int)
 {
     QPopupMenu *pop = (QPopupMenu *) factory()->container("network_popup", this);
 
@@ -562,16 +564,16 @@ void XChatServerlist::slotNetworkListViewContextMenuRequested(QListViewItem *, c
 
 }
 
-void XChatServerlist::slotServerListViewContextMenuRequested(QListViewItem *, const QPoint &, int)
+void Serverlist::slotServerListViewContextMenuRequested(QListViewItem *, const QPoint &, int)
 {
 
 }
 
-void XChatServerlist::slotInvalidCheckboxToggled(bool sel)
+void Serverlist::slotInvalidCheckboxToggled(bool sel)
 {
     kdDebug() << "slotInvalidCheckboxToggled toggled " << sel << endl;
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -583,11 +585,11 @@ void XChatServerlist::slotInvalidCheckboxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotSecureCheckboxToggled(bool sel)
+void Serverlist::slotSecureCheckboxToggled(bool sel)
 {
     kdDebug() << "slotSecureCheckboxToggled toggled " << sel << endl;
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -599,11 +601,11 @@ void XChatServerlist::slotSecureCheckboxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotProxyCheckboxToggled(bool sel)
+void Serverlist::slotProxyCheckboxToggled(bool sel)
 {
     kdDebug() << "slotProxyCheckboxToggled toggled " << sel << endl;
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -615,7 +617,7 @@ void XChatServerlist::slotProxyCheckboxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotGlobalCheckboxToggled(bool sel)
+void Serverlist::slotGlobalCheckboxToggled(bool sel)
 {
     kdDebug() << "slotGlobalCheckboxToggled toggled" << sel << endl;
     if(sel) {
@@ -634,7 +636,7 @@ void XChatServerlist::slotGlobalCheckboxToggled(bool sel)
 	textLabel2_2->setEnabled(true);
     }
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -646,11 +648,11 @@ void XChatServerlist::slotGlobalCheckboxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotAutoCheckboxToggled(bool sel)
+void Serverlist::slotAutoCheckboxToggled(bool sel)
 {
     kdDebug() << "slotAutoCheckboxToggled toggled " << sel << endl;
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -662,11 +664,11 @@ void XChatServerlist::slotAutoCheckboxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotCycleBoxToggled(bool sel)
+void Serverlist::slotCycleBoxToggled(bool sel)
 {
     kdDebug() << "slotCycleBoxToggled toggled " << sel << endl;
 
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) m_networkListView->currentItem();
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) m_networkListView->currentItem();
 
     ircnet *net = ni->getNetwork();
 
@@ -678,10 +680,10 @@ void XChatServerlist::slotCycleBoxToggled(bool sel)
     kdDebug() << "flags end= " << net->flags << endl;
 }
 
-void XChatServerlist::slotNetworkListViewCurrentChanged(QListViewItem * it)
+void Serverlist::slotNetworkListViewCurrentChanged(QListViewItem * it)
 {
     m_serverListView->clear();
-    XChatServerlistNetworkItem *ni = (XChatServerlistNetworkItem *) it;
+    ServerlistNetworkItem *ni = (ServerlistNetworkItem *) it;
 
     m_settingsGroupBox->setTitle(QString(i18n("Settings for %1")).arg(ni->text(0)));
     ircnet *net = ni->getNetwork();
@@ -741,29 +743,29 @@ void XChatServerlist::slotNetworkListViewCurrentChanged(QListViewItem * it)
 
 }
 
-XChatServerlistNetworkItem::XChatServerlistNetworkItem(QListView * list, XChatServerlistNetworkItem * after, ircnet * net):
+ServerlistNetworkItem::ServerlistNetworkItem(QListView * list, ServerlistNetworkItem * after, ircnet * net):
 KListViewItem(list, after)
 {
     m_network = net;
     setText(0, QString::fromLocal8Bit(net->name));
 }
 
-XChatServerlistNetworkItem::~XChatServerlistNetworkItem()
+ServerlistNetworkItem::~ServerlistNetworkItem()
 {
 }
 
-ircnet *XChatServerlistNetworkItem::getNetwork()
+ircnet *ServerlistNetworkItem::getNetwork()
 {
     return m_network;
 }
 
-XChatUserOptionsDialog::XChatUserOptionsDialog(QWidget * parent)
+UserOptionsDialog::UserOptionsDialog(QWidget * parent)
 :  KDialogBase(Swallow, i18n("Configure User Info"), Help | Default | Ok | Apply | Cancel, Ok, parent, 0, false)
 {
-    m_userOptionsView = new XChatUserOptionsView(this);
+    m_userOptionsView = new UserOptionsView(this);
     setMainWidget(m_userOptionsView);
 }
 
-XChatUserOptionsDialog::~XChatUserOptionsDialog()
+UserOptionsDialog::~UserOptionsDialog()
 {
 }

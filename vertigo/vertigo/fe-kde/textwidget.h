@@ -18,18 +18,13 @@
 #define ATTR_REVERSE '\026'
 #define ATTR_UNDERLINE '\037'
 
-typedef QIntDict<QColor> XChatPalette;
 
 class QScrollView;
 
 
 namespace Vertigo{
-/*    class TextView;
-    struct TextEntry;
-    struct TextRenderState;
-    struct TextBuffer;
-}*/
 
+typedef QIntDict<QColor> Palette;
 
 typedef struct TextEntry {
     Vertigo::TextEntry *next;
@@ -185,7 +180,7 @@ class TextView:public QScrollView {
     QString m_timeStampFormat;
 
     Vertigo::TextBuffer *m_buffer;
-    XChatPalette m_palette;
+    Vertigo::Palette m_palette;
 
     QCursor *m_cursorSplit;
     QCursor *m_cursorIbeam;

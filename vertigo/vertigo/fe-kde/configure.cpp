@@ -49,7 +49,10 @@ extern struct text_event te[];
 extern char *pntevts_text[];
 extern GSList *plugin_list;
 
-XChatConfigureDialog::XChatConfigureDialog(QWidget * parent)
+using namespace Vertigo;
+
+
+ConfigureDialog::ConfigureDialog(QWidget * parent)
 :  KDialogBase(TreeList, i18n("Configure"), Help | Default | Ok | Apply | Cancel, Ok, parent, 0, false)
 {
     QStringList tree;
@@ -197,7 +200,7 @@ XChatConfigureDialog::XChatConfigureDialog(QWidget * parent)
 
 //colors
     //
-    XChatPalette pal = xchatapp->palette();
+    Palette pal = xchatapp->palette();
 
 #define setButtonColor(x) m_ircColorButton[x]->setColor(*(pal[x]))
      // for (i = 0; i< 16; i++)
@@ -314,7 +317,7 @@ m_popCheckbox->setChecked(true);
 	    helpText.append(QString("$%1 %2<br>").arg(j + 1).arg(te[i].help[j]));
 	    j++;
 	}
-	new XChatEventlistItem(m_eventListView, te[i].name, pntevts_text[i], helpText);
+	new EventlistItem(m_eventListView, te[i].name, pntevts_text[i], helpText);
     }
 
     // plugins
@@ -349,7 +352,7 @@ connect( m_uploadLimitCheck, SIGNAL( clicked() ), this, SLOT( slotUploadLimitChe
 
 }
 
-void XChatConfigureDialog::languageChange()
+void ConfigureDialog::languageChange()
 {
 
 // TODO move to createXXX pages
@@ -477,7 +480,7 @@ void XChatConfigureDialog::languageChange()
     textLabel4_2->setText(tr("Log &timestamp format:"));
 }
 
-void XChatConfigureDialog::createInterfaceGeneralPage(QFrame * frame)
+void ConfigureDialog::createInterfaceGeneralPage(QFrame * frame)
 {
     QVBoxLayout *Form1Layout = new QVBoxLayout(frame, 12, 6, "lay");
 
@@ -520,7 +523,7 @@ void XChatConfigureDialog::createInterfaceGeneralPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::slotChooseFont()
+void ConfigureDialog::slotChooseFont()
 {
     QFont font;
     QString name = m_fontEdit->text();
@@ -541,7 +544,7 @@ void XChatConfigureDialog::slotChooseFont()
 
 }
 
-void XChatConfigureDialog::createInterfaceTextPage(QFrame * frame)
+void ConfigureDialog::createInterfaceTextPage(QFrame * frame)
 {
     WStackPageLayout_3 = new QVBoxLayout(frame, 12, 6, "WStackPageLayout_3");
     layout30 = new QHBoxLayout(0, 0, 6, "layout30");
@@ -619,7 +622,7 @@ void XChatConfigureDialog::createInterfaceTextPage(QFrame * frame)
     m_tintCheck = new QCheckBox(groupBox3, "m_tintCheck");
     layout12->addWidget(m_tintCheck);
 
-    m_tintColorButton = new XChatColorButton(groupBox3, "m_tintColorButton");
+    m_tintColorButton = new ColorButton(groupBox3, "m_tintColorButton");
     m_tintColorButton->setMaximumSize(QSize(50, 25));
     layout12->addWidget(m_tintColorButton);
     QSpacerItem *spacer_8 = new QSpacerItem(101, 20, QSizePolicy::Expanding,
@@ -656,7 +659,7 @@ void XChatConfigureDialog::createInterfaceTextPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createColorPage(QFrame * frame)
+void ConfigureDialog::createColorPage(QFrame * frame)
 {
     WStackPageLayout_2 = new QVBoxLayout(frame, 11, 6, "WStackPageLayout_2");
 
@@ -669,82 +672,82 @@ void XChatConfigureDialog::createColorPage(QFrame * frame)
     m_colorsGroupBoxLayout = new QGridLayout(m_colorsGroupBox->layout());
     m_colorsGroupBoxLayout->setAlignment(Qt::AlignTop);
 
-    m_ircColorButton13 = new XChatColorButton(m_colorsGroupBox, "m_ircColor13Button");
+    m_ircColorButton13 = new ColorButton(m_colorsGroupBox, "m_ircColor13Button");
     m_ircColorButton13->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton13, 1, 5);
 
-    m_ircColorButton10 = new XChatColorButton(m_colorsGroupBox, "m_ircColor10Button");
+    m_ircColorButton10 = new ColorButton(m_colorsGroupBox, "m_ircColor10Button");
     m_ircColorButton10->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton10, 1, 2);
 
-    m_ircColorButton9 = new XChatColorButton(m_colorsGroupBox, "m_ircColor9Button");
+    m_ircColorButton9 = new ColorButton(m_colorsGroupBox, "m_ircColor9Button");
     m_ircColorButton9->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton9, 1, 1);
 
-    m_ircColorButton14 = new XChatColorButton(m_colorsGroupBox, "m_ircColor14Button");
+    m_ircColorButton14 = new ColorButton(m_colorsGroupBox, "m_ircColor14Button");
     m_ircColorButton14->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton14, 1, 6);
 
-    m_ircColorButton12 = new XChatColorButton(m_colorsGroupBox, "m_ircColor12Button");
+    m_ircColorButton12 = new ColorButton(m_colorsGroupBox, "m_ircColor12Button");
     m_ircColorButton12->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton12, 1, 4);
 
-    m_ircColorButton11 = new XChatColorButton(m_colorsGroupBox, "m_ircColor11Button");
+    m_ircColorButton11 = new ColorButton(m_colorsGroupBox, "m_ircColor11Button");
     m_ircColorButton11->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton11, 1, 3);
 
-    m_ircColorButton15 = new XChatColorButton(m_colorsGroupBox, "m_ircColor15Button");
+    m_ircColorButton15 = new ColorButton(m_colorsGroupBox, "m_ircColor15Button");
     m_ircColorButton15->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton15, 1, 7);
 
-    m_ircColorButton8 = new XChatColorButton(m_colorsGroupBox, "m_ircColor8Button");
+    m_ircColorButton8 = new ColorButton(m_colorsGroupBox, "m_ircColor8Button");
     m_ircColorButton8->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton8, 1, 0);
 
-    m_ircColorButton4 = new XChatColorButton(m_colorsGroupBox, "m_ircColor4Button");
+    m_ircColorButton4 = new ColorButton(m_colorsGroupBox, "m_ircColor4Button");
     m_ircColorButton4->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton4, 0, 4);
 
-    m_ircColorButton6 = new XChatColorButton(m_colorsGroupBox, "m_ircColor6Button");
+    m_ircColorButton6 = new ColorButton(m_colorsGroupBox, "m_ircColor6Button");
     m_ircColorButton6->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton6, 0, 6);
 
-    m_ircColorButton3 = new XChatColorButton(m_colorsGroupBox, "m_ircColor3Button");
+    m_ircColorButton3 = new ColorButton(m_colorsGroupBox, "m_ircColor3Button");
     m_ircColorButton3->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton3, 0, 3);
 
-    m_ircColorButton5 = new XChatColorButton(m_colorsGroupBox, "m_ircColor5Button");
+    m_ircColorButton5 = new ColorButton(m_colorsGroupBox, "m_ircColor5Button");
     m_ircColorButton5->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton5, 0, 5);
 
-    m_ircColorButton2 = new XChatColorButton(m_colorsGroupBox, "m_ircColor2Button");
+    m_ircColorButton2 = new ColorButton(m_colorsGroupBox, "m_ircColor2Button");
     m_ircColorButton2->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton2, 0, 2);
 
-    m_ircColorButton7 = new XChatColorButton(m_colorsGroupBox, "m_ircColor7Button");
+    m_ircColorButton7 = new ColorButton(m_colorsGroupBox, "m_ircColor7Button");
     m_ircColorButton7->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton7, 0, 7);
 
-    m_ircColorButton1 = new XChatColorButton(m_colorsGroupBox, "m_ircColor1Button");
+    m_ircColorButton1 = new ColorButton(m_colorsGroupBox, "m_ircColor1Button");
     m_ircColorButton1->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton1, 0, 1);
 
-    m_ircColorButton0 = new XChatColorButton(m_colorsGroupBox, "m_ircColor0Button");
+    m_ircColorButton0 = new ColorButton(m_colorsGroupBox, "m_ircColor0Button");
     m_ircColorButton0->setMaximumSize(QSize(50, 25));
 
     m_colorsGroupBoxLayout->addWidget(m_ircColorButton0, 0, 0);
@@ -759,12 +762,12 @@ void XChatConfigureDialog::createColorPage(QFrame * frame)
 
     layout4 = new QGridLayout(0, 1, 1, 0, 6, "layout4");
 
-    m_msgColorButton = new XChatColorButton(frame, "m_msgColorButton");
+    m_msgColorButton = new ColorButton(frame, "m_msgColorButton");
     m_msgColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_msgColorButton, 5, 1);
 
-    m_highlightColorButton = new XChatColorButton(frame, "m_highlightColorButton");
+    m_highlightColorButton = new ColorButton(frame, "m_highlightColorButton");
     m_highlightColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_highlightColorButton, 6, 1);
@@ -781,22 +784,22 @@ void XChatConfigureDialog::createColorPage(QFrame * frame)
 
     layout4->addWidget(textLabel1_3_2_2_2, 4, 0);
 
-    m_selForeColorButton = new XChatColorButton(frame, "m_selForeColorButton");
+    m_selForeColorButton = new ColorButton(frame, "m_selForeColorButton");
     m_selForeColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_selForeColorButton, 2, 1);
 
-    m_backColorButton = new XChatColorButton(frame, "m_backColorButton");
+    m_backColorButton = new ColorButton(frame, "m_backColorButton");
     m_backColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_backColorButton, 1, 1);
 
-    m_dataColorButton = new XChatColorButton(frame, "m_dataColorButton");
+    m_dataColorButton = new ColorButton(frame, "m_dataColorButton");
     m_dataColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_dataColorButton, 4, 1);
 
-    m_selBackColorButton = new XChatColorButton(frame, "m_selBackColorButton");
+    m_selBackColorButton = new ColorButton(frame, "m_selBackColorButton");
     m_selBackColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_selBackColorButton, 3, 1);
@@ -805,7 +808,7 @@ void XChatConfigureDialog::createColorPage(QFrame * frame)
 
     layout4->addWidget(textLabel1_3_2_2_2_2, 5, 0);
 
-    m_foreColorButton = new XChatColorButton(frame, "m_foreColorButton");
+    m_foreColorButton = new ColorButton(frame, "m_foreColorButton");
     m_foreColorButton->setMaximumSize(QSize(50, 25));
 
     layout4->addWidget(m_foreColorButton, 0, 1);
@@ -834,7 +837,7 @@ void XChatConfigureDialog::createColorPage(QFrame * frame)
     WStackPageLayout_2->addItem(spacer_4);
 }
 
-void XChatConfigureDialog::createTabsPage(QFrame * frame)
+void ConfigureDialog::createTabsPage(QFrame * frame)
 {
     WStackPageLayout = new QVBoxLayout(frame, 11, 6, "WStackPageLayout");
     layout8 = new QGridLayout(0, 1, 1, 0, 6, "layout8");
@@ -896,7 +899,7 @@ void XChatConfigureDialog::createTabsPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createUserlistPage(QFrame * frame)
+void ConfigureDialog::createUserlistPage(QFrame * frame)
 {
     WStackPageLayout_4 = new QVBoxLayout(frame, 11, 6, "WStackPageLayout_4");
 
@@ -933,7 +936,7 @@ void XChatConfigureDialog::createUserlistPage(QFrame * frame)
     m_userlistButtonCheck = new QCheckBox(groupBox8, "m_userlistButtonCheck");
     groupBox8Layout->addWidget(m_userlistButtonCheck);
 
-    m_userlistView = new XChatEditListView(groupBox8, "buttons.conf", button_list);
+    m_userlistView = new EditListView(groupBox8, "buttons.conf", button_list);
     groupBox8Layout->addWidget(m_userlistView);
     /* layout30_2 = new QHBoxLayout(0, 0, 6, "layout30_2");
 
@@ -967,7 +970,7 @@ void XChatConfigureDialog::createUserlistPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createChattingGeneralPage(QFrame * frame)
+void ConfigureDialog::createChattingGeneralPage(QFrame * frame)
 {
     WStackPageLayout_5 = new QVBoxLayout(frame, 11, 6, "WStackPageLayout_5");
 
@@ -1035,15 +1038,15 @@ void XChatConfigureDialog::createChattingGeneralPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createUserPage(QFrame * frame)
+void ConfigureDialog::createUserPage(QFrame * frame)
 {
     QVBoxLayout *vb = new QVBoxLayout(frame, 1, 1, "WStackPageLayout_6");
-    XChatUserOptionsView *ov = new XChatUserOptionsView(frame);
+    UserOptionsView *ov = new UserOptionsView(frame);
 
     vb->addWidget(ov);
 }
 
-void XChatConfigureDialog::createLoggingPage(QFrame * frame)
+void ConfigureDialog::createLoggingPage(QFrame * frame)
 {
     WStackPageLayout_6 = new QVBoxLayout(frame, 11, 6, "WStackPageLayout_6");
 
@@ -1088,7 +1091,7 @@ void XChatConfigureDialog::createLoggingPage(QFrame * frame)
     WStackPageLayout_6->addItem(spacer_14);
 }
 
-void XChatConfigureDialog::createEventsTextPage(QFrame * frame)
+void ConfigureDialog::createEventsTextPage(QFrame * frame)
 {
     QVBoxLayout *lay = new QVBoxLayout(frame, 12, 6, "lay");
 
@@ -1111,7 +1114,7 @@ void XChatConfigureDialog::createEventsTextPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createNotificationsPage(QFrame * frame)
+void ConfigureDialog::createNotificationsPage(QFrame * frame)
 {
     QVBoxLayout *lay = new QVBoxLayout(frame, 12, 6, "lay");
 
@@ -1132,7 +1135,7 @@ void XChatConfigureDialog::createNotificationsPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createPluginsPage(QFrame * frame)
+void ConfigureDialog::createPluginsPage(QFrame * frame)
 {
     QGridLayout *lay = new QGridLayout(frame, 1, 1, 12, 6, "Form1Layout");
 
@@ -1161,7 +1164,7 @@ void XChatConfigureDialog::createPluginsPage(QFrame * frame)
 
 }
 
-void XChatConfigureDialog::createNetworkGeneralPage(QFrame * frame)
+void ConfigureDialog::createNetworkGeneralPage(QFrame * frame)
 {
 QVBoxLayout *lay = new QVBoxLayout( frame, 12, 6, "Form8Layout"); 
 
@@ -1222,7 +1225,7 @@ QVBoxLayout *lay = new QVBoxLayout( frame, 12, 6, "Form8Layout");
 
  }
 
-void XChatConfigureDialog::createXferPage(QFrame * frame)
+void ConfigureDialog::createXferPage(QFrame * frame)
 {
 QGridLayout  *lay = new QGridLayout( frame, 1, 1, 12, 6, "lay"); 
 
@@ -1339,11 +1342,11 @@ m_downloadLabel->setText( tr( "Download files to:" ) );
 }
 
 
-XChatConfigureDialog::~XChatConfigureDialog()
+ConfigureDialog::~ConfigureDialog()
 {
 }
 
-void XChatConfigureDialog::slotNickCompButtonToggled(bool on)
+void ConfigureDialog::slotNickCompButtonToggled(bool on)
 {
     if(on) {
 	m_nickCompLabel->setEnabled(true);
@@ -1355,7 +1358,7 @@ void XChatConfigureDialog::slotNickCompButtonToggled(bool on)
 
 }
 
-void XChatConfigureDialog::slotUserlistButtonToggled(bool on)
+void ConfigureDialog::slotUserlistButtonToggled(bool on)
 {
     if(on) {
 	m_userlistView->setEnabled(true);
@@ -1365,7 +1368,7 @@ void XChatConfigureDialog::slotUserlistButtonToggled(bool on)
 
 }
 
-void XChatConfigureDialog::slotLogCheckToggled(bool on)
+void ConfigureDialog::slotLogCheckToggled(bool on)
 {
     if(on) {
 	textLabel4->setEnabled(true);
@@ -1379,7 +1382,7 @@ void XChatConfigureDialog::slotLogCheckToggled(bool on)
 
 }
 
-void XChatConfigureDialog::slotStampLogCheckToggled(bool on)
+void ConfigureDialog::slotStampLogCheckToggled(bool on)
 {
     if(on) {
 	m_stampLogEdit->setEnabled(true);
@@ -1394,31 +1397,31 @@ void XChatConfigureDialog::slotStampLogCheckToggled(bool on)
     }
 }
 
-void XChatConfigureDialog::slotProxyCheckClicked()
+void ConfigureDialog::slotProxyCheckClicked()
 {
     qWarning( "Form8::slotProxyCheckClicked(): Not implemented yet" );
 }
 
-void XChatConfigureDialog::slotUploadLimitCheckClicked()
+void ConfigureDialog::slotUploadLimitCheckClicked()
 {
     qWarning( "Form9::slotUploadLimitCheckClicked(): Not implemented yet" );
 }
 
-void XChatConfigureDialog::slotEventListViewCurrentChanged(QListViewItem * it)
+void ConfigureDialog::slotEventListViewCurrentChanged(QListViewItem * it)
 {
-    XChatEventlistItem *i = (XChatEventlistItem *) it;
+    EventlistItem *i = (EventlistItem *) it;
 
     m_eventListViewHelp->setText(i->helpText);
 }
 
 
 
-XChatColorButton::XChatColorButton(QWidget * parent, const char *name)
+ColorButton::ColorButton(QWidget * parent, const char *name)
 :KColorButton(parent, name)
 {
 }
 
-XChatColorButton::~XChatColorButton()
+ColorButton::~ColorButton()
 {
 }
 
@@ -1439,7 +1442,7 @@ static QColor contrastingForeground(const QColor & fg, const QColor & bg)
     }
 }
 
-void XChatColorButton::drawButtonLabel(QPainter * painter)
+void ColorButton::drawButtonLabel(QPainter * painter)
 {
     int x, y, w, h;
     QRect r = style().subRect(QStyle::SR_PushButtonContents, this);
@@ -1475,12 +1478,12 @@ int margin=h-fontMetrics().height()+3;
     painter->drawText(r, Qt::AlignCenter, text());
 }
 
-XChatEventlistItem::XChatEventlistItem(QListView * list, QString name, QString text, QString _helpText):
+EventlistItem::EventlistItem(QListView * list, QString name, QString text, QString _helpText):
 KListViewItem(list, name, text)
 {
     helpText = _helpText;
 }
 
-XChatEventlistItem::~XChatEventlistItem()
+EventlistItem::~EventlistItem()
 {
 }

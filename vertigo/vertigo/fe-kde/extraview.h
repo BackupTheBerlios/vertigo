@@ -24,25 +24,28 @@ class QGroupBox;
 class QSplitter;
 class QCheckBox;
 class QSpinBox;
-class XChatMainWindow;
 
-class XChatContainerView{
+namespace Vertigo {
+
+class MainWindow;
+
+class ContainerView{
     public:
-        XChatContainerView (XChatMainWindow *w);
-        virtual void setWindow(XChatMainWindow *w);
-        virtual XChatMainWindow* window();
+        ContainerView (Vertigo::MainWindow *w);
+        virtual void setWindow(Vertigo::MainWindow *w);
+        virtual Vertigo::MainWindow* window();
     private:
-        XChatMainWindow *m_window;
+        Vertigo::MainWindow *m_window;
 };
 
 
-class XChatChanlistView : public QWidget, public XChatContainerView
+class ChanlistView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatChanlistView( QWidget* parent = 0, XChatMainWindow * w=0, server * s=0, const char* name = 0, WFlags fl = 0 );
-    ~XChatChanlistView();
+    ChanlistView( QWidget* parent = 0, Vertigo::MainWindow * w=0, server * s=0, const char* name = 0, WFlags fl = 0 );
+    ~ChanlistView();
 
     KListView* m_chanlistView;
     QPushButton* m_refreshButton;
@@ -73,29 +76,29 @@ public slots:
     virtual void slotRefreshButtonClicked();
     virtual void slotSaveButtonClicked();
 protected:
-    XChatMainWindow * m_window;
+    Vertigo::MainWindow * m_window;
     server *m_server;
-    QGridLayout* XChatChanlistViewLayout;
+    QGridLayout* ChanlistViewLayout;
     QGridLayout* m_limitGroupBoxLayout;
 };
 
-class XChatChanlistItem:public KListViewItem {
+class ChanlistItem:public KListViewItem {
   public:
-    XChatChanlistItem(QListView * list, QString chan, QString users, QString topic);
-    ~XChatChanlistItem();
+    ChanlistItem(QListView * list, QString chan, QString users, QString topic);
+    ~ChanlistItem();
 int compare ( QListViewItem * i, int col, bool ascending ) const;
 
 };
 
 
 
-class XChatRawlogView : public QWidget, public XChatContainerView
+class RawlogView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatRawlogView( QWidget* parent ,  XChatMainWindow *w, server *s, const char* name = 0, WFlags fl = 0 );
-    ~XChatRawlogView();
+    RawlogView( QWidget* parent ,  Vertigo::MainWindow *w, server *s, const char* name = 0, WFlags fl = 0 );
+    ~RawlogView();
 
     void appendText(QString s);
 
@@ -104,8 +107,8 @@ public:
     QPushButton* m_clearButton;
     QPushButton* m_saveButton;
 
-//XChatMainWindow *window(){return m_window;}
-//void setWindow(XChatMainWindow *w){m_window=w;}
+//Vertigo::MainWindow *window(){return m_window;}
+//void setWindow(Vertigo::MainWindow *w){m_window=w;}
 
 server *getServer(){return m_server;}
 void setServer(server *s){m_server=s;}
@@ -115,20 +118,20 @@ public slots:
     void slotSaveButtonClicked();
 
 protected:
-    QGridLayout* XChatRawlogViewLayout;
-  //  XChatMainWindow *m_window;
+    QGridLayout* RawlogViewLayout;
+  //  Vertigo::MainWindow *m_window;
  server *m_server;
  
 
 };
 
-class XChatBanListView : public QWidget, public XChatContainerView
+class BanListView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatBanListView( QWidget* parent = 0,XChatMainWindow * w=0, const char* name = 0, WFlags fl = 0 );
-    ~XChatBanListView();
+    BanListView( QWidget* parent = 0,Vertigo::MainWindow * w=0, const char* name = 0, WFlags fl = 0 );
+    ~BanListView();
 
     QPushButton* m_clearButton;
     KListView* m_banlistView;
@@ -145,20 +148,20 @@ public slots:
      void slotRefreshButtonClicked();
 
 protected:
-     XChatMainWindow * m_window;
-    QGridLayout* XChatBanlistViewLayout;
+     Vertigo::MainWindow * m_window;
+    QGridLayout* BanlistViewLayout;
 
 
 };
 
 
-class XChatChatListView : public QWidget, public XChatContainerView
+class ChatListView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatChatListView( QWidget* parent = 0, XChatMainWindow * w=0,const char* name = 0, WFlags fl = 0 );
-    ~XChatChatListView();
+    ChatListView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ~ChatListView();
 
     QPushButton* m_cancelButton;
     KListView* m_chatListView;
@@ -169,20 +172,20 @@ void showSelf();
 
     
 protected:
-    QGridLayout* XChatChatListViewLayout;
-    XChatMainWindow * m_window;
+    QGridLayout* ChatListViewLayout;
+    Vertigo::MainWindow * m_window;
 
 };
 
 
 
-class XChatNotifyListView : public QWidget, public XChatContainerView
+class NotifyListView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatNotifyListView( QWidget* parent = 0, XChatMainWindow * w=0,const char* name = 0, WFlags fl = 0 );
-    ~XChatNotifyListView();
+    NotifyListView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ~NotifyListView();
 
     KListView* m_notifyView;
     QPushButton* m_addButton;
@@ -197,19 +200,19 @@ public slots:
     void slotRemoveButtonClicked();
 
 protected:
-    XChatMainWindow * m_window;
-    QGridLayout* XChatNotifyViewLayout;
+    Vertigo::MainWindow * m_window;
+    QGridLayout* NotifyViewLayout;
 
 
 };
 
-class XChatXferView : public QWidget, public XChatContainerView
+class XferView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatXferView( QWidget* parent = 0, XChatMainWindow * w=0,const char* name = 0, WFlags fl = 0 );
-    ~XChatXferView();
+    XferView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ~XferView();
 
     QSplitter* m_splitter;
     QPushButton* m_dlInfoButton;
@@ -237,20 +240,20 @@ public slots:
     void slotUlInfoButtonClicked();
 
 protected:
-    QVBoxLayout* XChatFileXferViewLayout;
+    QVBoxLayout* FileXferViewLayout;
     QGridLayout* m_downloadLayout;
     QGridLayout* m_uploadLayout;
-    XChatMainWindow * m_window;
+    Vertigo::MainWindow * m_window;
 
 };
 
-class XChatURLGrabberView : public QWidget, public XChatContainerView
+class URLGrabberView : public QWidget, public Vertigo::ContainerView
 {
     Q_OBJECT
 
 public:
-    XChatURLGrabberView( QWidget* parent = 0, XChatMainWindow * w=0,const char* name = 0, WFlags fl = 0 );
-    ~XChatURLGrabberView();
+    URLGrabberView( QWidget* parent = 0, Vertigo::MainWindow * w=0,const char* name = 0, WFlags fl = 0 );
+    ~URLGrabberView();
 
     QPushButton* m_saveButton;
     QPushButton* m_clearButton;
@@ -263,33 +266,33 @@ public slots:
     void slotClearButtonClicked();
 
 protected:
-    QGridLayout* XChatURLViewLayout;
-    XChatMainWindow * m_window;
+    QGridLayout* URLViewLayout;
+    Vertigo::MainWindow * m_window;
 
 };
 
 
 
 
-class XChatEditListView : public QWidget
+class EditListView : public QWidget
 {
     Q_OBJECT
 
 public:
-    XChatEditListView( QWidget* parent , const char *filename, GSList *entries, const char* name = 0);
-    ~XChatEditListView();
+    EditListView( QWidget* parent , const char *filename, GSList *entries, const char* name = 0);
+    ~EditListView();
 private: 
     GSList *m_entries;
 };
 
 
-class XChatUserOptionsView : public QWidget
+class UserOptionsView : public QWidget
 {
     Q_OBJECT
 
 public:
-    XChatUserOptionsView( QWidget* parent = 0, const char* name = 0);
-    ~XChatUserOptionsView();
+    UserOptionsView( QWidget* parent = 0, const char* name = 0);
+    ~UserOptionsView();
 
     QLineEdit* secEdit;
     QLabel* secLabel;
@@ -303,8 +306,9 @@ public:
     QLabel* nickLabel;
 
 protected:
-    QGridLayout* XChatUserOptionsViewLayout;
+    QGridLayout* UserOptionsViewLayout;
 
+};
 };
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef XChatMainWin_H
-#define XChatMainWin_H
+#ifndef MainWin_H
+#define MainWin_H
 
 #include <kmainwindow.h>
 #include "mainview.h"
@@ -8,16 +8,19 @@
 #include "../common/xchat.h"
 
 class KProgress;
-class XChatTabWidget;
-class XChatStatusBarWidget;
 
-class XChatMainWindow:public KMainWindow {
+namespace Vertigo {
+
+class TabWidget;
+class StatusBarWidget;
+
+class MainWindow:public KMainWindow {
   Q_OBJECT public:
-     XChatMainWindow(QWidget * parent = 0);
-    ~XChatMainWindow();
+     MainWindow(QWidget * parent = 0);
+    ~MainWindow();
 
-XChatMainView *getMainView(session * sess);
-    XChatTabWidget *m_tabWidget;
+Vertigo::MainView *getMainView(session * sess);
+    Vertigo::TabWidget *m_tabWidget;
 
 
     
@@ -38,10 +41,10 @@ int lastSameServerTabIndex();
 	void setLag(int lag);
     void setNumbers(int ops, int total);
 
-	void raiseView(XChatMainView *v);
+	void raiseView(Vertigo::MainView *v);
 
 	
-    XChatTabWidget *tabWidget() {
+    Vertigo::TabWidget *tabWidget() {
 	return m_tabWidget;
     }
     public slots:void slotTabChanged(QWidget *);
@@ -90,9 +93,9 @@ void slotPreviousTab();
 void forwardLoop();
     
   protected:
-    QVBoxLayout * XChatMainWindowLayout;
-    QPtrList < XChatMainView > *m_mainViewList;
-    XChatStatusBarWidget *m_statusBarWidget;
+    QVBoxLayout * MainWindowLayout;
+    QPtrList < Vertigo::MainView > *m_mainViewList;
+    Vertigo::StatusBarWidget *m_statusBarWidget;
 	KProgress *m_progressBar;
 
     // bool m_detached;
@@ -103,13 +106,13 @@ void forwardLoop();
 };
 
 /*
-class XChatStatusBarWidget : public QWidget
+class StatusBarWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    XChatStatusBarWidget( QWidget* parent = 0, const char* name = 0);
-    ~XChatStatusBarWidget();
+    Vertigo::StatusBarWidget( QWidget* parent = 0, const char* name = 0);
+    ~Vertigo::StatusBarWidget();
 
     QLabel* messageLabel;
     QLabel* lagLabel;
@@ -117,7 +120,7 @@ public:
     QLabel* nameLabel;
 
 protected:
-    QHBoxLayout* XChatStatusBarWidgetLayout;
+    QHBoxLayout* Vertigo::StatusBarWidgetLayout;
     QHBoxLayout* nameFrameLayout;
 
 
@@ -126,6 +129,6 @@ protected:
 */
 
 
+};
 
-
-#endif				// XChatMainWin_H
+#endif				// Vertigo::MainWin_H

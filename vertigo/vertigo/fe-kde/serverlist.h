@@ -1,5 +1,5 @@
-#ifndef XChatServerlist_H
-#define XChatServerlist_H
+#ifndef Serverlist_H
+#define Serverlist_H
 
 #include <qvariant.h>
 #include <kmainwindow.h>
@@ -26,19 +26,22 @@ class QLineEdit;
 class QComboBox;
 class QCheckBox;
 class QPushButton;
-class XChatUserOptionsDialog;
 
-class XChatServerlist:public KMainWindow {
+
+namespace Vertigo{
+class UserOptionsDialog;
+
+class Serverlist:public KMainWindow {
   Q_OBJECT public:
-     XChatServerlist(QWidget * parent = 0, const char *name = 0);
-    ~XChatServerlist();
+     Serverlist(QWidget * parent = 0, const char *name = 0);
+    ~Serverlist();
 
     void closeEvent(QCloseEvent * e);
 
 
     void setSession(session * sess);
 
-XChatUserOptionsDialog *m_optionsDialog;
+Vertigo::UserOptionsDialog *m_optionsDialog;
     
     QSplitter *m_mainSplitter;
     QFrame *m_networkFrame;
@@ -105,7 +108,7 @@ XChatUserOptionsDialog *m_optionsDialog;
  void slotDelayedDestruct();
     
   protected:
-     QVBoxLayout * XChatServerlistLayout;
+     QVBoxLayout * ServerlistLayout;
     QVBoxLayout *m_networkFrameLayout;
     QHBoxLayout *networkLayout;
     QVBoxLayout *m_settingsGroupBoxLayout;
@@ -121,28 +124,25 @@ XChatUserOptionsDialog *m_optionsDialog;
 
 };
 
-class XChatServerlistNetworkItem:public KListViewItem {
+class ServerlistNetworkItem:public KListViewItem {
   public:
-    XChatServerlistNetworkItem(QListView * list,
-			       XChatServerlistNetworkItem * after,
+    ServerlistNetworkItem(QListView * list,
+			       Vertigo::ServerlistNetworkItem * after,
 			       ircnet * net);
-    ~XChatServerlistNetworkItem();
+    ~ServerlistNetworkItem();
 
     ircnet *getNetwork();
   private:
      ircnet * m_network;
 };
 
-class XChatUserOptionsDialog:public KDialogBase {
+class UserOptionsDialog:public KDialogBase {
   Q_OBJECT public:
-    XChatUserOptionsDialog(QWidget * parent);
-    ~XChatUserOptionsDialog();
+    UserOptionsDialog(QWidget * parent);
+    ~UserOptionsDialog();
     private:
-    XChatUserOptionsView *m_userOptionsView;
+    Vertigo::UserOptionsView *m_userOptionsView;
 };
 
-
-
-
-
-#endif				// XChatServerlist_H
+};
+#endif				// Vertigo::Serverlist_H

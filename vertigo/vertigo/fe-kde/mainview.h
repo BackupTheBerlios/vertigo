@@ -1,5 +1,5 @@
-#ifndef XChatMainView_H
-#define XChatMainView_H
+#ifndef MainView_H
+#define MainView_H
 
 #include <qvariant.h>
 #include <klistview.h>
@@ -9,7 +9,6 @@
 #include <qtextedit.h>
 
 #include <ksqueezedtextlabel.h>
-
 
 #include <qdialog.h>
 class QVBoxLayout;
@@ -28,11 +27,6 @@ class QTextEdit;
 class KListBox;
 class QListBoxItem;
 
-
-class XChatMainView;
-class XChatUserlistView;
-class XChatTopicEdit;
-class XChatInputLineEdit;
 #include <dcopobject.h>
 
 #include "extraview.h"
@@ -41,13 +35,20 @@ class XChatInputLineEdit;
 #include "../common/xchat.h"
 #include "../common/userlist.h"
 
+namespace Vertigo{
 
- class XChatMainViewIface : virtual public DCOPObject
+class MainView;
+class UserlistView;
+class TopicEdit;
+class InputLineEdit;
+
+
+ class MainViewIface : virtual public DCOPObject
  {
      K_DCOP
 
 protected:
-    XChatMainViewIface( QCString objId ) : DCOPObject( objId ) {}
+    MainViewIface( QCString objId ) : DCOPObject( objId ) {}
 
 k_dcop:
 
@@ -57,13 +58,13 @@ k_dcop:
 };
 
 
-class XChatMainView:public QWidget, public XChatContainerView, virtual public XChatMainViewIface {
+class MainView:public QWidget, public Vertigo::ContainerView, virtual public Vertigo::MainViewIface {
   Q_OBJECT public:
-     XChatMainView(XChatMainWindow * s, session * s);
-    ~XChatMainView();
+     MainView(Vertigo::MainWindow * s, session * s);
+    ~MainView();
 
-XChatMainWindow *window();
-    void setWindow(XChatMainWindow *w);
+Vertigo::MainWindow *window();
+    void setWindow(Vertigo::MainWindow *w);
 
     void clearUserlist();
     void showUserlist();
@@ -108,13 +109,13 @@ XChatMainWindow *window();
     QPushButton *pushButton5;
     QSplitter *splitter1;
     Vertigo::TextView *textEdit1;
-    XChatInputLineEdit *m_inputLine;
+    Vertigo::InputLineEdit *m_inputLine;
     QPushButton *pushButton1;
-    XChatUserlistView *m_userList;
+    Vertigo::UserlistView *m_userList;
     QPushButton *pushButton10_2_2;
     QWidget *m_textPanel;
     QWidget *m_userlistPanel;
-    XChatTopicEdit *topicEdit;
+    Vertigo::TopicEdit *topicEdit;
     session *m_session;
    int m_oldTopicParaPos;
        int m_oldTopicIndexPos;
@@ -123,17 +124,17 @@ XChatMainWindow *window();
 };
 
 /*
-class XChatWidgetStack:public QWidgetStack {
+class WidgetStack:public QWidgetStack {
   Q_OBJECT public:
-     XChatWidgetStack(QWidget * parent);
-    ~XChatWidgetStack();
+     Vertigo::WidgetStack(QWidget * parent);
+    ~Vertigo::WidgetStack();
 QSize sizeHint () const;
 };*/
 
-class XChatTopicEdit:public QTextEdit {
+class TopicEdit:public QTextEdit {
   Q_OBJECT public:
-     XChatTopicEdit(QWidget * parent);
-    ~XChatTopicEdit();
+     TopicEdit(QWidget * parent);
+    ~TopicEdit();
 	//QSize sizeHint() const;
 	void setTopicText(QString s);
 	void focusInEvent ( QFocusEvent * );
@@ -146,10 +147,10 @@ QSize minimumSizeHint() const;
 	QString m_topicText;
 };
 
-class XChatInputLineEdit:public QLineEdit {
+class InputLineEdit:public QLineEdit {
   Q_OBJECT public:
-     XChatInputLineEdit(QWidget * parent);
-    ~XChatInputLineEdit();
+     InputLineEdit(QWidget * parent);
+    ~InputLineEdit();
     bool eventFilter(QObject * o, QEvent * e);
     
      signals:void tabPressed();
@@ -160,10 +161,10 @@ class XChatInputLineEdit:public QLineEdit {
 
 
 
-class XChatUserlistView:public KListView {
+class UserlistView:public KListView {
   Q_OBJECT public:
-     XChatUserlistView(QWidget * parent);
-    ~XChatUserlistView();
+     UserlistView(QWidget * parent);
+    ~UserlistView();
 //QSize minimumSizeHint() const;
 	
   //private:
@@ -172,10 +173,10 @@ class XChatUserlistView:public KListView {
 };
 
 
-class XChatUserlistItem:public KListViewItem {
+class UserlistItem:public KListViewItem {
   public:
-    XChatUserlistItem(XChatUserlistView * list, QPixmap * pix, User * u);
-    ~XChatUserlistItem();
+    UserlistItem(Vertigo::UserlistView * list, QPixmap * pix, User * u);
+    ~UserlistItem();
 
  //   bool isAlternate();
 QPixmap *getPixmap();
@@ -202,5 +203,6 @@ void paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int a
 	QPixmap *m_pixmap;
 };
 
+};
 
-#endif				// XChatMainView_H
+#endif				// Vertigo::MainView_H

@@ -41,8 +41,8 @@
 using namespace Vertigo;
 
 
-XChatMainView::XChatMainView(XChatMainWindow * w, session * sess)
-:  QWidget(w, "XChatMainView"), XChatMainViewIface("XChatMainView"),  XChatContainerView(w)
+MainView::MainView(MainWindow * w, session * sess)
+:  QWidget(w, "MainView"), MainViewIface("MainView"),  ContainerView(w)
 {
     Form1Layout = new QVBoxLayout(this, 1, 1, "Form1Layout");
 
@@ -54,8 +54,8 @@ XChatMainView::XChatMainView(XChatMainWindow * w, session * sess)
     topicStack->setFrameShape(QFrame::LineEditPanel);
     topicStack->setFrameShadow(QFrame::Sunken);
 */
-    //topicLabel = new XChatTopicLabel(topicStack, 2);
-	topicEdit = new XChatTopicEdit(this);
+    //topicLabel = new TopicLabel(topicStack, 2);
+	topicEdit = new TopicEdit(this);
 	
 	
   topicEdit->
@@ -76,7 +76,7 @@ XChatMainView::XChatMainView(XChatMainWindow * w, session * sess)
     //topicLabel->setAlignment(QLabel::WordBreak | QLabel::AlignVCenter);
 
     //topicStack->addWidget(topicLabel, 1);
-    //topicLineEdit = new XChatTopicLineEdit(topicStack, 1);
+    //topicLineEdit = new TopicLineEdit(topicStack, 1);
     //  topicLineEdit->
     //    setSizePolicy(QSizePolicy
     //                ( QSizePolicy::Minimum, QSizePolicy::Maximum, false));
@@ -122,7 +122,7 @@ layout1->addWidget(topicEdit);
 
     layout3 = new QHBoxLayout(0, 1, 1, "layout3");
 
-    m_inputLine = new XChatInputLineEdit(m_textPanel);
+    m_inputLine = new InputLineEdit(m_textPanel);
     layout3->addWidget(m_inputLine);
 
     pushButton1 = new QPushButton(m_textPanel, "pushButton1");
@@ -133,7 +133,7 @@ layout1->addWidget(topicEdit);
 
     layout4 = new QVBoxLayout(m_userlistPanel, 1, 1, "layout4");
 
-    m_userList = new XChatUserlistView(m_userlistPanel);
+    m_userList = new UserlistView(m_userlistPanel);
     /*  m_userList->
        setSizePolicy(QSizePolicy
        ((QSizePolicy::SizeType) 1,
@@ -210,15 +210,15 @@ splitter1->setSizes(QValueList < int >() << width()- m_userlistPanel->minimumWid
 
 }
 
-XChatMainView::~XChatMainView()
+MainView::~MainView()
 {
 }
 
-XChatMainWindow *XChatMainView::window(){
+MainWindow *MainView::window(){
     return m_session->gui->win;
 }
 
-void XChatMainView::setWindow(XChatMainWindow *w){
+void MainView::setWindow(MainWindow *w){
     kdDebug() << "mainview::set Window"<<endl;
 m_session->gui->win=w;
 }
@@ -324,7 +324,7 @@ QString unescapeText(QString t)
     return t;
 }
 
-void XChatMainView::topicEnter()
+void MainView::topicEnter()
 {
 	kdDebug() << "topicEnter"<<endl;
 	
@@ -336,7 +336,7 @@ void XChatMainView::topicEnter()
 	}
 }
 
-void XChatMainView::setTopic(QString t)
+void MainView::setTopic(QString t)
 {
 	kdDebug() << "setting topic: "<<t<<endl;
     topicEdit->setTopicText(t);
@@ -352,14 +352,14 @@ void XChatMainView::setTopic(QString t)
     //QToolTip::add(topicLineEdit, topicLabel->text());
 }
 
-void XChatMainView::giveInputFocus()
+void MainView::giveInputFocus()
 {
     m_inputLine->setFocus();
     //topicStack->raiseWidget(1);
     //topicStack->update();
 }
 
-void XChatMainView::entryDown()
+void MainView::entryDown()
 {
     char *c = history_down(&m_session->history);
 
@@ -367,7 +367,7 @@ void XChatMainView::entryDown()
 	m_inputLine->setText(c);
 }
 
-void XChatMainView::entryUp()
+void MainView::entryUp()
 {
     char *c = history_up(&m_session->history);
 
@@ -375,7 +375,7 @@ void XChatMainView::entryUp()
 	m_inputLine->setText(c);
 }
 
-void XChatMainView::entryEnter()
+void MainView::entryEnter()
 {
     if(!m_inputLine->text().isEmpty()) {
 	QString d = m_inputLine->text();
@@ -385,7 +385,7 @@ void XChatMainView::entryEnter()
     }
 }
 
-void XChatMainView::entryTab()
+void MainView::entryTab()
 {
     QString t = m_inputLine->text();
     int pos = m_inputLine->cursorPosition();
@@ -458,7 +458,7 @@ void aaa()
 }
 #endif
 
-void XChatMainView::completionMatches(const QStringList & matchlist)
+void MainView::completionMatches(const QStringList & matchlist)
 {
     if(matchlist.count() > 1) {
 	QString a = matchlist.join(" ");
@@ -467,35 +467,35 @@ void XChatMainView::completionMatches(const QStringList & matchlist)
     }
 }
 
-void XChatMainView::clearUserlist()
+void MainView::clearUserlist()
 {
     m_userList->clear();
 }
 
-void XChatMainView::showUserlist()
+void MainView::showUserlist()
 {
     if(m_userlistPanel->isHidden())
         m_userlistPanel->show();
     
 }
 
-void XChatMainView::hideUserlist()
+void MainView::hideUserlist()
 {
     if(!m_userlistPanel->isHidden())
             m_userlistPanel->hide();
 }
 
-void XChatMainView::insertUser(server * s, User * u, int index, int sel)
+void MainView::insertUser(server * s, User * u, int index, int sel)
 {
 showUserlist();
-    XChatUserlistItem *i=new XChatUserlistItem(m_userList, xchatapp->getUserIcon(s, u), u);
+    UserlistItem *i=new UserlistItem(m_userList, xchatapp->getUserIcon(s, u), u);
 	i->setUser(u);
 }
 
-bool XChatMainView::removeUser(User * u)
+bool MainView::removeUser(User * u)
 {
     bool wasSelected = false;
-	XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstChild();
+	UserlistItem *i = (UserlistItem *) m_userList->firstChild();
 
 	while( i ) {
 	if(i->getUser() == u) {
@@ -504,43 +504,43 @@ bool XChatMainView::removeUser(User * u)
 	    delete i;
 	    break;
 	}
-	i = (XChatUserlistItem *)i->nextSibling();
+	i = (UserlistItem *)i->nextSibling();
     }
     return wasSelected;
 
 }
 
-void XChatMainView::rehashUser(User *u)
+void MainView::rehashUser(User *u)
 {
-XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstChild();
+UserlistItem *i = (UserlistItem *) m_userList->firstChild();
 while( i ) {
 if (i->getUser() == u)
 {
 i->setUser(u);
 	return;
 }
-i = (XChatUserlistItem *)i->nextSibling();
+i = (UserlistItem *)i->nextSibling();
 }
 }
 
 
 /*
-XChatWidgetStack::XChatWidgetStack(QWidget * parent):QWidgetStack(parent)
+WidgetStack::WidgetStack(QWidget * parent):QWidgetStack(parent)
 {
 }
 
-XChatWidgetStack::~XChatWidgetStack()
+WidgetStack::~WidgetStack()
 {
 }
 
-QSize XChatWidgetStack::sizeHint() const
+QSize WidgetStack::sizeHint() const
 {
     return (QSize(1, 1));
 }
 */
 
 
-XChatTopicEdit::XChatTopicEdit(QWidget * parent):QTextEdit(parent)
+TopicEdit::TopicEdit(QWidget * parent):QTextEdit(parent)
 {
 	setVScrollBarMode(QScrollView::AlwaysOff);
 	setHScrollBarMode(QScrollView::AlwaysOff);
@@ -549,10 +549,10 @@ XChatTopicEdit::XChatTopicEdit(QWidget * parent):QTextEdit(parent)
 	setWordWrap(QTextEdit::NoWrap);
 }
 
-XChatTopicEdit::~XChatTopicEdit()
+TopicEdit::~TopicEdit()
 {
 }
-QSize XChatTopicEdit::sizeHint() const
+QSize TopicEdit::sizeHint() const
 {
   /*  QFontMetrics fm( font() );
     int h = QMAX(fm.lineSpacing(), 14) + 2*1;
@@ -564,7 +564,7 @@ QSize XChatTopicEdit::sizeHint() const
 					 return minimumSizeHint();
 }
 
-QSize XChatTopicEdit::minimumSizeHint() const
+QSize TopicEdit::minimumSizeHint() const
 {
     QFontMetrics fm = fontMetrics();
     int h = fm.height() + QMAX( 2*1, fm.leading() );
@@ -576,14 +576,14 @@ QSize XChatTopicEdit::minimumSizeHint() const
 
 
 
-void XChatTopicEdit::setTopicText(QString s)
+void TopicEdit::setTopicText(QString s)
 {
 	m_topicText=s;
 	setText(convertText(s));
 	QToolTip::add(this, "<b></b>"+text());
 }
 
-void XChatTopicEdit::keyPressEvent( QKeyEvent *e )
+void TopicEdit::keyPressEvent( QKeyEvent *e )
 {
  if (( e->key()==Key_Enter ) || (e->key()==Key_Return)) {
 	emit returnPressed();
@@ -594,35 +594,35 @@ void XChatTopicEdit::keyPressEvent( QKeyEvent *e )
  
 }
 
-void XChatTopicEdit::focusInEvent ( QFocusEvent * )
+void TopicEdit::focusInEvent ( QFocusEvent * )
 {
 	setText(escapeText(m_topicText));
 }
 
-void XChatTopicEdit::focusOutEvent ( QFocusEvent * )
+void TopicEdit::focusOutEvent ( QFocusEvent * )
 {
 	setText(convertText(m_topicText));
 }
 
 
 /*
-QSize XChatTopicEdit::sizeHint() const
+QSize TopicEdit::sizeHint() const
 {
     return (QSize(1, fontMetrics().height()));
 	}
 */	
 
 
-XChatInputLineEdit::XChatInputLineEdit(QWidget * parent):QLineEdit(parent)
+InputLineEdit::InputLineEdit(QWidget * parent):QLineEdit(parent)
 {
     installEventFilter(this);
 }
 
-XChatInputLineEdit::~XChatInputLineEdit()
+InputLineEdit::~InputLineEdit()
 {
 }
 
-bool XChatInputLineEdit::eventFilter(QObject * o, QEvent * e)
+bool InputLineEdit::eventFilter(QObject * o, QEvent * e)
 {
     switch (e->type()) {
 	case QEvent::KeyPress:
@@ -656,7 +656,7 @@ bool XChatInputLineEdit::eventFilter(QObject * o, QEvent * e)
     return QLineEdit::eventFilter(o, e);
 }
 
-XChatUserlistView::XChatUserlistView(QWidget * parent):KListView(parent)
+UserlistView::UserlistView(QWidget * parent):KListView(parent)
 {
 addColumn ( "");
 addColumn ( "User");
@@ -666,12 +666,12 @@ setAllColumnsShowFocus(true);
 ;//setSelectionMode(QListBox::Extended);
 }
 
-XChatUserlistView::~XChatUserlistView()
+UserlistView::~UserlistView()
 {
 }
 
 /*
-QSize XChatUserlistView::minimumSizeHint() const
+QSize UserlistView::minimumSizeHint() const
 {
     QSize n = QListBox::minimumSizeHint();
     int w=maxItemWidth()+style().pixelMetric(QStyle::PM_ScrollBarExtent)+2;
@@ -683,14 +683,14 @@ QSize XChatUserlistView::minimumSizeHint() const
 }*/
 
 /*
-void XChatUserlistView::resizeEvent(QResizeEvent * r)
+void UserlistView::resizeEvent(QResizeEvent * r)
 {
     KListView::resizeEvent(r);
     setColumnWidth(0, visibleWidth());
 }*/
 
 
-XChatUserlistItem::XChatUserlistItem(XChatUserlistView * list, QPixmap *pix, User *user)
+UserlistItem::UserlistItem(UserlistView * list, QPixmap *pix, User *user)
 : KListViewItem(list)
 {
 	m_pixmap=pix;
@@ -699,12 +699,12 @@ XChatUserlistItem::XChatUserlistItem(XChatUserlistView * list, QPixmap *pix, Use
 	setUser(user);
 }
 
-XChatUserlistItem::~XChatUserlistItem()
+UserlistItem::~UserlistItem()
 {
 }
 
 
-void XChatUserlistItem::setUser(User *user)
+void UserlistItem::setUser(User *user)
 {	
 	m_user=user;
 	kdDebug() << "--> New User Item: nick="<<user->nick<<" host="<<user->hostname<<endl;
@@ -713,16 +713,16 @@ void XChatUserlistItem::setUser(User *user)
 
 }
 
-QPixmap *XChatUserlistItem::getPixmap()
+QPixmap *UserlistItem::getPixmap()
 {
 	return m_pixmap;
 }
 
-int XChatUserlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
+int UserlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
 {
 	if (col==0)
 	{
-		XChatUserlistItem *xi=(XChatUserlistItem *)i;
+		UserlistItem *xi=(UserlistItem *)i;
 		int l=xchatapp->getUserLevel(xi->getPixmap());
 		int my=xchatapp->getUserLevel(m_pixmap);
 		if (my == l)
@@ -741,7 +741,7 @@ int XChatUserlistItem::compare ( QListViewItem * i, int col, bool ascending ) co
 	}
 }
 
-void XChatUserlistItem::paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int align )
+void UserlistItem::paintCell ( QPainter * p, const QColorGroup & cg, int col, int width, int align )
 {
 	    if (col==0)
 		{
@@ -752,10 +752,10 @@ void XChatUserlistItem::paintCell ( QPainter * p, const QColorGroup & cg, int co
 		}
 }
 
-/*void XChatUserlistItem::paint(QPainter * painter)
+/*void UserlistItem::paint(QPainter * painter)
 {
 
-    XChatUserlistView *view = static_cast < XChatUserlistView * >(listBox());
+    UserlistView *view = static_cast < UserlistView * >(listBox());
 
     int itemHeight = height(view);
     int yPos;
@@ -776,12 +776,12 @@ void XChatUserlistItem::paintCell ( QPainter * p, const QColorGroup & cg, int co
     }
 }
 
-int XChatUserlistItem::height(const QListBox * lb) const
+int UserlistItem::height(const QListBox * lb) const
 {
     return lb->fontMetrics().lineSpacing() + 2;
 }
 
-int XChatUserlistItem::width(const QListBox * lb) const
+int UserlistItem::width(const QListBox * lb) const
 {
     return 5 + lb->fontMetrics().width(text()) + 5 + 5 + 5;
     //+ listBox()->style().pixelMetric(QStyle::PM_ScrollBarExtent);

@@ -87,7 +87,7 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent,
     m_wrapBoundary = 15;
     m_autoResizeColumns = true;
     m_scrollType = AlwaysScroll;
-    m_doubleBuffer = false;
+    m_doubleBuffer = true;
 
     m_cursorSplit = new QCursor(Qt::SplitHCursor);
     m_cursorIbeam = new QCursor(Qt::IbeamCursor);
@@ -800,8 +800,8 @@ void TextView::paintText(int x, int y, int w, int h, QString text,
     p->setFont(*(m_buffer->font));	// TODO: only set if curfont != font
 
     //if (m_buffer->renderState->bg)
-	p->fillRect(x, y - m_buffer->lineHeight + m_buffer->lineDescent, w,
-		    h, QBrush(convColor(m_buffer->renderState->bg)));
+//	p->fillRect(x, y - m_buffer->lineHeight + m_buffer->lineDescent, w,
+//		    h, QBrush(convColor(m_buffer->renderState->bg)));
 
 
 if (m_buffer->renderState->underline)

@@ -9,8 +9,9 @@
 #include "../common/fe.h"
 #include "../common/cfgfiles.h"
 
+using namespace Vertigo;
 
-XChatTabWidget::XChatTabWidget(QWidget * parent, const char *name)
+TabWidget::TabWidget(QWidget * parent, const char *name)
 :KTabWidget(parent, name)
 {
 // TODO :: :when config arrives, add option to group tabs-- if false then enable this    
@@ -18,11 +19,11 @@ setTabReorderingEnabled(true);
     tabBar()->hide();
 }
 
-XChatTabWidget::~XChatTabWidget()
+TabWidget::~TabWidget()
 {
 }
 
-void XChatTabWidget::insertTab(QWidget * child, const QString & label,
+void TabWidget::insertTab(QWidget * child, const QString & label,
 			       int index)
 {
     KTabWidget::insertTab(child, label.left(prefs.truncchans), index);
@@ -48,7 +49,7 @@ void XChatTabWidget::insertTab(QWidget * child, const QString & label,
 
 }
 
-void XChatTabWidget::removePage(QWidget * w)
+void TabWidget::removePage(QWidget * w)
 {
     //setCurrentPage (currentPageIndex ()-1);
     KTabWidget::removePage(w);

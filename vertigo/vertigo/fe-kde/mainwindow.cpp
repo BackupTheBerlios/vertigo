@@ -40,17 +40,20 @@
 #include "../common/xchatc.h"
 
 #include "../common/fe.h"
+#include "tabwidget.h"
 #include "fe-kde.h"
 #include "app.h"
 #include "extraview.h"
 #include "serverlist.h"
 #include "configure.h"
 
-XChatMainWindow::XChatMainWindow(QWidget * parent)
-:  KMainWindow(parent, "XChatMainWindow", WType_TopLevel)
+using namespace Vertigo;
+
+MainWindow::MainWindow(QWidget * parent)
+:  KMainWindow(parent, "MainWindow", WType_TopLevel)
 {
 
-//m_statusBarWidget= new XChatStatusBarWidget(statusBar(), "Progress Bar");
+//m_statusBarWidget= new StatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
 	m_progressBar=new KProgress(statusBar(),"progressBar");
 m_progressBar->setFormat("Connecting...");
@@ -207,9 +210,9 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     resize(prefs.mainwindow_width, prefs.mainwindow_height);
     move(prefs.mainwindow_left, prefs.mainwindow_top);
 
-    XChatMainWindowLayout = new QVBoxLayout(this, 12, 6, "XChatMainWindowLayout");
+    MainWindowLayout = new QVBoxLayout(this, 12, 6, "MainWindowLayout");
 
-    m_tabWidget = new XChatTabWidget(this, "m_tabWidget");
+    m_tabWidget = new TabWidget(this, "m_tabWidget");
     m_tabWidget->setTabPosition(QTabWidget::Top);
 
     QPushButton *tabRemove = new QPushButton(m_tabWidget);
@@ -234,27 +237,27 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     tabNew->hide();
     connect(m_tabWidget, SIGNAL(currentChanged(QWidget *)), this, SLOT(slotTabChanged(QWidget *)));
 
-/*    XChatMainView *view = new XChatMainView(this);
+/*    MainView *view = new MainView(this);
 
     m_tabWidget->insertTab(view, "<none>");
 */
-    XChatMainWindowLayout->addWidget(m_tabWidget);
+    MainWindowLayout->addWidget(m_tabWidget);
     setCentralWidget(m_tabWidget);
 
-    m_mainViewList = new QPtrList < XChatMainView > ();
+    m_mainViewList = new QPtrList < MainView > ();
 
 //new KDCOPActionProxy ( actionCollection(), this ); 
 	
     
 }
-XChatMainView *XChatMainWindow::getMainView(session * sess)
+MainView *MainWindow::getMainView(session * sess)
 {
-    XChatMainView *v;
+    MainView *v;
 
     /*  QWidget *t = m_tabWidget->currentPage();
 
-       if (t->isA("XChatMainView")) {
-       v = (XChatMainView *) t;
+       if (t->isA("MainView")) {
+       v = (MainView *) t;
        if (!v->isUsed()) {
        v->setUsed(true);
        return v;
@@ -276,19 +279,19 @@ XChatMainView *XChatMainWindow::getMainView(session * sess)
 	}
     }
 
-    v = new XChatMainView(this, sess);
+    v = new MainView(this, sess);
     m_mainViewList->append(v);
     m_tabWidget->insertTab(v, "(none)", lastTab);
     kdDebug() << "added view" << endl;
     return v;
 }
 
-XChatMainWindow::~XChatMainWindow()
+MainWindow::~MainWindow()
 {
     // no need to delete child widgets, Qt does it all for us
 }
 
-void XChatMainWindow::resizeEvent(QResizeEvent * r)
+void MainWindow::resizeEvent(QResizeEvent * r)
 {
     /*KConfig *config = KGlobal::config();
 
@@ -303,13 +306,13 @@ void XChatMainWindow::resizeEvent(QResizeEvent * r)
     prefs.mainwindow_top = y();
 }
 
-void XChatMainWindow::slotTabChanged(QWidget * t)
+void MainWindow::slotTabChanged(QWidget * t)
 {
     kdDebug() << "slotTabChanged" << endl;
     if(!t)
 	return;
-    if(t->isA("XChatMainView")) {
-	XChatMainView *v = (XChatMainView *) t;
+    if(t->isA("MainView")) {
+	MainView *v = (MainView *) t;
 
 	current_sess = v->getSession();
 	current_tab = current_sess;
@@ -335,7 +338,7 @@ void XChatMainWindow::slotTabChanged(QWidget * t)
     }
 }
 
-void XChatMainWindow::showProgressBar()
+void MainWindow::showProgressBar()
 {
     kdDebug() << "showProgressBar" << endl;
     //static int did=0;
@@ -353,7 +356,7 @@ void XChatMainWindow::showProgressBar()
     }
 }
 
-void XChatMainWindow::hideProgressBar()
+void MainWindow::hideProgressBar()
 {
     kdDebug() << "hideProgressBar" << endl;
     if(!statusBar()->isHidden()) {
@@ -365,7 +368,7 @@ void XChatMainWindow::hideProgressBar()
     }
 }
 
-void XChatMainWindow::forwardLoop()
+void MainWindow::forwardLoop()
 {
     m_progressBar->setProgress(m_progressBar->progress() + 1);
     if(m_progressBar->progress() > m_progressBar->totalSteps()) {
@@ -376,7 +379,7 @@ void XChatMainWindow::forwardLoop()
 
 
 
-void XChatMainWindow::setNumbers(int ops, int total)
+void MainWindow::setNumbers(int ops, int total)
 {
     kdDebug() << "setNumbers" << ops << " "<<total << endl;
     QString text = "%1 %2, %3 %4";
@@ -388,7 +391,7 @@ void XChatMainWindow::setNumbers(int ops, int total)
 }
 
 
-void XChatMainWindow::setLag(int lag)
+void MainWindow::setLag(int lag)
 {
     kdDebug() << "setLag" << lag << endl;
     QString text = "%1 %2";
@@ -399,12 +402,12 @@ void XChatMainWindow::setLag(int lag)
 
 }
 
-void XChatMainWindow::slotServerList()
+void MainWindow::slotServerList()
 {
     fe_serverlist_open(current_sess);
 }
 
-void XChatMainWindow::slotNewServerWindow()
+void MainWindow::slotNewServerWindow()
 {
     int old = prefs.tabchannels;
 
@@ -413,7 +416,7 @@ void XChatMainWindow::slotNewServerWindow()
     prefs.tabchannels = old;
 }
 
-void XChatMainWindow::slotNewChannelWindow()
+void MainWindow::slotNewChannelWindow()
 {
     int old = prefs.tabchannels;
 
@@ -422,7 +425,7 @@ void XChatMainWindow::slotNewChannelWindow()
     prefs.tabchannels = old;
 }
 
-void XChatMainWindow::slotNewServerTab()
+void MainWindow::slotNewServerTab()
 {
     int old = prefs.tabchannels;
 
@@ -431,7 +434,7 @@ void XChatMainWindow::slotNewServerTab()
     prefs.tabchannels = old;
 }
 
-void XChatMainWindow::slotNewChannelTab()
+void MainWindow::slotNewChannelTab()
 {
     int old = prefs.tabchannels;
 
@@ -440,11 +443,11 @@ void XChatMainWindow::slotNewChannelTab()
     prefs.tabchannels = old;
 }
 
-void XChatMainWindow::slotDetachTab()
+void MainWindow::slotDetachTab()
 {
     /*if (m_detached) {
        // xxx: widget may not be xchatmainview
-       XChatMainView *v = (XChatMainView *) m_tabWidget->currentPage();
+       MainView *v = (MainView *) m_tabWidget->currentPage();
        QString label = m_tabWidget->tabLabel(v);
 
        v->reparent(v->getSession()->gui->win, QPoint(0, 0), false);
@@ -456,25 +459,25 @@ void XChatMainWindow::slotDetachTab()
     QWidget *t = m_tabWidget->currentPage();
 
     if(viewCount() != 1) {
-	XChatMainWindow *w = xchatapp->createNewWindow();
+	MainWindow *w = xchatapp->createNewWindow();
 	QWidget *t = m_tabWidget->currentPage();
 
-if(t->isA("XChatMainView")) {
-XChatMainView *v = (XChatMainView *) t;
+if(t->isA("MainView")) {
+MainView *v = (MainView *) t;
 v->setWindow(w);
 }
 else{
-    XChatContainerView *v=(XChatContainerView *)t;
+    ContainerView *v=(ContainerView *)t;
     v->setWindow(w);
 }
 /*
-	if(t->isA("XChatMainView")) {
-	    XChatMainView *v = (XChatMainView *) t;
+	if(t->isA("MainView")) {
+	    MainView *v = (MainView *) t;
 
 	    v->getSession()->gui->win = w;
-	} else if(t->isA("XChatRawlogView")) {
+	} else if(t->isA("RawlogView")) {
 
-	    XChatRawlogView *v = (XChatRawlogView *) t;
+	    RawlogView *v = (RawlogView *) t;
 
 	    v->setWindow(w);
 	}*/
@@ -487,17 +490,17 @@ else{
     //}
 }
 
-void XChatMainWindow::slotCloseTab()
+void MainWindow::slotCloseTab()
 {
     QWidget *t = m_tabWidget->currentPage();
 
-    if(t->isA("XChatMainView")) {
-	XChatMainView *m = (XChatMainView *) t;
+    if(t->isA("MainView")) {
+	MainView *m = (MainView *) t;
 
 	m_mainViewList->remove(m);
 	fe_close_window(current_sess);
-    } else if(t->isA("XChatRawlogView")) {
-	XChatRawlogView *m = (XChatRawlogView *) t;
+    } else if(t->isA("RawlogView")) {
+	RawlogView *m = (RawlogView *) t;
 
 	m->getServer()->gui->rawlog = 0;
 	t->close(true);
@@ -507,17 +510,17 @@ void XChatMainWindow::slotCloseTab()
     }
 }
 
-void XChatMainWindow::slotQuit()
+void MainWindow::slotQuit()
 {
     hide();
     kapp->quit();
 }
 
-int XChatMainWindow::lastSameServerTabIndex()
+int MainWindow::lastSameServerTabIndex()
 {
 int lastTab = -1;
 session *s;
-XChatMainView *v;
+MainView *v;
 for(v = m_mainViewList->first(); v; v = m_mainViewList->next()) {
 s = v->getSession();
 if(s && (s->server == current_sess->server)) {
@@ -529,11 +532,11 @@ return lastTab;
 }
 
 
-void XChatMainWindow::slotChanlist()
+void MainWindow::slotChanlist()
 {
 if(!current_sess->server->gui->chanlist) {
 	
-        XChatChanlistView *l = new XChatChanlistView(this, this, current_sess->server);
+        ChanlistView *l = new ChanlistView(this, this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;
         m_tabWidget->insertTab(l, "channels", lastSameServerTabIndex());
@@ -542,10 +545,10 @@ if(!current_sess->server->gui->chanlist) {
     }
 }
 
-void XChatMainWindow::slotURLGrabber()
+void MainWindow::slotURLGrabber()
 {
 if(!xchatapp->urlGrabber()) {
-        XChatURLGrabberView *l = new XChatURLGrabberView(this, this);
+        URLGrabberView *l = new URLGrabberView(this, this);
         xchatapp->setUrlGrabber(l);
         m_tabWidget->insertTab(l, "urls", -1);
     } else {
@@ -553,10 +556,10 @@ if(!xchatapp->urlGrabber()) {
     }
 }
 
-void XChatMainWindow::slotChatList()
+void MainWindow::slotChatList()
 {
 if(!xchatapp->chatList()) {
-        XChatChatListView *l = new XChatChatListView(this, this);
+        ChatListView *l = new ChatListView(this, this);
         xchatapp->setChatList(l);
         m_tabWidget->insertTab(l, "chats", -1);
     } else {
@@ -564,10 +567,10 @@ if(!xchatapp->chatList()) {
     }
 }
 
-void XChatMainWindow::slotTransfers()
+void MainWindow::slotTransfers()
 {
 if(!xchatapp->transfers()) {
-        XChatXferView *l = new XChatXferView(this, this);
+        XferView *l = new XferView(this, this);
         xchatapp->setTransfers(l);
         m_tabWidget->insertTab(l, "transfers", -1);
     } else {
@@ -575,10 +578,10 @@ if(!xchatapp->transfers()) {
     }
 }
 
-void XChatMainWindow::slotNotifyList()
+void MainWindow::slotNotifyList()
 {
 if(!xchatapp->notifyList()) {
-        XChatNotifyListView *l = new XChatNotifyListView(this, this);
+        NotifyListView *l = new NotifyListView(this, this);
         xchatapp->setNotifyList(l);
         m_tabWidget->insertTab(l, "notify", -1);
     } else {
@@ -586,11 +589,11 @@ if(!xchatapp->notifyList()) {
     }
 }
 
-void XChatMainWindow::slotIgnoreList()
+void MainWindow::slotIgnoreList()
 {
 	/*
 if(!xchatapp->ignoreList()) {
-        XChatIgnoreListView *l = new XChatIgnoreListView(this, this);
+        IgnoreListView *l = new IgnoreListView(this, this);
         xchatapp->setIgnoreList(l);
         m_tabWidget->insertTab(l, "ignores", -1);
     } else {
@@ -598,10 +601,10 @@ if(!xchatapp->ignoreList()) {
     }*/
 }
 
-void XChatMainWindow::slotBanlist()
+void MainWindow::slotBanlist()
 {
 if(!xchatapp->banList()) {
-        XChatBanListView *l = new XChatBanListView(this, this);
+        BanListView *l = new BanListView(this, this);
         xchatapp->setBanList(l);
         m_tabWidget->insertTab(l, "bans", -1);
     } else {
@@ -611,7 +614,7 @@ if(!xchatapp->banList()) {
 
 
 
-void XChatMainWindow::slotCharChart()
+void MainWindow::slotCharChart()
 {
 	 KCharSelect *l = xchatapp->charChart();
 	 
@@ -622,10 +625,10 @@ void XChatMainWindow::slotCharChart()
 }
 
 
-void XChatMainWindow::slotRawlog()
+void MainWindow::slotRawlog()
 {
     if(!current_sess->server->gui->rawlog) {
-	XChatRawlogView *l = new XChatRawlogView(this, this, current_sess->server);
+	RawlogView *l = new RawlogView(this, this, current_sess->server);
 
 	current_sess->server->gui->rawlog = l;
 	m_tabWidget->insertTab(l, "rawlog", lastSameServerTabIndex());
@@ -635,7 +638,7 @@ void XChatMainWindow::slotRawlog()
 
 }
 
-void XChatMainWindow::slotMenubar()
+void MainWindow::slotMenubar()
 {
     if(menuBar()->isVisible())
 	menuBar()->hide();
@@ -648,7 +651,7 @@ void XChatMainWindow::slotMenubar()
     config->sync();
 }
 
-void XChatMainWindow::slotToolbar()
+void MainWindow::slotToolbar()
 {
     if(toolBar()->isVisible())
 	toolBar()->hide();
@@ -661,7 +664,7 @@ void XChatMainWindow::slotToolbar()
     config->sync();
 }
 
-void XChatMainWindow::slotStatusbar()
+void MainWindow::slotStatusbar()
 {
     if(statusBar()->isVisible())
 	statusBar()->hide();
@@ -677,12 +680,12 @@ void XChatMainWindow::slotStatusbar()
 
 
 
-void XChatMainWindow::slotConfigureKeys()
+void MainWindow::slotConfigureKeys()
 {
     KKeyDialog::configure(actionCollection(), this);
 }
 
-void XChatMainWindow::slotConfigureToolbars()
+void MainWindow::slotConfigureToolbars()
 {
     KEditToolbar edit(factory());
 
@@ -690,59 +693,59 @@ void XChatMainWindow::slotConfigureToolbars()
     edit.exec();
 }
 
-void XChatMainWindow::slotPreferences()
+void MainWindow::slotPreferences()
 {
-    XChatConfigureDialog *n = new XChatConfigureDialog(this);
+    ConfigureDialog *n = new ConfigureDialog(this);
 
     n->show();
 }
 
-void XChatMainWindow::slotTab10()
+void MainWindow::slotTab10()
 {
 	m_tabWidget->setCurrentPage(10);
 }
 
-void XChatMainWindow::slotTab1()
+void MainWindow::slotTab1()
 {
     m_tabWidget->setCurrentPage(0);
 }
 
-void XChatMainWindow::slotTab2()
+void MainWindow::slotTab2()
 {
     m_tabWidget->setCurrentPage(1);
 }
 
-void XChatMainWindow::slotTab3()
+void MainWindow::slotTab3()
 {
     m_tabWidget->setCurrentPage(2);
 }
 
-void XChatMainWindow::slotTab4()
+void MainWindow::slotTab4()
 {
     m_tabWidget->setCurrentPage(3);
 }
 
-void XChatMainWindow::slotTab5()
+void MainWindow::slotTab5()
 {
     m_tabWidget->setCurrentPage(4);
 }
 
-void XChatMainWindow::slotTab6()
+void MainWindow::slotTab6()
 {
     m_tabWidget->setCurrentPage(5);
 }
 
-void XChatMainWindow::slotTab7()
+void MainWindow::slotTab7()
 {
     m_tabWidget->setCurrentPage(6);
 }
 
-void XChatMainWindow::slotTab8()
+void MainWindow::slotTab8()
 {
     m_tabWidget->setCurrentPage(7);
 }
 
-void XChatMainWindow::slotTab9()
+void MainWindow::slotTab9()
 {
     m_tabWidget->setCurrentPage(8);
 }
@@ -751,7 +754,7 @@ void XChatMainWindow::slotTab9()
 
 
 
-void XChatMainWindow::slotNextTab()
+void MainWindow::slotNextTab()
 {
 	int i=m_tabWidget->currentPageIndex()+1;
 	if (i== m_tabWidget->count())
@@ -760,7 +763,7 @@ void XChatMainWindow::slotNextTab()
 }
 
 
-void XChatMainWindow::slotPreviousTab()
+void MainWindow::slotPreviousTab()
 {
 	int i=m_tabWidget->currentPageIndex()-1;
 	if (i==-1)
@@ -770,23 +773,23 @@ void XChatMainWindow::slotPreviousTab()
 
 
 
-void XChatMainWindow::raiseView(XChatMainView *v)
+void MainWindow::raiseView(MainView *v)
 {
 	m_tabWidget->showPage(v);
 }
 
-int XChatMainWindow::viewCount()
+int MainWindow::viewCount()
 {
     return m_tabWidget->count();
 }
 
-void XChatMainWindow::focusInEvent(QFocusEvent *)
+void MainWindow::focusInEvent(QFocusEvent *)
 {
     kdDebug() << "focusinwindow" << endl;
     slotTabChanged(m_tabWidget->currentPage());
 }
 
-void XChatMainWindow::windowActivationChange(bool oldActive)
+void MainWindow::windowActivationChange(bool oldActive)
 {
     kdDebug() << caption() << "::windowActivationChange :: " << oldActive << endl;
     if(!oldActive) {
@@ -794,12 +797,12 @@ void XChatMainWindow::windowActivationChange(bool oldActive)
     }
 }
 
-bool XChatMainWindow::isCurrent(session *sess)
+bool MainWindow::isCurrent(session *sess)
 {
 	    QWidget *t = m_tabWidget->currentPage();
 
-		    if(t->isA("XChatMainView")) {
-			    XChatMainView *m = (XChatMainView *) t;
+		    if(t->isA("MainView")) {
+			    MainView *m = (MainView *) t;
 				if (m->getSession()==sess)
 				{
 					return true;
@@ -808,7 +811,7 @@ bool XChatMainWindow::isCurrent(session *sess)
 				return false;
 }
 
-void XChatMainWindow::closeEvent(QCloseEvent * e)
+void MainWindow::closeEvent(QCloseEvent * e)
 {
 
     kdDebug() << "vc=" << viewCount() << " wc=" << xchatapp->windowCount() << endl;

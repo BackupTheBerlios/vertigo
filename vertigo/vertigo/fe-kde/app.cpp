@@ -1,13 +1,30 @@
-#include "app.h"
-
+// kde includes
 #include <dcopclient.h>
 #include <kstandarddirs.h>
-#include <qvbox.h>
 #include <klocale.h>
 #include <kdebug.h>
 #include <kpassivepopup.h>
-#include <qcolor.h>
 #include <kaboutdata.h>
+
+// qt includes
+#include <qvbox.h>
+#include <qcolor.h>
+
+// system
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+// app includes
+#include "app.h"
+#include "fe-kde.h"
+#include "mainwindow.h"
+#include "serverlist.h"
+#include "textwidget.h"
+
+
+// backend includes
 #include "../common/xchat.h"
 #include "../common/xchatc.h"
 #include "../common/fe.h"
@@ -23,67 +40,69 @@
 #include "serverlist.h"
 #include "textwidget.h"
 
-XChatApp::XChatApp():KApplication()
+using namespace Vertigo;
+
+App():KApplication()
 {
 
-KGlobal::locale()->insertCatalogue("xchat-common");
+	KGlobal::locale()->insertCatalogue("xchat-common");
     loadUserIcons();
+
     m_idleList = new QPtrList < TimerData > ();
     m_timeoutList = new QPtrList < TimerData > ();
+	m_socketList = new QPtrList < SocketData > ();
 
     m_idleList->setAutoDelete(true);
     m_timeoutList->setAutoDelete(true);
-
-    m_socketList = new QPtrList < SocketData > ();
     m_socketList->setAutoDelete(true);
 
-
-m_nextSocketID=1;
+	m_nextSocketID=1;
 
     m_mainWindowCount = 0;
     m_otherWindowCount = 0;
-    m_serverList = 0;
+    
+	// global widgets
+	m_serverList = 0;
     m_charChart=0;
- m_banList=0;
-m_ignoreList=0;
-m_notifyList=0;
-m_transfers=0;
-m_chatList=0;
-m_urlGrabber=0;
+	m_banList=0;
+	m_ignoreList=0;
+	m_notifyList=0;
+	m_transfers=0;
+	m_chatList=0;
+	m_urlGrabber=0;
 
-    m_palette.resize(23);// = new QIntDict<QColor>(23);
+	// color palette
+    m_palette.resize(23);
     m_palette.setAutoDelete(true);
     loadDefaultPalette();
     loadPalette();
 }
 
-XChatMainWindow *XChatApp::createNewWindow()
+MainWindow *App::createNewWindow()
 {
-    XChatMainWindow *win;
+    MainWindow *win = new MainWindow(0);
 
-    win = new XChatMainWindow(0);
     m_mainWindowCount++;
     win->show();
     return win;
 }
 
-XChatMainWindow *XChatApp::getMainWindow(bool forceWindow)
+MainWindow *App::getMainWindow(bool forceWindow)
 {
     if(!m_mainWindowCount || forceWindow) {
-	return createNewWindow();
+		return createNewWindow();
     }
     return current_sess->gui->win;
-
 }
 
-XChatServerlist *XChatApp::serverList()
+ServerList *App::serverList()
 {
     if(!m_serverList)
-	m_serverList = new XChatServerlist(0);
+		m_serverList = new ServerList(0);
     return m_serverList;
 }
 
-KCharSelect *XChatApp::charChart()
+KCharSelect *App::charChart()
 {
 	if(!m_charChart)
 	{
@@ -93,80 +112,83 @@ KCharSelect *XChatApp::charChart()
 	return m_charChart;
 }
 
-XChatURLGrabberView *XChatApp::urlGrabber()
+URLGrabberView *App::urlGrabber()
 {
 	return m_urlGrabber;
 }
 
-        XChatChatListView *XChatApp::chatList()
+ChatListView *App::chatList()
 {
 	return m_chatList;
 }
 
-        XChatXferView *XChatApp::transfers()
+XferView *App::transfers()
 {
 	return m_transfers;
 }
 
-        XChatNotifyListView *XChatApp::notifyList()
+NotifyListView *App::notifyList()
 {
 	return m_notifyList;
 }
 
-        XChatIgnoreListView *XChatApp::ignoreList()
+IgnoreListView *App::ignoreList()
 {
 	return m_ignoreList;
 }
 
-        XChatBanListView *XChatApp::banList()
+BanListView *App::banList()
 {
 	return m_banList;
 }
 
-void XChatApp::setUrlGrabber(XChatURLGrabberView* v)
+void App::setUrlGrabber(URLGrabberView* v)
 {
 	m_urlGrabber=v;
 }
 
-void XChatApp::setChatList(XChatChatListView*v)
+void App::setChatList(ChatListView*v)
 {
 	m_chatList=v;
 }
 
-void XChatApp::setTransfers(XChatXferView*v)
+void App::setTransfers(XferView*v)
 {
 	m_transfers=v;
 }
 
-void XChatApp::setNotifyList(XChatNotifyListView* nl)
+void App::setNotifyList(NotifyListView* nl)
 {
-m_notifyList=nl;
+	m_notifyList=nl;
 }
 
-void XChatApp::setBanList(XChatBanListView* v)
+void App::setBanList(BanListView* v)
 {
 	m_banList=v;
 }
 
-void XChatApp::removeServerlistWindow()
+void App::removeServerlistWindow()
 {
     m_serverList = 0;
     m_otherWindowCount--;
 }
 
-void XChatApp::removeMainWindow()
+
+void App::removeMainWindow()
 {
     m_mainWindowCount--;
 }
 
-int XChatApp::windowCount()
+//! Return number of windows we have open.
+
+int App::windowCount()
 {
     return m_mainWindowCount + m_otherWindowCount;
 }
 
-// taken from fe-gtk
+//! Load palette from default colors.
 
-void XChatApp::loadDefaultPalette()
+void App::loadDefaultPalette()
 {
     m_palette.insert(0, new QColor(207, 207, 207));
     m_palette.insert(1, new QColor(0, 0, 0));
@@ -193,12 +215,17 @@ void XChatApp::loadDefaultPalette()
     m_palette.insert(22, new QColor(245, 0, 0));
 }
 
-XChatPalette XChatApp::palette()
+
+//! Return global color palette.
+
+Palette App::palette()
 {
     return m_palette;
 }
 
-void XChatApp::loadPalette()
+//! Load xchat palette from disk.
+
+void App::loadPalette()
 {
     int i, l, fh, res;
     char prefname[256];
@@ -238,11 +265,12 @@ void XChatApp::loadPalette()
 
 }
 
-void XChatApp::loadUserIcons()
+//! Load userlist icons from disk.
+
+void App::loadUserIcons()
 {
     QString dir = KGlobal::dirs()->findResource("data", "vertigo/pics/");
 
-    kdDebug() << "loadUserIcons from " << dir << endl;
     m_opPix = new QPixmap(dir + "op.png");
     m_hopPix = new QPixmap(dir + "hop.png");
     m_voicePix = new QPixmap(dir + "voice.png");
@@ -250,7 +278,9 @@ void XChatApp::loadUserIcons()
     m_purplePix = new QPixmap(dir + "purple.png");
 }
 
-QPixmap *XChatApp::getUserIcon(server * serv, User * user)
+//! Return the correct icon for a given user on a particular server.
+
+QPixmap *App::getUserIcon(server * serv, User * user)
 {
     char *pre;
     int level;
@@ -294,7 +324,11 @@ QPixmap *XChatApp::getUserIcon(server * serv, User * user)
     return 0;
 }
 
-int XChatApp::getUserLevel(QPixmap *p)
+
+//! Returns the user level based on what icon an user has been
+//! assigned- useful for quickly comparing one user and another.
+
+int App::getUserLevel(QPixmap *p)
 {
 	if (p==NULL)
 		return 1;
@@ -314,7 +348,7 @@ int XChatApp::getUserLevel(QPixmap *p)
 
 
 
-int XChatApp::addTimeoutFunction(int interval, void *fn, void *args)
+int App::addTimeoutFunction(int interval, void *fn, void *args)
 {
     bool idle = false;
 
@@ -343,7 +377,7 @@ int XChatApp::addTimeoutFunction(int interval, void *fn, void *args)
     return dat->timer->timerId();
 }
 
-void XChatApp::removeTimeoutFunction(int timerId)
+void App::removeTimeoutFunction(int timerId)
 {
     TimerData *dat;
 
@@ -357,7 +391,7 @@ void XChatApp::removeTimeoutFunction(int timerId)
 
 }
 
-void XChatApp::execTimeoutFunction()
+void App::execTimeoutFunction()
 {
     QTimer *t = (QTimer *) sender();
 
@@ -378,12 +412,12 @@ void XChatApp::execTimeoutFunction()
 }
 
 
-void XChatApp::addIdleFunction(void *fn, void *args)
+void App::addIdleFunction(void *fn, void *args)
 {
     addTimeoutFunction(0, fn, args);
 }
 
-void XChatApp::execIdleFunction()
+void App::execIdleFunction()
 {
     if(m_idleList->isEmpty()) {
 	kdDebug() << "!!!!!whoops!!" << endl;
@@ -401,7 +435,7 @@ void XChatApp::execIdleFunction()
     }
 }
 
-int XChatApp::addInputFunction(int fd, int flags, void *func, void *data)
+int App::addInputFunction(int fd, int flags, void *func, void *data)
 {
     SocketData *dat = new SocketData;
 
@@ -442,7 +476,7 @@ dat->excen = excen;
     return (dat->id);
 }
 
-void XChatApp::removeInputFunction(int id)
+void App::removeInputFunction(int id)
 {
     SocketData *dat;
 kdDebug() << "   ===  remove socket notifier: id="<< id <<endl;
@@ -466,7 +500,7 @@ kdDebug() << "   ===  remove socket notifier: id="<< id <<endl;
     }
 }
 
-void XChatApp::socketReady(int fd)
+void App::socketReady(int fd)
 {
     QSocketNotifier *sn = (QSocketNotifier *) sender();
     int cond = 0;
@@ -500,32 +534,32 @@ void XChatApp::socketReady(int fd)
 
 }
 
-void XChatApp::getString(char *prompt, char *def, void *callback, void *ud)
+void App::getString(char *prompt, char *def, void *callback, void *ud)
 {
-    XChatInputDialog *i = new XChatInputDialog(this, prompt, def, callback, ud);
+    InputDialog *i = new InputDialog(this, prompt, def, callback, ud);
 
     connect(i, SIGNAL(dialogDone()), this, SLOT(dialogInputHandled()));
     i->show();
 }
 
-void XChatApp::getInt(char *prompt, int def, void *callback, void *ud)
+void App::getInt(char *prompt, int def, void *callback, void *ud)
 {
-    XChatInputDialog *i = new XChatInputDialog(this, prompt, def, callback, ud);
+    InputDialog *i = new InputDialog(this, prompt, def, callback, ud);
 
     connect(i, SIGNAL(dialogDone()), this, SLOT(dialogInputHandled()));
     i->show();
 }
 
-void XChatApp::dialogInputHandled()
+void App::dialogInputHandled()
 {
-    XChatInputDialog *i = (XChatInputDialog *) sender();
+    InputDialog *i = (InputDialog *) sender();
 
-    if(i->getType() == XChatInputDialog::StringDialog) {
+    if(i->getType() == InputDialog::StringDialog) {
 	StringInputFunc fn = i->getStringFunc();
 
 	if(fn)
 	    (*fn) (i->cancelled(), i->getString().latin1(), i->getUserData());
-    } else if(i->getType() == XChatInputDialog::IntDialog) {
+    } else if(i->getType() == InputDialog::IntDialog) {
 	IntInputFunc fn = i->getIntFunc();
 
 	if(fn)
@@ -534,12 +568,12 @@ void XChatApp::dialogInputHandled()
     delete i;
 }
 
-XChatCleanupHandler::XChatCleanupHandler()
+CleanupHandler::CleanupHandler()
 {
 
 }
 
-void XChatCleanupHandler::cleanup()
+void CleanupHandler::cleanup()
 {
     //idea taken from kmail
     xchatapp->dcopClient()->suspend();
@@ -547,7 +581,7 @@ void XChatCleanupHandler::cleanup()
     xchatapp->enter_loop();
 }
 
-void XChatCleanupHandler::startCleanupLoop()
+void CleanupHandler::startCleanupLoop()
 {
     KPassivePopup *popup = new KPassivePopup();
     QVBox *box = popup->standardView(xchatapp->aboutData()->programName(),
@@ -568,7 +602,7 @@ void XChatCleanupHandler::startCleanupLoop()
     
 }
 
-void XChatCleanupHandler::forwardLoop()
+void CleanupHandler::forwardLoop()
 {
  //   if (!m_progress)
    //       return;
@@ -579,7 +613,7 @@ void XChatCleanupHandler::forwardLoop()
     //}
 }
 
-XChatInputDialog::XChatInputDialog(QObject * parent, char *prompt, int def, void *callback, void *ud)
+InputDialog::InputDialog(QObject * parent, char *prompt, int def, void *callback, void *ud)
 :QDialog()
 {
     //setParent(parent);
@@ -596,7 +630,7 @@ XChatInputDialog::XChatInputDialog(QObject * parent, char *prompt, int def, void
     setup(QString(prompt), num);
 }
 
-XChatInputDialog::XChatInputDialog(QObject * parent, char *prompt, char *def, void *callback, void *ud)
+InputDialog::InputDialog(QObject * parent, char *prompt, char *def, void *callback, void *ud)
 :QDialog()
 {
 
@@ -611,7 +645,7 @@ XChatInputDialog::XChatInputDialog(QObject * parent, char *prompt, char *def, vo
     setup(QString(prompt), QString(def));
 }
 
-void XChatInputDialog::setup(QString prompt, QString def)
+void InputDialog::setup(QString prompt, QString def)
 {
     setCaption(prompt);
 
@@ -653,17 +687,17 @@ void XChatInputDialog::setup(QString prompt, QString def)
     connect(pushButton2, SIGNAL(clicked()), this, SLOT(cancelledClicked()));
 }
 
-XChatInputDialog::~XChatInputDialog()
+InputDialog::~InputDialog()
 {
 }
 
-void XChatInputDialog::okClicked()
+void InputDialog::okClicked()
 {
     m_cancelled = false;
     emit dialogDone();
 }
 
-void XChatInputDialog::cancelledClicked()
+void InputDialog::cancelledClicked()
 {
     m_cancelled = true;
     emit dialogDone();

@@ -2,6 +2,9 @@
 #define APP_H
 
 #include <kapplication.h>
+#include <kcharselect.h>
+#include <kprogress.h>
+
 #include <qptrlist.h>
 #include <qtimer.h>
 #include <qsocketnotifier.h>
@@ -11,16 +14,10 @@
 #include <qspinbox.h>
 #include <qlayout.h>
 #include <qtimer.h>
-#include <kprogress.h>
 #include <qlineedit.h>
 #include <qdialog.h>
 #include <qcolor.h>
 #include <qintdict.h>
-#include <kcharselect.h>
-
-#define xchatapp (static_cast<XChatApp*>(kapp))
-
-
 
 #include "../common/xchat.h"
 #include "../common/userlist.h"
@@ -32,17 +29,16 @@
 #include "extraview.h"
 
 
-class XChatServerlist;
-class XChatURLGrabberView;
-class XChatChatListView;
-class XChatXferView;
-class XChatNotifyListView;
-class XChatIgnoreListView;
-class XChatBanListView;
-class KCharSelect;
+namespace Vertigo {
 
-
-
+#define xchatapp (static_cast<App*>(kapp))
+class Serverlist;
+class URLGrabberView;
+class ChatListView;
+class XferView;
+class NotifyListView;
+class IgnoreListView;
+class BanListView;
 
 typedef int (*TimerFunc) (void *data);
 typedef int (*SocketFunc) (void *source, int con, void *data);
@@ -67,27 +63,25 @@ typedef struct SocketData {
 } SocketData;
 
 
-class XChatApp:public KApplication {
+class App:public KApplication {
   Q_OBJECT public:
-     XChatApp();
+     App();
 
-    XChatServerlist *serverList();
-KCharSelect *charChart();
-XChatURLGrabberView *urlGrabber();
-	XChatChatListView *chatList();
-	XChatXferView *transfers();
-	XChatNotifyListView *notifyList();
-	XChatIgnoreListView *ignoreList();
-	XChatBanListView *banList();
+    Vertigo::Serverlist *serverList();
+	KCharSelect *charChart();
+	Vertigo::URLGrabberView *urlGrabber();
+	Vertigo::ChatListView *chatList();
+	Vertigo::XferView *transfers();
+	Vertigo::NotifyListView *notifyList();
+	Vertigo::IgnoreListView *ignoreList();
+	Vertigo::BanListView *banList();
 
-void loadDefaultPalette();
-void loadPalette();
+	void loadDefaultPalette();
+	void loadPalette();
    
-XChatPalette palette();
-
-
-int getUserLevel(QPixmap *p);
-
+	Vertigo::Palette palette();
+	
+	int getUserLevel(QPixmap *p);
 
     int addTimeoutFunction(int interval, void *fn, void *args);
     void removeTimeoutFunction(int timerId);
@@ -101,38 +95,32 @@ int getUserLevel(QPixmap *p);
     void loadUserIcons();
     QPixmap *getUserIcon(server * serv, User * user);
 
-    XChatMainWindow *createNewWindow();
-    XChatMainWindow *getMainWindow(bool force);
+    Vertigo::MainWindow *createNewWindow();
+    Vertigo::MainWindow *getMainWindow(bool force);
     void removeMainWindow();
     void removeServerlistWindow();
 
     int windowCount();
 
-void setUrlGrabber(XChatURLGrabberView* v);
-void setChatList(XChatChatListView*v);
-void setTransfers(XChatXferView*v);
-void setNotifyList(XChatNotifyListView* nl);
-void setBanList(XChatBanListView* v);
-
-
-
-
-
-
+	void setUrlGrabber(Vertigo::URLGrabberView* v);
+	void setChatList(Vertigo::ChatListView*v);
+	void setTransfers(Vertigo::XferView*v);
+	void setNotifyList(Vertigo::NotifyListView* nl);
+	void setBanList(Vertigo::BanListView* v);
     
-    public slots:void execTimeoutFunction();
+	public slots:void execTimeoutFunction();
     void execIdleFunction();
     void socketReady(int);
     void dialogInputHandled();
 
-  private:
-     QPtrList < TimerData > *m_idleList;
-     QPtrList < TimerData > *m_timeoutList;
-     QPtrList < SocketData > *m_socketList;
+	private:
+    QPtrList < TimerData > *m_idleList;
+    QPtrList < TimerData > *m_timeoutList;
+    QPtrList < SocketData > *m_socketList;
     int m_mainWindowCount;
     int m_otherWindowCount;
 
-int m_nextSocketID;
+	int m_nextSocketID;
 
     QPixmap *m_opPix;
     QPixmap *m_hopPix;
@@ -140,44 +128,40 @@ int m_nextSocketID;
     QPixmap *m_redPix;
     QPixmap *m_purplePix;
 
-    XChatServerlist *m_serverList;
-XChatPalette m_palette;
-KCharSelect *m_charChart;
-        XChatURLGrabberView *m_urlGrabber;
-        XChatChatListView *m_chatList;
-        XChatXferView *m_transfers;
-        XChatNotifyListView *m_notifyList;
-        XChatIgnoreListView *m_ignoreList;
-        XChatBanListView *m_banList;
-
+    Vertigo::Serverlist *m_serverList;
+	Vertigo::Palette m_palette;
+	KCharSelect *m_charChart;
+    Vertigo::URLGrabberView *m_urlGrabber;
+    Vertigo::ChatListView *m_chatList;
+    Vertigo::XferView *m_transfers;
+    Vertigo::NotifyListView *m_notifyList;
+    Vertigo::IgnoreListView *m_ignoreList;
+    Vertigo::BanListView *m_banList;
 
 };
 
 
-class XChatCleanupHandler:public QObject {
+class CleanupHandler:public QObject {
   Q_OBJECT public:
-     XChatCleanupHandler();
+     CleanupHandler();
     KProgress *m_progress;
     QTimer *m_timer;
     void cleanup();
 
     public slots:void startCleanupLoop();
     void forwardLoop();
-
-
-    
 };
 
-class XChatInputDialog:public QDialog {
+class InputDialog:public QDialog {
   Q_OBJECT public:
     enum DialogType { IntDialog = 0, StringDialog };
 
-     XChatInputDialog(QObject * parent, char *prompt, int def,
+     InputDialog(QObject * parent, char *prompt, int def,
 		      void *callback, void *ud);
-     XChatInputDialog(QObject * parent, char *prompt, char *def,
+     InputDialog(QObject * parent, char *prompt, char *def,
 		      void *callback, void *ud);
 
-    ~XChatInputDialog();
+    ~InputDialog();
 
     IntInputFunc getIntFunc() {
 	return m_intFunc;

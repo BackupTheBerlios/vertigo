@@ -30,30 +30,30 @@
 using namespace Vertigo;
 
 
-XChatContainerView::XChatContainerView (XChatMainWindow *w)
+ContainerView::ContainerView (MainWindow *w)
 {
     setWindow(w);
 }
 
-void XChatContainerView::setWindow(XChatMainWindow *w)
+void ContainerView::setWindow(MainWindow *w)
 {
     kdDebug() << "container setwindow"<<endl;
     m_window=w;
 }
 
-XChatMainWindow* XChatContainerView::window()
+MainWindow* ContainerView::window()
 {
     return m_window;
 }
 
-XChatChanlistView::XChatChanlistView(QWidget * parent, XChatMainWindow * w, server * s, const char *name, WFlags fl)
-    : QWidget( parent, name, fl ), XChatContainerView(w)
+ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s, const char *name, WFlags fl)
+    : QWidget( parent, name, fl ), ContainerView(w)
 {
 	m_window=w;
 	m_server=s;
     if ( !name )
-	setName( "XChatChanlistView" );
-    XChatChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "XChatChanlistViewLayout"); 
+	setName( "ChanlistView" );
+    ChanlistViewLayout = new QGridLayout( this, 1, 1, 11, 6, "ChanlistViewLayout"); 
 
     m_chanlistView = new KListView( this, "m_chanlistView" );
     m_chanlistView->addColumn( tr( "Channel" ) , m_chanlistView->fontMetrics().width("#halohalohalo"));
@@ -63,21 +63,21 @@ XChatChanlistView::XChatChanlistView(QWidget * parent, XChatMainWindow * w, serv
 m_chanlistView->setColumnWidthMode(0, QListView::Manual);
 m_chanlistView->setFullWidth(true);
     
-    XChatChanlistViewLayout->addMultiCellWidget( m_chanlistView, 1, 4, 0, 0 );
+    ChanlistViewLayout->addMultiCellWidget( m_chanlistView, 1, 4, 0, 0 );
 
     m_refreshButton = new QPushButton( this, "m_refreshButton" );
 
-    XChatChanlistViewLayout->addWidget( m_refreshButton, 2, 1 );
+    ChanlistViewLayout->addWidget( m_refreshButton, 2, 1 );
 
     m_saveButton = new QPushButton( this, "m_saveButton" );
 
-    XChatChanlistViewLayout->addWidget( m_saveButton, 3, 1 );
+    ChanlistViewLayout->addWidget( m_saveButton, 3, 1 );
 
     m_joinButton = new QPushButton( this, "m_joinButton" );
 
-    XChatChanlistViewLayout->addWidget( m_joinButton, 1, 1 );
+    ChanlistViewLayout->addWidget( m_joinButton, 1, 1 );
     QSpacerItem* spacer = new QSpacerItem( 31, 151, QSizePolicy::Minimum, QSizePolicy::Expanding );
-    XChatChanlistViewLayout->addItem( spacer, 4, 1 );
+    ChanlistViewLayout->addItem( spacer, 4, 1 );
 
     m_limitGroupBox = new QGroupBox( this, "m_limitGroupBox" );
     m_limitGroupBox->setColumnLayout(0, Qt::Vertical );
@@ -128,7 +128,7 @@ m_chanlistView->setFullWidth(true);
 
     m_limitGroupBoxLayout->addWidget( m_applyButton, 1, 5 );
 
-    XChatChanlistViewLayout->addMultiCellWidget( m_limitGroupBox, 0, 0, 0, 1 );
+    ChanlistViewLayout->addMultiCellWidget( m_limitGroupBox, 0, 0, 0, 1 );
     resize( QSize(570, 456).expandedTo(minimumSizeHint()) );
     clearWState( WState_Polished );
 
@@ -178,12 +178,12 @@ m_chanlistView->setFullWidth(true);
 /*
  *  Destroys the object and frees any allocated resources
  */
-XChatChanlistView::~XChatChanlistView()
+ChanlistView::~ChanlistView()
 {
     // no need to delete child widgets, Qt does it all for us
 }
 
-void XChatChanlistView::enableItems(bool yes){
+void ChanlistView::enableItems(bool yes){
 	if (yes)
 	{
 		setEnabled(true);
@@ -196,20 +196,20 @@ void XChatChanlistView::enableItems(bool yes){
 	
 }
 
-void XChatChanlistView::showSelf()
+void ChanlistView::showSelf()
 {
 	m_window->tabWidget()->showPage(this);
 }
 
-void XChatChanlistView::slotApplyButtonClicked()
+void ChanlistView::slotApplyButtonClicked()
 {
 }
 
- void XChatChanlistView::slotJoinButtonClicked(){
+ void ChanlistView::slotJoinButtonClicked(){
 
 }
 
- void XChatChanlistView::slotRefreshButtonClicked(){
+ void ChanlistView::slotRefreshButtonClicked(){
 	if (m_server->connected)
         {
 		m_chanlistView->clear();
@@ -222,10 +222,10 @@ void XChatChanlistView::slotApplyButtonClicked()
 }
 
 
- void XChatChanlistView::appendChannel(QString chan,QString users,QString topic)
+ void ChanlistView::appendChannel(QString chan,QString users,QString topic)
 {
 	m_chanlistView->setUpdatesEnabled(false);
-	XChatChanlistItem *i=new XChatChanlistItem(m_chanlistView, chan, users, topic);
+	ChanlistItem *i=new ChanlistItem(m_chanlistView, chan, users, topic);
 	
 	if (isMatch(chan, users, topic))
 	{
@@ -241,14 +241,14 @@ void XChatChanlistView::slotApplyButtonClicked()
 
 }
 
-bool XChatChanlistView::isMatch(QString chan,QString users,QString topic)
+bool ChanlistView::isMatch(QString chan,QString users,QString topic)
 {
 	return true;
 }
 
 
 
- void XChatChanlistView::slotSaveButtonClicked()
+ void ChanlistView::slotSaveButtonClicked()
 {
 
 }
@@ -256,17 +256,17 @@ bool XChatChanlistView::isMatch(QString chan,QString users,QString topic)
 
 
 
-XChatChanlistItem::XChatChanlistItem(QListView * list,  QString chan, QString users, QString topic):
+ChanlistItem::ChanlistItem(QListView * list,  QString chan, QString users, QString topic):
 KListViewItem(list, chan, users, topic)
 {
 
 }
 
-XChatChanlistItem::~XChatChanlistItem()
+ChanlistItem::~ChanlistItem()
 {
 }
 
-int XChatChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
+int ChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
 {
 	if (col!=1)
 	{
@@ -289,35 +289,35 @@ int XChatChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) co
 
 
 
-XChatBanListView::XChatBanListView(QWidget * parent,XChatMainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+BanListView::BanListView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
 	m_window=w;
     if(!name)
-	setName("XChatBanlistView");
-    XChatBanlistViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatBanlistViewLayout");
+	setName("BanlistView");
+    BanlistViewLayout = new QGridLayout(this, 1, 1, 12, 6, "BanlistViewLayout");
 
     m_clearButton = new QPushButton(this, "m_clearButton");
 
-    XChatBanlistViewLayout->addWidget(m_clearButton, 2, 1);
+    BanlistViewLayout->addWidget(m_clearButton, 2, 1);
     QSpacerItem *spacer = new QSpacerItem(41, 280, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatBanlistViewLayout->addItem(spacer, 4, 1);
+    BanlistViewLayout->addItem(spacer, 4, 1);
 
     m_banlistView = new KListView(this, "m_banlistView");
     m_banlistView->addColumn(tr("Mask"));
     m_banlistView->addColumn(tr("From"));
     m_banlistView->addColumn(tr("Date"));
-    XChatBanlistViewLayout->addMultiCellWidget(m_banlistView, 0, 4, 0, 0);
+    BanlistViewLayout->addMultiCellWidget(m_banlistView, 0, 4, 0, 0);
 
     m_unbanButton = new QPushButton(this, "m_unbanButton");
-    XChatBanlistViewLayout->addWidget(m_unbanButton, 0, 1);
+    BanlistViewLayout->addWidget(m_unbanButton, 0, 1);
 
     m_refreshButton = new QPushButton(this, "m_refreshButton");
-    XChatBanlistViewLayout->addWidget(m_refreshButton, 3, 1);
+    BanlistViewLayout->addWidget(m_refreshButton, 3, 1);
 
     m_cropButton = new QPushButton(this, "m_cropButton");
-    XChatBanlistViewLayout->addWidget(m_cropButton, 1, 1);
+    BanlistViewLayout->addWidget(m_cropButton, 1, 1);
 
     connect(m_unbanButton, SIGNAL(clicked()), this, SLOT(slotUnbanButtonClicked()));
     connect(m_cropButton, SIGNAL(clicked()), this, SLOT(slotCropButtonClicked()));
@@ -338,58 +338,58 @@ XChatBanListView::XChatBanListView(QWidget * parent,XChatMainWindow * w, const c
     m_cropButton->setAccel(QKeySequence(tr("Alt+C")));
 }
 
-XChatBanListView::~XChatBanListView()
+BanListView::~BanListView()
 {
 }
 
-void XChatBanListView::showSelf()
+void BanListView::showSelf()
 {
 	        m_window->tabWidget()->showPage(this);
 }
 
-void XChatBanListView::slotUnbanButtonClicked()
+void BanListView::slotUnbanButtonClicked()
 {
 
 }
 
-void XChatBanListView::slotCropButtonClicked()
+void BanListView::slotCropButtonClicked()
 {
 
 }
 
-void XChatBanListView::slotClearButtonClicked()
+void BanListView::slotClearButtonClicked()
 {
 
 }
 
-void XChatBanListView::slotRefreshButtonClicked()
+void BanListView::slotRefreshButtonClicked()
 {
 
 }
 
-XChatChatListView::XChatChatListView(QWidget * parent, XChatMainWindow * w,const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+ChatListView::ChatListView(QWidget * parent, MainWindow * w,const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
 	m_window=w;
     if(!name)
-	setName("XChatChatListView");
-    XChatChatListViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatChatListViewLayout");
+	setName("ChatListView");
+    ChatListViewLayout = new QGridLayout(this, 1, 1, 12, 6, "ChatListViewLayout");
 
     m_cancelButton = new QPushButton(this, "m_cancelButton");
-    XChatChatListViewLayout->addWidget(m_cancelButton, 1, 1);
+    ChatListViewLayout->addWidget(m_cancelButton, 1, 1);
 
     m_chatListView = new KListView(this, "m_chatListView");
     m_chatListView->addColumn(tr("Status"));
     m_chatListView->addColumn(tr("User"));
     m_chatListView->addColumn(tr("Time"));
 
-    XChatChatListViewLayout->addMultiCellWidget(m_chatListView, 0, 2, 0, 0);
+    ChatListViewLayout->addMultiCellWidget(m_chatListView, 0, 2, 0, 0);
     QSpacerItem *spacer = new QSpacerItem(31, 221, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatChatListViewLayout->addItem(spacer, 2, 1);
+    ChatListViewLayout->addItem(spacer, 2, 1);
 
     m_acceptButton = new QPushButton(this, "m_acceptButton");
-    XChatChatListViewLayout->addWidget(m_acceptButton, 0, 1);
+    ChatListViewLayout->addWidget(m_acceptButton, 0, 1);
 
     setCaption(tr("Chats"));
     m_cancelButton->setText(tr("&Cancel"));
@@ -401,38 +401,38 @@ XChatChatListView::XChatChatListView(QWidget * parent, XChatMainWindow * w,const
     m_acceptButton->setAccel(QKeySequence(tr("Alt+A")));
 }
 
-XChatChatListView::~XChatChatListView()
+ChatListView::~ChatListView()
 {
 }
 
-void XChatChatListView::showSelf()
+void ChatListView::showSelf()
 {
 	        m_window->tabWidget()->showPage(this);
 }
 
-XChatNotifyListView::XChatNotifyListView(QWidget * parent,XChatMainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+NotifyListView::NotifyListView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
 	m_window=w;
     if(!name)
-	setName("XChatNotifyView");
-    XChatNotifyViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatNotifyViewLayout");
+	setName("NotifyView");
+    NotifyViewLayout = new QGridLayout(this, 1, 1, 12, 6, "NotifyViewLayout");
 
     m_notifyView = new KListView(this, "m_notifyView");
     m_notifyView->addColumn(tr("User"));
     m_notifyView->addColumn(tr("Status"));
     m_notifyView->addColumn(tr("Server"));
     m_notifyView->addColumn(tr("Last Seen"));
-    XChatNotifyViewLayout->addMultiCellWidget(m_notifyView, 0, 2, 0, 0);
+    NotifyViewLayout->addMultiCellWidget(m_notifyView, 0, 2, 0, 0);
 
     m_addButton = new QPushButton(this, "m_addButton");
-    XChatNotifyViewLayout->addWidget(m_addButton, 0, 1);
+    NotifyViewLayout->addWidget(m_addButton, 0, 1);
 
     m_removeButton = new QPushButton(this, "m_removeButton");
-    XChatNotifyViewLayout->addWidget(m_removeButton, 1, 1);
+    NotifyViewLayout->addWidget(m_removeButton, 1, 1);
     QSpacerItem *spacer = new QSpacerItem(30, 120, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatNotifyViewLayout->addItem(spacer, 2, 1);
+    NotifyViewLayout->addItem(spacer, 2, 1);
     setCaption(tr("Notify"));
     m_notifyView->header()->setLabel(0, tr("User"));
     m_notifyView->header()->setLabel(1, tr("Status"));
@@ -445,47 +445,47 @@ XChatNotifyListView::XChatNotifyListView(QWidget * parent,XChatMainWindow * w, c
     connect(m_removeButton, SIGNAL(clicked()), this, SLOT(slotRemoveButtonClicked()));
 }
 
-XChatNotifyListView::~XChatNotifyListView()
+NotifyListView::~NotifyListView()
 {
 }
 
-void XChatNotifyListView::showSelf()
+void NotifyListView::showSelf()
 {
 	        m_window->tabWidget()->showPage(this);
 }
 
-void XChatNotifyListView::slotAddButtonClicked()
+void NotifyListView::slotAddButtonClicked()
 {
-    qWarning("XChatNotifyView::slotAddButtonClicked(): Not implemented yet");
+    qWarning("NotifyView::slotAddButtonClicked(): Not implemented yet");
 }
 
-void XChatNotifyListView::slotRemoveButtonClicked()
+void NotifyListView::slotRemoveButtonClicked()
 {
-    qWarning("XChatNotifyView::slotRemoveButtonClicked(): Not implemented yet");
+    qWarning("NotifyView::slotRemoveButtonClicked(): Not implemented yet");
 }
 
-XChatRawlogView::XChatRawlogView(QWidget * parent, XChatMainWindow * w, server * s, const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s, const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
     if(!name)
-	setName("XChatRawlogView");
+	setName("RawlogView");
 
     //setWindow(w);
     setServer(s);
-    XChatRawlogViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatRawlogViewLayout");
+    RawlogViewLayout = new QGridLayout(this, 1, 1, 12, 6, "RawlogViewLayout");
 
     m_clearButton = new QPushButton(this, "m_clearButton");
-    XChatRawlogViewLayout->addWidget(m_clearButton, 1, 1);
+    RawlogViewLayout->addWidget(m_clearButton, 1, 1);
 
     m_rawlogView = new TextView(this, "m_rawlogView");
     m_rawlogView->setSizePolicy(QSizePolicy((QSizePolicy::SizeType) 7, (QSizePolicy::SizeType) 7, 0, 0, m_rawlogView->sizePolicy().hasHeightForWidth()));
-    XChatRawlogViewLayout->addMultiCellWidget(m_rawlogView, 0, 2, 0, 0);
+    RawlogViewLayout->addMultiCellWidget(m_rawlogView, 0, 2, 0, 0);
 
     m_saveButton = new QPushButton(this, "m_saveButton");
-    XChatRawlogViewLayout->addWidget(m_saveButton, 0, 1);
+    RawlogViewLayout->addWidget(m_saveButton, 0, 1);
     QSpacerItem *spacer = new QSpacerItem(50, 254, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatRawlogViewLayout->addItem(spacer, 2, 1);
+    RawlogViewLayout->addItem(spacer, 2, 1);
 
     setCaption(tr("Raw Log"));
     m_clearButton->setText(tr("&Clear"));
@@ -497,45 +497,45 @@ XChatRawlogView::XChatRawlogView(QWidget * parent, XChatMainWindow * w, server *
     connect(m_saveButton, SIGNAL(clicked()), this, SLOT(slotSaveButtonClicked()));
 }
 
-XChatRawlogView::~XChatRawlogView()
+RawlogView::~RawlogView()
 {
 }
 
-void XChatRawlogView::slotClearButtonClicked()
+void RawlogView::slotClearButtonClicked()
 {
-    qWarning("XChatRawlogView::slotClearButtonClicked(): Not implemented yet");
+    qWarning("RawlogView::slotClearButtonClicked(): Not implemented yet");
 }
 
-void XChatRawlogView::slotSaveButtonClicked()
+void RawlogView::slotSaveButtonClicked()
 {
-    qWarning("XChatRawlogView::slotSaveButtonClicked(): Not implemented yet");
+    qWarning("RawlogView::slotSaveButtonClicked(): Not implemented yet");
 }
 
-void XChatRawlogView::appendText(QString s)
+void RawlogView::appendText(QString s)
 {
     m_rawlogView->appendText(s, true);
 }
 
-XChatURLGrabberView::XChatURLGrabberView(QWidget * parent, XChatMainWindow * w,const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+URLGrabberView::URLGrabberView(QWidget * parent, MainWindow * w,const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
 	m_window=w;
     if(!name)
-	setName("XChatURLView");
-    XChatURLViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatURLViewLayout");
+	setName("URLView");
+    URLViewLayout = new QGridLayout(this, 1, 1, 12, 6, "URLViewLayout");
     m_saveButton = new QPushButton(this, "m_saveButton");
-    XChatURLViewLayout->addWidget(m_saveButton, 0, 1);
+    URLViewLayout->addWidget(m_saveButton, 0, 1);
 
     m_clearButton = new QPushButton(this, "m_clearButton");
-    XChatURLViewLayout->addWidget(m_clearButton, 1, 1);
+    URLViewLayout->addWidget(m_clearButton, 1, 1);
     QSpacerItem *spacer = new QSpacerItem(20, 220, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatURLViewLayout->addItem(spacer, 2, 1);
+    URLViewLayout->addItem(spacer, 2, 1);
 
     m_urlView = new KListView(this, "m_urlView");
     m_urlView->addColumn(tr("URL"));
 
-    XChatURLViewLayout->addMultiCellWidget(m_urlView, 0, 2, 0, 0);
+    URLViewLayout->addMultiCellWidget(m_urlView, 0, 2, 0, 0);
     setCaption(tr("URL Grabber"));
     m_saveButton->setText(tr("&Save..."));
     m_saveButton->setAccel(QKeySequence(tr("Alt+S")));
@@ -547,32 +547,32 @@ XChatURLGrabberView::XChatURLGrabberView(QWidget * parent, XChatMainWindow * w,c
     connect(m_clearButton, SIGNAL(clicked()), this, SLOT(slotClearButtonClicked()));
 }
 
-XChatURLGrabberView::~XChatURLGrabberView()
+URLGrabberView::~URLGrabberView()
 {
 }
 
-void XChatURLGrabberView::showSelf()
+void URLGrabberView::showSelf()
 {
 	        m_window->tabWidget()->showPage(this);
 }
 
-void XChatURLGrabberView::slotSaveButtonClicked()
+void URLGrabberView::slotSaveButtonClicked()
 {
-    qWarning("XChatURLView::slotSaveButtonClicked(): Not implemented yet");
+    qWarning("URLView::slotSaveButtonClicked(): Not implemented yet");
 }
 
-void XChatURLGrabberView::slotClearButtonClicked()
+void URLGrabberView::slotClearButtonClicked()
 {
-    qWarning("XChatURLView::slotClearButtonClicked(): Not implemented yet");
+    qWarning("URLView::slotClearButtonClicked(): Not implemented yet");
 }
 
-XChatXferView::XChatXferView(QWidget * parent,XChatMainWindow * w, const char *name, WFlags fl)
-:QWidget(parent, name, fl), XChatContainerView(w)
+XferView::XferView(QWidget * parent,MainWindow * w, const char *name, WFlags fl)
+:QWidget(parent, name, fl), ContainerView(w)
 {
 	m_window=w;
     if(!name)
-	setName("XChatFileXferView");
-    XChatFileXferViewLayout = new QVBoxLayout(this, 1, 1, "XChatFileXferViewLayout");
+	setName("FileXferView");
+    FileXferViewLayout = new QVBoxLayout(this, 1, 1, "FileXferViewLayout");
 
     m_splitter = new QSplitter(this, "m_splitter");
     m_splitter->setOrientation(QSplitter::Vertical);
@@ -634,7 +634,7 @@ XChatXferView::XChatXferView(QWidget * parent,XChatMainWindow * w, const char *n
     m_uploadsView->addColumn(tr("Position"));
 
     m_uploadLayout->addMultiCellWidget(m_uploadsView, 1, 3, 0, 0);
-    XChatFileXferViewLayout->addWidget(m_splitter);
+    FileXferViewLayout->addWidget(m_splitter);
     setCaption(tr("File Transfers"));
     m_dlInfoButton->setText(tr("&Information"));
     m_dlInfoButton->setAccel(QKeySequence(tr("Alt+I")));
@@ -677,50 +677,50 @@ XChatXferView::XChatXferView(QWidget * parent,XChatMainWindow * w, const char *n
     m_uploadsLabel->setBuddy(m_uploadsView);
 }
 
-XChatXferView::~XChatXferView()
+XferView::~XferView()
 {
 }
 
-void XChatXferView::showSelf()
+void XferView::showSelf()
 {
 	        m_window->tabWidget()->showPage(this);
 }
 
-void XChatXferView::slotStartButtonClicked()
+void XferView::slotStartButtonClicked()
 {
 
 }
 
-void XChatXferView::slotDlCancelButtonClicked()
+void XferView::slotDlCancelButtonClicked()
 {
 
 }
 
-void XChatXferView::slotResumeButtonClicked()
+void XferView::slotResumeButtonClicked()
 {
 
 }
 
-void XChatXferView::slotDlInfoButtonClicked()
+void XferView::slotDlInfoButtonClicked()
 {
 
 }
 
-void XChatXferView::slotUlCancelButtonClicked()
+void XferView::slotUlCancelButtonClicked()
 {
 
 }
 
-void XChatXferView::slotUlInfoButtonClicked()
+void XferView::slotUlInfoButtonClicked()
 {
 
 }
 
-XChatEditListView::XChatEditListView(QWidget * parent, const char *filename, GSList * entries, const char *name)
+EditListView::EditListView(QWidget * parent, const char *filename, GSList * entries, const char *name)
 :QWidget(parent, name)
 {
     if(!name)
-	setName("XChatRawlogView");
+	setName("RawlogView");
     m_entries = entries;
     QHBoxLayout *layout30_2 = new QHBoxLayout(this, 0, 6, "layout30_2");
 
@@ -771,50 +771,50 @@ XChatEditListView::XChatEditListView(QWidget * parent, const char *filename, GSL
     m_helpUserlistButton->setText(tr("&Help"));
 }
 
-XChatEditListView::~XChatEditListView()
+EditListView::~EditListView()
 {
 }
 
-XChatUserOptionsView::XChatUserOptionsView(QWidget * parent, const char *name)
+UserOptionsView::UserOptionsView(QWidget * parent, const char *name)
 :QWidget(parent, name)
 {
     if(!name)
-	setName("XChatUserOptionsView");
-    XChatUserOptionsViewLayout = new QGridLayout(this, 1, 1, 12, 6, "XChatUserOptionsViewLayout");
+	setName("UserOptionsView");
+    UserOptionsViewLayout = new QGridLayout(this, 1, 1, 12, 6, "UserOptionsViewLayout");
 
     nickEdit = new QLineEdit(this, "nickEdit");
-    XChatUserOptionsViewLayout->addWidget(nickEdit, 0, 1);
+    UserOptionsViewLayout->addWidget(nickEdit, 0, 1);
 
     altLabel = new QLabel(this, "altLabel");
-    XChatUserOptionsViewLayout->addWidget(altLabel, 1, 0);
+    UserOptionsViewLayout->addWidget(altLabel, 1, 0);
 
     nickLabel = new QLabel(this, "nickLabel");
-    XChatUserOptionsViewLayout->addWidget(nickLabel, 0, 0);
+    UserOptionsViewLayout->addWidget(nickLabel, 0, 0);
 
     secEdit = new QLineEdit(this, "secEdit");
-    XChatUserOptionsViewLayout->addWidget(secEdit, 2, 1);
+    UserOptionsViewLayout->addWidget(secEdit, 2, 1);
 
     secLabel = new QLabel(this, "secLabel");
-    XChatUserOptionsViewLayout->addWidget(secLabel, 2, 0);
+    UserOptionsViewLayout->addWidget(secLabel, 2, 0);
 
     altEdit = new QLineEdit(this, "altEdit");
-    XChatUserOptionsViewLayout->addWidget(altEdit, 1, 1);
+    UserOptionsViewLayout->addWidget(altEdit, 1, 1);
 
     realLabel = new QLabel(this, "realLabel");
-    XChatUserOptionsViewLayout->addWidget(realLabel, 4, 0);
+    UserOptionsViewLayout->addWidget(realLabel, 4, 0);
 
     userEdit = new QLineEdit(this, "userEdit");
-    XChatUserOptionsViewLayout->addWidget(userEdit, 3, 1);
+    UserOptionsViewLayout->addWidget(userEdit, 3, 1);
 
     userLabel = new QLabel(this, "userLabel");
-    XChatUserOptionsViewLayout->addWidget(userLabel, 3, 0);
+    UserOptionsViewLayout->addWidget(userLabel, 3, 0);
 
     realEdit = new QLineEdit(this, "realEdit");
-    XChatUserOptionsViewLayout->addWidget(realEdit, 4, 1);
+    UserOptionsViewLayout->addWidget(realEdit, 4, 1);
 
     QSpacerItem *spacer = new QSpacerItem(51, 133, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-    XChatUserOptionsViewLayout->addItem(spacer, 5, 1);
+    UserOptionsViewLayout->addItem(spacer, 5, 1);
 
     secLabel->setBuddy(secEdit);
     realLabel->setBuddy(realEdit);
@@ -836,7 +836,7 @@ XChatUserOptionsView::XChatUserOptionsView(QWidget * parent, const char *name)
 
 }
 
-XChatUserOptionsView::~XChatUserOptionsView()
+UserOptionsView::~UserOptionsView()
 {
 
 }
