@@ -93,6 +93,17 @@ int TextEntry::y()
 }
 
 
+void TextEntry::setTimeStamp(const QString &s)
+{
+	m_timeStamp=s;
+}
+
+QString TextEntry::timeStamp()
+{
+    return m_timeStamp;
+}
+
+
 TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
 	   WStaticContents |WResizeNoErase |
 	   WRepaintNoErase)
@@ -105,12 +116,15 @@ TextView::TextView(QWidget * parent, const char *name):QScrollView(parent, name,
     m_minWrapWidth = 30;
     m_wrapBoundary = 15;
 
+	m_showTimeStamp = true;
+    m_timeStampFormat = "[hh:mm]";
+
     m_cursorSplit = new QCursor(Qt::SplitHCursor);
     m_cursorIbeam = new QCursor(Qt::IbeamCursor);
 	m_currentCursor=m_cursorIbeam;
 	
- m_updateSepOnly=false;
-m_scrollType=AlwaysScroll;
+	m_updateSepOnly=false;
+	m_scrollType=AlwaysScroll;
     m_autoResizeColumns=false;
     m_doubleBuffer=true;
     m_reversedLayout=QApplication::reverseLayout();
@@ -130,8 +144,10 @@ m_scrollType=AlwaysScroll;
 
     setHScrollBarMode(QScrollView::AlwaysOff);
     setDragAutoScroll(false);
-    setFontName("Verdana 10");
+    viewport()->setFocusProxy( this );
+    viewport()->setFocusPolicy( WheelFocus );
 
+    setFontName("Verdana 10");
 }
 
 TextView::~TextView()
@@ -166,8 +182,8 @@ void TextView::clearBuffer()
     m_buffer->fm = 0;
     m_buffer->layoutEnabled=true;
     m_buffer->layoutTimerId=0;
-
-
+	m_buffer->sepEnd=false;
+	m_buffer->updatesEnabled=true;
 }
 
 
@@ -208,7 +224,15 @@ void TextView::resizeView(int h)
     else
 	//h = h + 5;
     if (contentsHeight() != h) {
-	resizeContents(w, h);
+/*    if (m_buffer->sepEnd)
+            {
+                setContentsPos(contentsX(), contentsHeight() - visibleHeight());
+            }*/
+
+	m_buffer->updatesEnabled=false;
+	resizeContents(w, h); // may cause flicker.. 
+	m_buffer->updatesEnabled=true;
+
     }
 }
 
@@ -252,7 +276,7 @@ void TextView::timerEvent ( QTimerEvent *e )
 	if ( e->timerId() == m_buffer->layoutTimerId ) {
 		m_buffer->layoutTimerId=0;
 		recalcLayout();
-		            updateContents(contentsX(),
+		            updateContents(0,
                    contentsY(),
                    visibleWidth(), visibleHeight());
 
@@ -452,6 +476,10 @@ void
 	resizeView(m_buffer->textHeight);
     }
 
+    QTime t = QTime::currentTime();
+
+    ent->setTimeStamp(t.toString(m_timeStampFormat));
+
     if (m_buffer->textHeight < visibleHeight())
 	if (i == -1)
 	    updateContents();
@@ -463,6 +491,42 @@ void
 	    scrollDown();
     }
 }
+
+
+void TextView::keyPressEvent(QKeyEvent * e)
+{
+    switch (e->key()) {
+    case Key_Down:
+    setContentsPos(contentsX(), contentsY() + 15);
+    break;
+    case Key_Up:
+    setContentsPos(contentsX(), contentsY() - 15);
+    break;
+    case Key_PageUp:
+    setContentsPos(contentsX(), contentsY() - visibleHeight());
+    break;
+    case Key_PageDown:
+    setContentsPos(contentsX(), contentsY() + visibleHeight());
+    break;
+    case Key_Home:
+    setContentsPos(contentsX(), 0);
+    break;
+    case Key_End:
+    setContentsPos(contentsX(), contentsHeight() - visibleHeight());
+    break;
+    default:
+    break;
+    }
+	          updateContents(0,
+                   contentsY(),
+                   visibleWidth(), visibleHeight());
+
+
+}
+
+
+
+
 
 int TextView::recalcEntryLayout(TextEntry * ent, bool resizeCols)
 {
@@ -787,17 +851,24 @@ void TextView::drawSeperator(QPainter &p, int y, int h)
 
 void TextView::viewportPaintEvent ( QPaintEvent * pe )
 {
-	QRegion unpainted=pe->region();
-	QRect ur=unpainted.boundingRect();
+	//QRegion unpainted=pe->region();
+	QRect ur=pe->rect();//unpainted.boundingRect();
 
     TextEntry *ent;
 	QRect lr;
 	bool painted=false;
-	int a=0,le=0,h;
+	int a=0,le=0,h,dummy;
+	QString stamp;
 	QPainter p(viewport());
 	p.setFont(*(m_buffer->font));
 
 	//int pp=0,ppp=0;
+
+
+    if (!m_buffer->updatesEnabled)
+    {
+        return;
+    }
 
 	if (m_updateSepOnly)
 	{
@@ -823,6 +894,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 
     for (ent = m_entryList.last(); ent; ent = m_entryList.prev()) {
 		a=ent->y()-contentsY();
+		dummy=0;
 		le=ent->linesTaken()*m_buffer->lineHeight;
 		//qWarning("painting: lr.y=%d ur.y=%d lr.height=%d ur.height=%d text=%s",lr.y(),ur.y(), lr.height(), ur.height(), ent->text(0).latin1());
 
@@ -852,6 +924,10 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 				m_buffer->painter.begin(m_buffer->pixmap, false);
 				m_buffer->painter.setFont(*(m_buffer->font));
 				m_buffer->painter.fillRect(0,0,visibleWidth(), le, QBrush(Qt::black));
+				if (m_showTimeStamp) {
+					stamp = ent->timeStamp();
+					paintTextChunk(wrapText(stamp, ent->leftX()-m_margin*2, dummy), m_margin, m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
+				}
 				paintTextChunk(ent->text(0), ent->leftX(), m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter, true);
 				QStringList strings=ent->rightWrapList();
 				h=0;
@@ -868,6 +944,10 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		else
 		{
 			p.fillRect(0,a,visibleWidth(), le, QBrush(Qt::black));
+			if (m_showTimeStamp) {
+                    stamp = ent->timeStamp();
+                    paintTextChunk(wrapText(stamp, ent->leftX()-m_margin*2,dummy), m_margin, a+m_buffer->lineHeight-m_buffer->lineDescent, p);
+            }
 			paintTextChunk(ent->text(0), ent->leftX(), a+m_buffer->lineHeight-m_buffer->lineDescent, p,true);
 			QStringList strings=ent->rightWrapList();
 			for ( int i = 0; i < strings.size(); i++ )
@@ -903,6 +983,8 @@ void TextView::contentsMousePressEvent(QMouseEvent * e)
 		m_updateSepOnly=true;
 	    updateContents(m_buffer->sepValue, contentsY(),
 			   m_sepWidth, visibleHeight());
+		if (contentsY()+visibleHeight()==contentsHeight())
+			m_buffer->sepEnd=true;
 	}
     }
 }
@@ -916,10 +998,13 @@ void TextView::contentsMouseMoveEvent(QMouseEvent * e)
 	    if ((x > 10) && ((width() / 2) > x)) {
 		int d = myabs(m_buffer->sepValue - x);
 		if (d > 5) {
-		 m_buffer->sepValue = x;
+			m_buffer->sepValue = x;
 			//scheduleLayout();
 			recalcLayout();
-		    //m_relayoutBeforePaint=true;
+			/*if (m_buffer->sepEnd)
+			{
+				setContentsPos(contentsX(), contentsHeight() - visibleHeight());
+			}*/
 			updateContents(0,
 				   contentsY(),
 				   visibleWidth(), visibleHeight());
@@ -955,6 +1040,7 @@ void TextView::contentsMouseReleaseEvent(QMouseEvent * e)
     if (m_buffer->sepActive) {
 	m_buffer->sepActive = false;
 		m_updateSepOnly=true;
+		m_buffer->sepEnd=false;
         updateContents(m_buffer->sepValue, contentsY(),
                m_sepWidth, visibleHeight());
 	}

@@ -44,10 +44,12 @@ class TextEntry {
 	void clearRightWrap();
 	QStringList rightWrapList();
 	QString text (const int col);
-
+	void setTimeStamp(const QString &s);
+	QString timeStamp();
   private:
   	QString m_leftText;
 	QString m_rightText;
+	QString m_timeStamp;
 	QStringList m_textWrap;
 	int m_leftX;
 	int m_rightX;
@@ -60,6 +62,7 @@ typedef struct TextBuffer {
     QFontMetrics *fm;
     int sepValue;
     bool sepActive;
+	bool sepEnd;
     ulong textHeight;
     int lineHeight;
     int lineDescent;
@@ -67,6 +70,8 @@ typedef struct TextBuffer {
     bool layoutEnabled;
 	int layoutTimerId;
 
+
+	bool updatesEnabled;
 
     QPixmap *pixmap;
     QPainter painter;
@@ -101,6 +106,7 @@ void appendText(const QString &text, bool indent, bool scroll=false);
 
     void scrollDown();
 protected:
+
 void clearBuffer();
    void clearRenderState(bool attribs = false);
    QString wrapText(QString & text, int wrapLen, int &curLen, bool clearState = true);
@@ -121,7 +127,7 @@ void paintTextChunk(QString text, int x, int y, QPainter &p,
 void contentsMousePressEvent(QMouseEvent * e);
 void contentsMouseMoveEvent(QMouseEvent * e);
 void contentsMouseReleaseEvent(QMouseEvent * e);
-
+void keyPressEvent(QKeyEvent * e);
   private:
   	QPtrList<TextEntry> m_entryList;
 	TextBuffer *m_buffer;
@@ -140,6 +146,7 @@ void contentsMouseReleaseEvent(QMouseEvent * e);
 	QCursor *m_currentCursor;
 	bool m_relayoutBeforePaint;
 	bool  m_updateSepOnly;
+    QString m_timeStampFormat;
 
 };
 
