@@ -2,7 +2,7 @@
 #define XChatMainView_H
 
 #include <qvariant.h>
-#include <klistbox.h>
+#include <klistview.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qwidgetstack.h>
@@ -30,6 +30,7 @@ class QListBoxItem;
 
 class XChatMainView;
 class XChatUserlistView;
+class XChatTopicEdit;
 class XChatInputLineEdit;
 #include <dcopobject.h>
 
@@ -111,7 +112,7 @@ XChatMainWindow *window();
     QPushButton *pushButton10_2_2;
     QWidget *m_textPanel;
     QWidget *m_userlistPanel;
-    QTextEdit *topicEdit;
+    XChatTopicEdit *topicEdit;
     session *m_session;
 };
 
@@ -123,7 +124,7 @@ class XChatWidgetStack:public QWidgetStack {
 QSize sizeHint () const;
 };*/
 
-class XChatTopicEdit:public QTextEdit {
+class XChatTopicEdit:public QLineEdit {
   Q_OBJECT public:
      XChatTopicEdit(QWidget * parent);
     ~XChatTopicEdit();
@@ -145,36 +146,34 @@ class XChatInputLineEdit:public QLineEdit {
 
 
 
-class XChatUserlistView:public KListBox {
+class XChatUserlistView:public KListView {
   Q_OBJECT public:
      XChatUserlistView(QWidget * parent);
     ~XChatUserlistView();
-    bool event(QEvent * e);
-    const QColor & alternateBackground() const;
-QSize minimumSizeHint() const;
+//QSize minimumSizeHint() const;
 	
-  private:
-     QColor m_alternateBackground;
+  //private:
+    // QColor m_alternateBackground;
     //void resizeEvent(QResizeEvent * r);
 };
 
 
-class XChatUserlistItem:public QListBoxItem {
+class XChatUserlistItem:public KListViewItem {
   public:
     XChatUserlistItem(XChatUserlistView * list, QPixmap * pix, User * u);
     ~XChatUserlistItem();
 
-    bool isAlternate();
+ //   bool isAlternate();
 
     User *getUser() {
 	return m_user;
     }
-    void paint(QPainter * painter);
-    int height(const QListBox * lb) const;
-    int width(const QListBox * lb) const;
+   // void paint(QPainter * painter);
+    //int height(const QListBox * lb) const;
+    //int width(const QListBox * lb) const;
 
-    bool m_known;
-    bool m_odd;
+    //bool m_known;
+    //bool m_odd;
 
 
   private:

@@ -475,7 +475,7 @@ showUserlist();
 bool XChatMainView::removeUser(User * u)
 {
     bool wasSelected = false;
-    XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstItem();
+   /* XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstItem();
 
     for(; i; i = (XChatUserlistItem *) i->next()) {
 	if(i->getUser() == u) {
@@ -485,7 +485,7 @@ bool XChatMainView::removeUser(User * u)
 
 	    break;
 	}
-    }
+    }*/
     return wasSelected;
 
 }
@@ -506,10 +506,10 @@ QSize XChatWidgetStack::sizeHint() const
 */
 
 
-XChatTopicEdit::XChatTopicEdit(QWidget * parent):QTextEdit(parent)
+XChatTopicEdit::XChatTopicEdit(QWidget * parent):QLineEdit(parent)
 {
     setFocusPolicy(QWidget::WheelFocus);
-setWordWrap(QTextEdit::NoWrap);
+//setWordWrap(QLineEdit::NoWrap);
 }
 
 XChatTopicEdit::~XChatTopicEdit()
@@ -566,29 +566,21 @@ bool XChatInputLineEdit::eventFilter(QObject * o, QEvent * e)
     return QLineEdit::eventFilter(o, e);
 }
 
-XChatUserlistView::XChatUserlistView(QWidget * parent):KListBox(parent)
+XChatUserlistView::XChatUserlistView(QWidget * parent):KListView(parent)
 {
-    m_alternateBackground = KGlobalSettings::alternateBackgroundColor();
-    setSelectionMode(QListBox::Extended);
+addColumn ( "Op");
+addColumn ( "User");
+addColumn ( "Host");
+setFullWidth(true);
+setAllColumnsShowFocus(true);
+;//setSelectionMode(QListBox::Extended);
 }
 
 XChatUserlistView::~XChatUserlistView()
 {
 }
 
-bool XChatUserlistView::event(QEvent * e)
-{
-    if(e->type() == QEvent::ApplicationPaletteChange)
-	m_alternateBackground = KGlobalSettings::alternateBackgroundColor();
-
-    return KListBox::event(e);
-}
-
-const QColor & XChatUserlistView::alternateBackground() const
-{
-    return m_alternateBackground;
-}
-
+/*
 QSize XChatUserlistView::minimumSizeHint() const
 {
     QSize n = QListBox::minimumSizeHint();
@@ -598,7 +590,7 @@ QSize XChatUserlistView::minimumSizeHint() const
     else
 	    n.setWidth(120);
     return n;
-}
+}*/
 
 /*
 void XChatUserlistView::resizeEvent(QResizeEvent * r)
@@ -607,52 +599,23 @@ void XChatUserlistView::resizeEvent(QResizeEvent * r)
     setColumnWidth(0, visibleWidth());
 }*/
 
-// based on qlistboxpixmap.. alt bgd code based on klistviewitem
 
 XChatUserlistItem::XChatUserlistItem(XChatUserlistView * list, QPixmap * pix, User * user):
-QListBoxItem(list)
+KListViewItem(list)
 {
     m_user = user;
-    setText(user->nick);
+    setText(1, user->nick);
+	setText(2, user->hostname);
+	if (pix)
+	setPixmap(0, *pix);
     m_pixmap = pix;
-    m_known = false;
-    m_odd = false;
 }
 
 XChatUserlistItem::~XChatUserlistItem()
 {
 }
 
-bool XChatUserlistItem::isAlternate()
-{
-    /*XChatUserlistView *lv = static_cast<XChatUserlistView *>(listBox());
-       if (lv && lv->alternateBackground().isValid())
-       {
-       XChatUserlistItem *above = 0;
-       above = dynamic_cast<XChatUserlistItem *>(prev());
-       m_known = above ? above->m_known : true;
-       if (m_known)
-       {
-       m_odd = above ? !above->m_odd : false;
-       }
-       else
-       {
-       XChatUserlistItem *item;
-       bool previous = true;
-       item = dynamic_cast<XChatUserlistItem *>(lv->firstItem());
-       while(item)
-       {
-       item->m_odd = previous = !previous;
-       item->m_known = true;
-       item = dynamic_cast<XChatUserlistItem *>(item->next());
-       }
-       }
-       return m_odd;
-       } */
-    return false;
-}
-
-void XChatUserlistItem::paint(QPainter * painter)
+/*void XChatUserlistItem::paint(QPainter * painter)
 {
 
     XChatUserlistView *view = static_cast < XChatUserlistView * >(listBox());
@@ -685,4 +648,4 @@ int XChatUserlistItem::width(const QListBox * lb) const
 {
     return 5 + lb->fontMetrics().width(text()) + 5 + 5 + 5;
     //+ listBox()->style().pixelMetric(QStyle::PM_ScrollBarExtent);
-}
+}*/
