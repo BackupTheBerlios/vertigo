@@ -259,7 +259,7 @@ void TextView::timerEvent ( QTimerEvent *e )
     killTimer(e->timerId());
 	if ( e->timerId() == m_buffer->layoutTimerId ) {
 		m_buffer->layoutTimerId=0;
-		m_buffer->sepRegion=QRegion();
+		//m_buffer->sepRegion=QRegion();
 		recalcLayout();
 		            updateContents(contentsX(),
                    contentsY(),
@@ -801,15 +801,17 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 	QPainter p(viewport());
 	p.setFont(*(m_buffer->font));
 
+	//int pp=0,ppp=0;
+
 	if (m_updateSepOnly)
 	{
 		m_updateSepOnly=false;
-	    QRegion sep=m_buffer->sepRegion;
+	    /*QRegion sep=m_buffer->sepRegion;
 	    sep.translate(0,-contentsY());
 		if (m_buffer->sepActive)
 			p.fillRect(sep.boundingRect(), QBrush(Qt::white));
 		else
-			p.fillRect(sep.boundingRect(), QBrush(Qt::gray));
+			p.fillRect(sep.boundingRect(), QBrush(Qt::gray));*/
 	}
 
 
@@ -819,26 +821,31 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		m_relayoutBeforePaint=false;
 	}
 
-    if (m_buffer->sepRegion.isNull()) {
+    /*if (m_buffer->sepRegion.isNull()) {
 		m_buffer->sepRegion = QRegion(m_buffer->sepValue, 0, m_sepWidth, visibleHeight());
-    }
+    }*/
 
-    for (ent = m_entryList.first(); ent; ent = m_entryList.next()) {
+    for (ent = m_entryList.last(); ent; ent = m_entryList.prev()) {
 		reg=ent->leftRegion();
 		reg.translate(0,-contentsY());
 		lr=reg.boundingRect();
-	
 		//qWarning("painting: lr.y=%d ur.y=%d lr.height=%d ur.height=%d text=%s",lr.y(),ur.y(), lr.height(), ur.height(), ent->text(0).latin1());
 
 	
-		if (( lr.y() < ur.y()-15) || (lr.y()+lr.height()> ur.y()+ur.height()+15))
+		if (( lr.y() < ur.y()-(m_buffer->lineHeight*m_maxSubLines)) || (lr.y()+lr.height()> ur.y()+ur.height()+(m_buffer->lineHeight*m_maxSubLines)))
 		{
 		if (painted)
+		{
+			//qWarning("done painting.. y=%d h=%d  ur=%d urh=%d",lr.y(),ur.y(),ur.y(),ur.height());
 			goto done;
+		}
 		else
+		{
+			//ppp++;
 			continue;
 		}
-		
+		}
+		//pp++;
 		if (painted==false)
 			painted=true;
 		
@@ -848,10 +855,10 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 				m_buffer->pixmap->resize(QMAX(m_buffer->pixmap->width(), lr.width()),
 						QMAX(m_buffer->pixmap->height(), lr.height()));
 				// if bkg==color
-				m_buffer->pixmap->fill(Qt::black);
+				//m_buffer->pixmap->fill(Qt::black);
 				m_buffer->painter->begin(m_buffer->pixmap, false);
 				m_buffer->painter->setFont(*(m_buffer->font));
-				//m_buffer->painter->fillRect(0,0,lr.width(), lr.height(), QBrush(Qt::black));
+				m_buffer->painter->fillRect(0,0,lr.width(), lr.height(), QBrush(Qt::black));
 				paintTextChunk(ent->text(0), 0, m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
 				m_buffer->painter->end();
 				p.setClipRegion(reg);
@@ -859,7 +866,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     	}
 		else
 		{
-			p.fillRect(lr, QBrush(Qt::yellow));
+			p.fillRect(lr, QBrush(Qt::black));
 			paintTextChunk(ent->text(0), lr.x(), lr.y()+m_buffer->lineHeight-m_buffer->lineDescent, &p);
 		}
 
@@ -873,13 +880,13 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     	{
     		m_buffer->pixmap->resize(QMAX(m_buffer->pixmap->width(), lr.width()),
 					QMAX(m_buffer->pixmap->height(), lr.height()));
-			m_buffer->pixmap->fill(Qt::black);
+			//m_buffer->pixmap->fill(Qt::black);
 			m_buffer->painter->begin(m_buffer->pixmap, false);
 			m_buffer->painter->setFont(*(m_buffer->font));
 			o=reg;
 			o.translate(-lr.x(), -lr.y());
 			m_buffer->painter->setClipRegion(o);
-			//m_buffer->painter->fillRect(0,0,lr.width(),lr.height(), QBrush(Qt::black));
+			m_buffer->painter->fillRect(0,0,lr.width(),lr.height(), QBrush(Qt::black));
 			QStringList strings=ent->rightWrapList();
 			h=0;
 			//for ( it = strings.begin(); it != strings.end(); ++it ) {
@@ -916,19 +923,28 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 
 done:
 
-	QRegion sep=m_buffer->sepRegion;
-    sep.translate(0,-contentsY());
-    p.setClipRegion(sep);
-    if (m_buffer->sepActive)
-		p.fillRect(sep.boundingRect(), QBrush(Qt::white));
-    else
-		p.fillRect(sep.boundingRect(), QBrush(Qt::gray));
-	unpainted -= m_buffer->sepRegion;
+	//QRegion sep=m_buffer->sepRegion;
+    //sep.translate(0,-contentsY());
+    //p.setClipRegion(sep);
+    //if (m_buffer->sepActive)
+	//	p.fillRect(sep.boundingRect(), QBrush(Qt::white));
+    //else
+	//	p.fillRect(sep.boundingRect(), QBrush(Qt::gray));
+	//unpainted -= m_buffer->sepRegion;
 
 
 
     p.setClipRegion(unpainted);
-	p.fillRect(unpainted.boundingRect(), QBrush(Qt::black));
+	p.fillRect(ur, QBrush(Qt::black));
+
+p.setClipping(false);
+
+		if (m_buffer->sepActive)
+	p.fillRect(m_buffer->sepValue,ur.y(),m_sepWidth,ur.height(), QBrush(Qt::white));
+else
+p.fillRect(m_buffer->sepValue,ur.y(),m_sepWidth,ur.height(), QBrush(Qt::white));
+
+	//qWarning("paint: draw %d ents skipped %d ents",pp,ppp);
 }
 
 int myabs(int a)
@@ -959,11 +975,12 @@ void TextView::contentsMouseMoveEvent(QMouseEvent * e)
 	if (m_buffer->sepActive) {
 	    if ((x > 10) && ((width() / 2) > x)) {
 		int d = myabs(m_buffer->sepValue - x);
-		if (d > 5) {
+		if (d > 10) {
 		 m_buffer->sepValue = x;
 			//m_buffer->sepRegion = QRegion();//QRegion(m_buffer->sepValue, contentsY(), m_sepWidth, visibleHeight());
-			m_buffer->sepRegion =
-	    QRegion(m_buffer->sepValue, 0, m_sepWidth, visibleHeight());
+		//	m_buffer->sepRegion =
+	    //QRegion(m_buffer->sepValue, 0, m_sepWidth, visibleHeight());
+	//	m_buffer->sepRegion =QRegion();
 			//scheduleLayout();
 			recalcLayout();
 		    //m_relayoutBeforePaint=true;
