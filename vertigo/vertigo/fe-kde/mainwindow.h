@@ -87,7 +87,7 @@ void slotTab9();
     //TODO move these to the tabwidget directly
 void slotNextTab();
 void slotPreviousTab();
-
+void forwardLoop();
     
   protected:
     QVBoxLayout * XChatMainWindowLayout;
@@ -99,7 +99,7 @@ void slotPreviousTab();
     QLabel *lagLabel;
     QLabel *numbersLabel;
     QLabel *nameLabel;
-
+    QTimer *m_timer;
 };
 
 /*

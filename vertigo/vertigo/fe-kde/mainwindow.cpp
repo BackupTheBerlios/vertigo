@@ -54,11 +54,12 @@ XChatMainWindow::XChatMainWindow(QWidget * parent)
 //statusBar()->addWidget(m_statusBarWidget);
 	m_progressBar=new KProgress(statusBar(),"progressBar");
 m_progressBar->setFormat("Connecting...");
+m_progressBar->setTotalSteps(5);
 //m_progressBar->setAlignment( AlignHCenter | AlignVCenter );
 	statusBar()->addWidget(m_progressBar, 0, false);
 m_progressBar->hide();
-
-
+m_timer = new QTimer(this);
+connect(m_timer, SIGNAL(timeout()), this, SLOT(forwardLoop()));
     /*nameFrame = new QFrame(this, "nameFrame");
     nameFrame->setFrameShape(QFrame::StyledPanel);
     nameFrame->setFrameShadow(QFrame::Sunken);
@@ -341,6 +342,8 @@ void XChatMainWindow::showProgressBar()
 	//if (did)
 	//	return;
 	if(!statusBar()->isHidden()) {
+	m_progressBar->reset();
+	m_timer->start(500, false);
 	m_progressBar->show();
 //statusBar()->addWidget(m_progressBar, 0, false);
 //did =1;
@@ -358,8 +361,20 @@ void XChatMainWindow::hideProgressBar()
 //statusBar()->removeWidget(m_progressBar);
 //      m_statusBarWidget->messageLabel->setText(QString::null);
 	m_progressBar->hide();
+	m_timer->stop();
     }
 }
+
+void XChatMainWindow::forwardLoop()
+{
+    m_progressBar->setProgress(m_progressBar->progress() + 1);
+    if(m_progressBar->progress() > m_progressBar->totalSteps()) {
+   		m_progressBar->reset(); 
+    }
+}
+
+
+
 
 void XChatMainWindow::setNumbers(int ops, int total)
 {
