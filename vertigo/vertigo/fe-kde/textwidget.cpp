@@ -261,7 +261,10 @@ void TextView::timerEvent ( QTimerEvent *e )
 		m_buffer->layoutTimerId=0;
 		m_buffer->sepRegion=QRegion();
 		recalcLayout();
-		updateContents();
+		            updateContents(contentsX(),
+                   contentsY(),
+                   visibleWidth(), visibleHeight());
+
 		//repaint();
 	}
 }
@@ -472,7 +475,7 @@ void
 
 int TextView::recalcEntryLayout(TextEntry * ent, bool resizeCols)
 {
-    int w = textWidth(ent->text(0));
+    int w = QMAX(1, textWidth(ent->text(0)));
     int leftX = 0, rightX=0;
 
     if (m_reversedLayout) {
@@ -792,6 +795,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
     TextEntry *ent;
 	QRect lr;
 	QRegion reg, o;
+	bool painted=false;
 	//QStringList::Iterator it;
 	int h;
 	QPainter p(viewport());
@@ -823,9 +827,20 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		reg=ent->leftRegion();
 		reg.translate(0,-contentsY());
 		lr=reg.boundingRect();
-		
-		if (( lr.y() < ur.y()-20) || (lr.y()+lr.height()> ur.y()+ur.height()+20))
+	
+		//qWarning("painting: lr.y=%d ur.y=%d lr.height=%d ur.height=%d text=%s",lr.y(),ur.y(), lr.height(), ur.height(), ent->text(0).latin1());
+
+	
+		if (( lr.y() < ur.y()-15) || (lr.y()+lr.height()> ur.y()+ur.height()+15))
+		{
+		if (painted)
+			goto done;
+		else
 			continue;
+		}
+		
+		if (painted==false)
+			painted=true;
 		
 		h=lr.y();
 		if (m_doubleBuffer)
@@ -836,7 +851,7 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 				m_buffer->pixmap->fill(Qt::black);
 				m_buffer->painter->begin(m_buffer->pixmap, false);
 				m_buffer->painter->setFont(*(m_buffer->font));
-				//m_buffer->painter->fillRect(0,0, lr.width(), lr.height(), QBrush(Qt::black));
+				//m_buffer->painter->fillRect(0,0,lr.width(), lr.height(), QBrush(Qt::black));
 				paintTextChunk(ent->text(0), 0, m_buffer->lineHeight-m_buffer->lineDescent, m_buffer->painter);
 				m_buffer->painter->end();
 				p.setClipRegion(reg);
@@ -898,6 +913,8 @@ void TextView::viewportPaintEvent ( QPaintEvent * pe )
 		}
 		unpainted -=reg;
     }
+
+done:
 
 	QRegion sep=m_buffer->sepRegion;
     sep.translate(0,-contentsY());
