@@ -192,8 +192,11 @@ extern "C"
             xdir = dir.data();
         }
         // XXX: xchat doesn't support multiple args fix this
+	
+	char *aa=new char[1024];
         for (int i = 0; i < args->count(); i++) {
-            connect_url = args->url(i).path().latin1();
+        	qstrcpy(aa,args->url(i).path().latin1());
+		connect_url = aa;//args->url(i).path().latin1();
         }
 
         args->clear();

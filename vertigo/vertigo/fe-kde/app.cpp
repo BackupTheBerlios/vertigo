@@ -235,7 +235,7 @@ void App::loadPalette()
     fh = open(prefname, O_RDONLY | OFLAGS);
     if(fh != -1) {
 	fstat(fh, &st);
-	cfg = malloc(st.st_size + 1);
+	cfg = (char*)malloc(st.st_size + 1);
 	if(cfg) {
 	    cfg[0] = '\0';
 	    l = read(fh, cfg, st.st_size);
@@ -556,7 +556,7 @@ void App::dialogInputHandled()
 	StringInputFunc fn = i->getStringFunc();
 
 	if(fn)
-	    (*fn) (i->cancelled(), i->getString().latin1(), i->getUserData());
+	    (*fn) (i->cancelled(), (char*)i->getString().latin1(), i->getUserData());
     } else if(i->getType() == InputDialog::IntDialog) {
 	IntInputFunc fn = i->getIntFunc();
 
@@ -618,7 +618,7 @@ InputDialog::InputDialog(QObject * parent, char *prompt, int def, void *callback
     m_cancelled = true;
     m_type = IntDialog;
 
-    m_intFunc = callback;
+    m_intFunc = (IntInputFunc)callback;
     m_stringFunc = 0;
     m_userData = ud;
 
@@ -636,7 +636,7 @@ InputDialog::InputDialog(QObject * parent, char *prompt, char *def, void *callba
     m_cancelled = true;
     m_type = StringDialog;
 
-    m_stringFunc = callback;
+    m_stringFunc = (StringInputFunc)callback;
     m_intFunc = 0;
     m_userData = ud;
 

@@ -781,7 +781,7 @@ bool TextView::isUrl(QString txt)
     /*if (txt[0] == 'w')
 	return true;
     return false;*/
-    text_word_check (txt.latin1());
+    text_word_check ((char*)txt.latin1());
 
 }
 

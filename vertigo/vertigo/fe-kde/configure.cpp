@@ -333,7 +333,7 @@ m_popCheckbox->setChecked(true);
 
     setRootIsDecorated(false);
     setTreeListAutoResize(false);
-    unfoldTreeList(true);
+    //unfoldTreeList(true);
 
     resize(minimumSize());
 

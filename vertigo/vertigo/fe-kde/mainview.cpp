@@ -330,7 +330,7 @@ void MainView::topicEnter()
 	{
 		topicEdit->getCursorPosition(&m_oldTopicParaPos, &m_oldTopicIndexPos);
 		kdDebug() << "topic: |"<<unescapeText(topicEdit->text()).latin1()<<"|"<<endl;
-		set_topic(m_session, unescapeText(topicEdit->text()).latin1());
+		set_topic(m_session, (char*)unescapeText(topicEdit->text()).latin1());
 	}
 }
 
@@ -379,7 +379,7 @@ void MainView::entryEnter()
 	QString d = m_inputLine->text();
 
 	m_inputLine->clear();
-	handle_multiline(m_session, d.latin1(), 1, 0);
+	handle_multiline(m_session, (char*)d.latin1(), 1, 0);
     }
 }
 
