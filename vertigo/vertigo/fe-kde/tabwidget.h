@@ -1,7 +1,7 @@
 #ifndef XCHATTABWIDGET_H
 #define XCHATTABWIDGET_H
 
-#include "ktabwidget.h"
+#include "backport/ktabwidget.h"
 
     class TabWidget:public KTabWidget
     {

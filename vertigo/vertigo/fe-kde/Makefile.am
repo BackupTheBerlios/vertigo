@@ -2,7 +2,7 @@
 
 # this has all of the subdirectories that make will recurse into.  if
 # there are none, comment this out
-SUBDIRS = . pics
+SUBDIRS = . backport pics
 
 # this is the program that gets installed.  it's name is used for all
 # of the other Makefile.am variables
@@ -15,14 +15,13 @@ INCLUDES         = $(GLIB_CFLAGS) $(all_includes)
 vertigo_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 
 # the libraries to link against.
-vertigo_LDADD   = ../common/libxchatcommon.a $(GLIB_LIBS) $(LIB_KFILE)
-
+vertigo_LDADD   = ../common/libxchatcommon.a backport/libbackport.a $(GLIB_LIBS) $(LIB_KFILE) -Lbackport -lbackport
 
 # which sources should be compiled for vertigo
-vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp ktabbar.cpp ktabwidget.cpp tabwidget.cpp textwidget.cpp serverlist.cpp extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
+vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
 
 # these are the headers for your project
-noinst_HEADERS   = fe-kde.h textwidget.h configure.h ktabbar.h ktabwidget.h tabwidget.h serverlist.h extraview.h mainview.h mainwindow.cpp app.h
+noinst_HEADERS   = fe-kde.h textwidget.h configure.h tabwidget.h serverlist.h extraview.h mainview.h mainwindow.cpp app.h
 
 # let automoc handle all of the meta source files (moc)
 METASOURCES = AUTO
