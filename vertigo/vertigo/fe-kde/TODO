@@ -1,7 +1,7 @@
 Channel List:
 + buddy check
 - focus on text line on switch
-- implement filtering
++ implement filtering
 + on reload don't disable whole widget, just reload button
 + disable stop by default
 + join on double click
@@ -9,6 +9,10 @@ Channel List:
 - sane selection
 - implement stop button
 - set min/max value of min/max spinboxes to be equal (0=0) 
+- apply on return press in search field
+- save config/reload on switch
+- non-auto column resizing
+- richtext tooltips of topics
 
 Character chart:
 - designerize
@@ -25,8 +29,8 @@ URL Grabber:
 - update URLs
 - maintain internal URLList
 
-
-
+Server List:
+- 
 
 
 

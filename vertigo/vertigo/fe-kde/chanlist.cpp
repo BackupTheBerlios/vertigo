@@ -3,6 +3,7 @@
 #include <kmessagebox.h>
 #include <kpushbutton.h>
 #include <klineedit.h>
+#include <kdebug.h>
 #include <knuminput.h>
 #include <kconfig.h>
 #include <qregexp.h>
@@ -40,7 +41,7 @@ void ChanlistView::enableItems(bool yes){
 	{
 		m_stopButton->setEnabled(false);
 		m_refreshButton->setEnabled(true);
-		m_chanlistView->update();
+		m_chanlistView->repaint();
 	}
 	else{
 		m_stopButton->setEnabled(true);
@@ -57,13 +58,15 @@ void ChanlistView::setMatchSettings()
         m_maxUsers=m_maxSpin->value();
         if (!m_minUsers && !m_maxUsers)
                 m_minUsers=-1;
+	if (m_maxUsers < m_minUsers)
+		m_maxUsers=9999;
         m_regExp.setPattern(m_textEdit->text());
 }
 
 void ChanlistView::slotApplyButtonClicked()
 {
         setMatchSettings();
-        m_chanlistView->setUpdatesEnabled(false);
+        //m_chanlistView->setUpdatesEnabled(false);
         QPtrListIterator<ChanlistItem> it( m_chanList );
 	ChanlistItem *item;
         while ( it.current() ) {
@@ -76,8 +79,8 @@ void ChanlistView::slotApplyButtonClicked()
 	    }
             ++it;
         }
-        m_chanlistView->setUpdatesEnabled(true);
-	m_chanlistView->update();
+        //m_chanlistView->setUpdatesEnabled(true);
+	//m_chanlistView->repaint();
 }
 
 
@@ -110,24 +113,24 @@ if (getServer()->connected && m_chanlistView->currentItem ()->text(0) != "*")
 
 void ChanlistView::appendChannel(QString chan,QString users,QString topic)
 {
-	m_chanlistView->setUpdatesEnabled(false);
+	//m_chanlistView->setUpdatesEnabled(false);
 	ChanlistItem *i=new ChanlistItem(m_chanlistView, chan, users, topic);
 	m_chanList.append(i);
 	if (isMatch(i))
 	{
-		m_chanlistView->setUpdatesEnabled(true);
-			
+	//	m_chanlistView->setUpdatesEnabled(true);
+	;		
 	}	
 	else{
 		m_chanlistView->takeItem(i);
-		m_chanlistView->setUpdatesEnabled(true);
+	//	m_chanlistView->setUpdatesEnabled(true);
 	}
 
 }
 
 
 bool ChanlistView::isMatch(ChanlistItem *i)
-{	
+{
 	if (m_minUsers != -1)
 	{
 		if ((i->users() < m_minUsers ) || (i->users() > m_maxUsers ))

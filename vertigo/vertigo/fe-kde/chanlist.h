@@ -32,8 +32,8 @@ private:
 	void insertItem ( QListViewItem * i );
 	void takeItem ( QListViewItem * i );
 	void setMatchSettings();
-        QString m_matchTopic;
-        QString m_matchChan;
+        bool m_matchTopic;
+        bool m_matchChan;
         int m_minUsers;
         int m_maxUsers;
         QRegExp m_regExp;
