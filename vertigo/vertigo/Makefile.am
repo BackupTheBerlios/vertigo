@@ -1,1 +1,1 @@
-SUBDIRS = common plugins fe-kde
+SUBDIRS = common fe-kde plugins
