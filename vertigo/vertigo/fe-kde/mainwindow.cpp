@@ -31,6 +31,7 @@
 #include <klocale.h>
 #include <kedittoolbar.h>
 #include <kcharselect.h>
+#include <kprogress.h>
 
 #include <kdcopactionproxy.h>
 
@@ -51,9 +52,11 @@ XChatMainWindow::XChatMainWindow(QWidget * parent)
 
 //m_statusBarWidget= new XChatStatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
-	m_progressBar=new QProgressBar(this,"progressBar");
-	//statusBar()->addWidget(m_progressBar, 0, false);
-//m_progressBar->hide();
+	m_progressBar=new KProgress(statusBar(),"progressBar");
+m_progressBar->setFormat("Connecting...");
+//m_progressBar->setAlignment( AlignHCenter | AlignVCenter );
+	statusBar()->addWidget(m_progressBar, 0, false);
+m_progressBar->hide();
 
 
     /*nameFrame = new QFrame(this, "nameFrame");
@@ -61,17 +64,19 @@ XChatMainWindow::XChatMainWindow(QWidget * parent)
     nameFrame->setFrameShadow(QFrame::Sunken);
     nameFrameLayout = new QHBoxLayout(nameFrame, 2, 4, "nameFrameLayout");*/
 
-    nameLabel = new QLabel(this, "nameLabel");
+    //nameLabel = new QLabel(this, "nameLabel");
 
    // nameFrameLayout->addWidget(nameLabel);
-    statusBar()->addWidget(nameLabel, 0, true);
+    statusBar()->insertItem("Name: ", 1,0, true);
+	//statusBar()->addWidget(nameLabel, 0, true);
 
-    lagLabel = new QLabel(this, "lagLabel");
-    statusBar()->addWidget(lagLabel, 0, true);
+    //lagLabel = new QLabel(this, "lagLabel");
+    //statusBar()->addWidget(lagLabel, 0, true);
 
-    numbersLabel = new QLabel(this, "numbers");
-    statusBar()->addWidget(numbersLabel, 0, true);
-
+    //numbersLabel = new QLabel(this, "numbers");
+    //statusBar()->addWidget(numbersLabel, 0, true);
+statusBar()->insertItem("-1 ms", 2,0, true);
+statusBar()->insertItem("0 ops 0 users", 3,0, true);
 
 
     KIconLoader *loader = KGlobal::iconLoader();
@@ -332,9 +337,13 @@ void XChatMainWindow::slotTabChanged(QWidget * t)
 void XChatMainWindow::showProgressBar()
 {
     kdDebug() << "showProgressBar" << endl;
-    if(!statusBar()->isHidden()) {
-	//m_progressBar->show();
-statusBar()->addWidget(m_progressBar, 0, false);
+    //static int did=0;
+	//if (did)
+	//	return;
+	if(!statusBar()->isHidden()) {
+	m_progressBar->show();
+//statusBar()->addWidget(m_progressBar, 0, false);
+//did =1;
 	//statusBar()->message("Connecting...");
 	//m_statusBarWidget->messageLabel->setText("Connected...");
 	//m_progressBar->reset();
@@ -346,9 +355,9 @@ void XChatMainWindow::hideProgressBar()
     kdDebug() << "hideProgressBar" << endl;
     if(!statusBar()->isHidden()) {
 	//statusBar()->clear();
-statusBar()->removeWidget(m_progressBar);
+//statusBar()->removeWidget(m_progressBar);
 //      m_statusBarWidget->messageLabel->setText(QString::null);
-	//m_progressBar->hide();
+	m_progressBar->hide();
     }
 }
 
@@ -358,7 +367,8 @@ void XChatMainWindow::setNumbers(int ops, int total)
     QString text = "%1 %2, %3 %4";
 
     text = text.arg(ops).arg(i18n("ops")).arg(total).arg(i18n("total"));
-    numbersLabel->setText(text);
+    statusBar()->changeItem(text, 3);
+	//numbersLabel->setText(text);
 
 }
 
@@ -369,7 +379,8 @@ void XChatMainWindow::setLag(int lag)
     QString text = "%1 %2";
 
     text = text.arg(lag).arg(i18n("ms"));
-    lagLabel->setText(text);
+   statusBar()->changeItem(text, 2); 
+	//lagLabel->setText(text);
 
 }
 

@@ -7,7 +7,7 @@
 
 #include "../common/xchat.h"
 
-class QProgressBar;
+class KProgress;
 class XChatTabWidget;
 class XChatStatusBarWidget;
 
@@ -93,7 +93,7 @@ void slotPreviousTab();
     QVBoxLayout * XChatMainWindowLayout;
     QPtrList < XChatMainView > *m_mainViewList;
     XChatStatusBarWidget *m_statusBarWidget;
-	QProgressBar *m_progressBar;
+	KProgress *m_progressBar;
 
     // bool m_detached;
     QLabel *lagLabel;
