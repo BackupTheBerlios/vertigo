@@ -32,6 +32,8 @@
 #include "app.h"
 #include "mainview.h"
 #include "serverlist.h"
+#include "rawlog.h"
+#include "chanlist.h"
 #include "extraview.h"
 #include "textwidget.h"
 

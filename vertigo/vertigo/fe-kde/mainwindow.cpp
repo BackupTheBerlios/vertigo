@@ -44,6 +44,8 @@
 #include "fe-kde.h"
 #include "app.h"
 #include "containerview.h"
+#include "chanlist.h"
+#include "rawlog.h"
 #include "serverlist.h"
 #include "configure.h"
 #include "extraview.h"
@@ -517,7 +519,7 @@ void MainWindow::slotChanlist()
 {
 if(!current_sess->server->gui->chanlist) {
 
-        ChanlistView *l = new ChanlistView(this, this, current_sess->server);
+        ChanlistView *l = new ChanlistView(this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;
         addView(l, "channels", lastSameServerTabIndex());
@@ -609,7 +611,7 @@ void MainWindow::slotCharChart()
 void MainWindow::slotRawlog()
 {
     if(!current_sess->server->gui->rawlog) {
-	RawlogView *l = new RawlogView(this, this, current_sess->server);
+	RawlogView *l = new RawlogView(this, current_sess->server);
 
 	current_sess->server->gui->rawlog = l;
 	addView(l, "rawlog", lastSameServerTabIndex());

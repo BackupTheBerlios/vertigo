@@ -7,10 +7,14 @@
 #include "../common/xchat.h"
 
 class KProgress;
+class QLabel;
+
 
 class TabWidget;
 class ContainerView;
 class StatusBarWidget;
+
+
 
 class MainWindow:public KMainWindow {
   Q_OBJECT public:

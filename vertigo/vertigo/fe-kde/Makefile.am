@@ -19,10 +19,10 @@ vertigo_LDFLAGS = $(KDE_RPATH) $(all_libraries)
 vertigo_LDADD   = ../common/libxchatcommon.a $(GLIB_LIBS) $(LIB_KFILE) $(LIB_KPARTS)
 
 # which sources should be compiled for vertigo
-vertigo_SOURCES = fe-kde.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp containerview.cpp rawlogbase.ui chanlistbase.ui extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
+vertigo_SOURCES = fe-kde.cpp helperwidgets.cpp app.cpp configure.cpp tabwidget.cpp textwidget.cpp serverlist.cpp containerview.cpp rawlogbase.ui chanlistbase.ui rawlog.cpp chanlist.cpp extraview.cpp mainview.cpp mainview.skel mainwindow.cpp
 
 # these are the headers for your project
-noinst_HEADERS   = fe-kde.h textwidget.h configure.h tabwidget.h serverlist.h extraview.h containerview.h mainview.h mainwindow.cpp app.h
+noinst_HEADERS   = fe-kde.h textwidget.h configure.h helperwidgets.h tabwidget.h serverlist.h extraview.h containerview.h rawlog.h chanlist.h mainview.h mainwindow.cpp app.h
 
 # let automoc handle all of the meta source files (moc)
 METASOURCES = AUTO

@@ -26,127 +26,10 @@
 #include "../common/outbound.h"
 #include "../common/util.h"
 
-#include "rawlogbase.h"
-#include "chanlistbase.h"
+
 
 #include "tabwidget.h"
 #include "fe-kde.h"
-
-
-
-ChanlistView::ChanlistView(QWidget * parent, MainWindow * w, server * s)
-    :  ChanlistViewBase(parent, "ChanList")
-{
-	setWindow(w);
-	setServer(s);
-
-
-    // signals and slots connections
-    connect( m_applyButton, SIGNAL( clicked() ), this, SLOT( slotApplyButtonClicked() ) );
-    connect( m_joinButton, SIGNAL( clicked() ), this, SLOT( slotJoinButtonClicked() ) );
-    connect( m_refreshButton, SIGNAL( clicked() ), this, SLOT( slotRefreshButtonClicked() ) );
-
-
-
-		    m_chanlistView->setAllColumnsShowFocus(true);
-
-}
-
-
-ChanlistView::~ChanlistView()
-{
-}
-
-void ChanlistView::enableItems(bool yes){
-	if (yes)
-	{
-		setEnabled(true);
-		m_chanlistView->scrollBy(0,1);
-		//verticalScrollBar ()
-	}
-	else{
-	setEnabled(false);
-	}
-
-}
-
-
-void ChanlistView::slotApplyButtonClicked()
-{
-}
-
- void ChanlistView::slotJoinButtonClicked(){
-
-}
-
- void ChanlistView::slotRefreshButtonClicked(){
-	if (getServer()->connected)
-        {
-		m_chanlistView->clear();
-		handle_command (getServer()->server_session, "list", FALSE);
-		enableItems(false);
-	}
-	else
-                KMessageBox::error  	(   this, "Not connected to a server",
-		"error");
-}
-
-
- void ChanlistView::appendChannel(QString chan,QString users,QString topic)
-{
-	m_chanlistView->setUpdatesEnabled(false);
-	ChanlistItem *i=new ChanlistItem(m_chanlistView, chan, users, topic);
-	
-	if (isMatch(chan, users, topic))
-	{
-		//m_chanlistView->insertItem(i);
-		m_chanlistView->setUpdatesEnabled(true);
-	//	m_chanlistView->update();
-			
-	}	
-	else{
-		m_chanlistView->takeItem(i);
-		m_chanlistView->setUpdatesEnabled(true);
-	}
-
-}
-
-bool ChanlistView::isMatch(QString chan,QString users,QString topic)
-{
-	return true;
-}
-
-
-
-
-
-ChanlistItem::ChanlistItem(QListView * list,  QString chan, QString users, QString topic):
-KListViewItem(list, chan, users, topic)
-{
-
-}
-
-ChanlistItem::~ChanlistItem()
-{
-}
-
-int ChanlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
-{
-	if (col!=1)
-	{
-		return KListViewItem::compare(i,col,ascending);
-		
-	}
-	{
-		int a=key( col, ascending ).toInt();
-		int b=i->key( col, ascending ).toInt();
-		if (a==b)
-			return 0;
-		if (a<b)
-			return -1;
-		return 1;
-	}
-}
 
 
 BanListView::BanListView(QWidget * parent, MainWindow * w, server * s)
@@ -302,41 +185,6 @@ void NotifyListView::slotRemoveButtonClicked()
 {
     qWarning("NotifyView::slotRemoveButtonClicked(): Not implemented yet");
 }
-
-RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s)
-    :  RawlogViewBase(parent, "Rawlog")
-{
-    setServer(s);
-    setWindow(w);
-    connect(m_clearButton, SIGNAL(clicked()), this, SLOT(slotClearButtonClicked()));
-    connect(m_saveButton, SIGNAL(clicked()), this, SLOT(slotSaveButtonClicked()));
-}
-
-RawlogView::~RawlogView()
-{
-}
-
-void RawlogView::slotClearButtonClicked()
-{
-    qWarning("RawlogView::slotClearButtonClicked(): Not implemented yet");
-}
-
-void RawlogView::slotSaveButtonClicked()
-{
-    qWarning("RawlogView::slotSaveButtonClicked(): Not implemented yet");
-}
-
-void RawlogView::appendText(QString s)
-{
-    m_rawlogView->appendText(s, true);
-}
-
-void RawlogView::closeView()
-{
-	ContainerView::closeView();
-	getServer()->gui->rawlog = 0;
-}
-
 
 
 URLGrabberView::URLGrabberView(QWidget * parent, MainWindow * w, server * s)

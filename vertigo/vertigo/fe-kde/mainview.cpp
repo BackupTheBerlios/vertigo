@@ -73,7 +73,10 @@ layout1->addWidget(m_topicEdit);
     QVBoxLayout *layout4 = new QVBoxLayout(m_userlistPanel, 1, 1, "layout4");
 
     m_userList = new KListView(m_userlistPanel);
-
+	m_userList->addColumn("");
+ m_userList->addColumn ( "User");
+ m_userList->addColumn ( "Host");
+    m_userList->setHScrollBarMode(QScrollView::AlwaysOff);
 
     layout4->addWidget(m_userList);
 
