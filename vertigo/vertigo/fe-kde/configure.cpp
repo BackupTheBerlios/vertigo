@@ -41,6 +41,7 @@ typedef struct session xchat_context;
 #include "../common/outbound.h"
 #include "../common/text.h"
 #include "../common/util.h"
+#include "extraview.h"
 
 
 #include "app.h"

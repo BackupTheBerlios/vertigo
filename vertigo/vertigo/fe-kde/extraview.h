@@ -12,6 +12,8 @@
 
 #include "../common/xchat.h"
 
+#include "rawlogbase.h"
+
 class QVBoxLayout;
 class QHBoxLayout;
 class QGridLayout;
@@ -26,27 +28,6 @@ class QCheckBox;
 class QSpinBox;
 
 class MainWindow;
-
-class ContainerView: public QWidget
-{
-    Q_OBJECT
-
-    public:
-        ContainerView (QWidget* parent = 0, const char* name = 0,  MainWindow *w=0, server*s=0);
-        virtual void setWindow(MainWindow *w);
-        virtual MainWindow* window();
-
-	server *getServer(){return m_server;}
-	void setServer(server *s){m_server=s;}
-
-    public slots:
-    	virtual void showView();
-	virtual void closeView();
-
-    private:
-        MainWindow *m_window;
-	server *m_server;
-};
 
 
 class ChanlistView : public ContainerView
@@ -100,7 +81,7 @@ int compare ( QListViewItem * i, int col, bool ascending ) const;
 
 
 
-class RawlogView :  public ContainerView
+class RawlogView :  public RawlogViewBase
 {
     Q_OBJECT
 

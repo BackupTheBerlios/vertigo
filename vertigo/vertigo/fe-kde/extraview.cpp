@@ -25,37 +25,10 @@
 #include "../common/outbound.h"
 #include "../common/util.h"
 
+#include "rawlogbase.h"
+
 #include "tabwidget.h"
 #include "fe-kde.h"
-
-ContainerView::ContainerView (QWidget * parent, const char *name, MainWindow *w, server *s) : QWidget (parent, name, WDestructiveClose)
-{
-    setWindow(w);
-	setServer(s);
-}
-
-void ContainerView::setWindow(MainWindow *w)
-{
-    kdDebug() << "container setwindow"<<endl;
-    m_window=w;
-}
-
-void ContainerView::showView()
-{
-	if (window())
-		window()->showView(this);
-}
-
-void ContainerView::closeView()
-{
-	close();
-}
-
-
-MainWindow* ContainerView::window()
-{
-    return m_window;
-}
 
 
 
@@ -446,30 +419,10 @@ void NotifyListView::slotRemoveButtonClicked()
 }
 
 RawlogView::RawlogView(QWidget * parent, MainWindow * w, server * s)
-    :  ContainerView(parent, "Rawlog", w, s)
+    :  RawlogViewBase(parent, "Rawlog")
 {
     setServer(s);
-    RawlogViewLayout = new QGridLayout(this, 1, 1, 12, 6, "RawlogViewLayout");
-
-    m_clearButton = new QPushButton(this, "m_clearButton");
-    RawlogViewLayout->addWidget(m_clearButton, 1, 1);
-
-    m_rawlogView = new TextView(this, "m_rawlogView");
-    m_rawlogView->setSizePolicy(QSizePolicy((QSizePolicy::SizeType) 7, (QSizePolicy::SizeType) 7, 0, 0, m_rawlogView->sizePolicy().hasHeightForWidth()));
-    RawlogViewLayout->addMultiCellWidget(m_rawlogView, 0, 2, 0, 0);
-
-    m_saveButton = new QPushButton(this, "m_saveButton");
-    RawlogViewLayout->addWidget(m_saveButton, 0, 1);
-    QSpacerItem *spacer = new QSpacerItem(50, 254, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-    RawlogViewLayout->addItem(spacer, 2, 1);
-
-    setCaption(tr("Raw Log"));
-    m_clearButton->setText(tr("&Clear"));
-    m_clearButton->setAccel(QKeySequence(tr("Alt+C")));
-    m_saveButton->setText(tr("&Save..."));
-    m_saveButton->setAccel(QKeySequence(tr("Alt+S")));
-
+    setWindow(w);
     connect(m_clearButton, SIGNAL(clicked()), this, SLOT(slotClearButtonClicked()));
     connect(m_saveButton, SIGNAL(clicked()), this, SLOT(slotSaveButtonClicked()));
 }

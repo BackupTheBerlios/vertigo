@@ -1,4 +1,4 @@
-#include "mainview.h"
+
 
 #include <qvariant.h>
 #include <qlabel.h>
@@ -30,6 +30,7 @@
 
 #include "textwidget.h"
 #include "app.h"
+#include "mainview.h"
 
 #include "../common/xchat.h"
 #include "../common/xchatc.h"
@@ -37,7 +38,8 @@
 #include "../common/outbound.h"
 
 #include "fe-kde.h"
-
+#include "mainwindow.h"
+#include "containerview.h"
 
 MainView::MainView(MainWindow * w, session * sess)
 :  MainViewIface("MainView"),  ContainerView(w,"MainView",w, sess->server)
@@ -55,7 +57,7 @@ MainView::MainView(MainWindow * w, session * sess)
     //topicLabel = new TopicLabel(topicStack, 2);
 	topicEdit = new TopicEdit(this);
 
-	
+
   topicEdit->
       setSizePolicy(QSizePolicy
                     (QSizePolicy::Minimum, QSizePolicy::Maximum, false));

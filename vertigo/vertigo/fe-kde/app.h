@@ -22,14 +22,9 @@
 #include "../common/xchat.h"
 #include "../common/userlist.h"
 
-#include "mainview.h"
-#include "mainwindow.h"
-#include "serverlist.h"
-#include "textwidget.h"
-#include "extraview.h"
-
-
+typedef QIntDict<QColor> Palette;
 #define xchatapp (static_cast<App*>(kapp))
+
 class Serverlist;
 class URLGrabberView;
 class ChatListView;
@@ -39,6 +34,7 @@ class IgnoreListView;
 class BanListView;
 class MainWindow;
 class MainView;
+
 
 typedef int (*TimerFunc) (void *data);
 typedef int (*SocketFunc) (void *source, int con, void *data);
@@ -78,7 +74,7 @@ class App:public KApplication {
 
 	void loadDefaultPalette();
 	void loadPalette();
-   
+
 	Palette palette();
 	
 	int getUserLevel(QPixmap *p);

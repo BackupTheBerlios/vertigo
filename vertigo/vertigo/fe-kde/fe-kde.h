@@ -3,10 +3,10 @@
 
 #include <kcompletion.h>
 
-#include "mainview.h"
-#include "mainwindow.h"
-#include "extraview.h"
-#include "textwidget.h"
+class RawlogView;
+class ChanlistView;
+class MainView;
+class MainWindow;
 
 extern
  "C" {

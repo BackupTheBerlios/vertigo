@@ -3,13 +3,7 @@
 
 
 #include <time.h>
-#include <qwidget.h>
-#include <qscrollview.h>
-#include <qptrlist.h>
-#include <qpainter.h>
-#include <qtimer.h>
-#include <qpixmap.h>
-#include <qintdict.h>
+
 
 #define ATTR_BOLD '\002'
 #define ATTR_COLOR '\003'
@@ -22,7 +16,7 @@
 class QScrollView;
 
 
-typedef QIntDict<QColor> Palette;
+#include "app.h"
 
 typedef struct TextEntry {
     TextEntry *next;

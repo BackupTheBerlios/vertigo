@@ -6,7 +6,6 @@
 #include <klistview.h>
 #include <kdialogbase.h>
 
-#include "extraview.h"
 
 #include "../common/xchat.h"
 #include "../common/servlist.h"
@@ -26,7 +25,7 @@ class QLineEdit;
 class QComboBox;
 class QCheckBox;
 class QPushButton;
-
+class UserOptionsView;
 
 class UserOptionsDialog;
 

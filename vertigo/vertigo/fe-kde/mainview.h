@@ -29,8 +29,8 @@ class QListBoxItem;
 
 #include <dcopobject.h>
 
-#include "extraview.h"
-#include "textwidget.h"
+#include "containerview.h"
+
 
 #include "../common/xchat.h"
 #include "../common/userlist.h"
@@ -39,6 +39,7 @@ class MainView;
 class UserlistView;
 class TopicEdit;
 class InputLineEdit;
+class TextView;
 
 
  class MainViewIface : virtual public DCOPObject
@@ -78,6 +79,7 @@ MainWindow *window();
     TextView *getTextView() {
 	return textEdit1;
     }
+
     void setSession(session * s) {
 	m_session = s;
     }

@@ -33,6 +33,7 @@
 #include "app.h"
 #include "mainview.h"
 #include "serverlist.h"
+#include "extraview.h"
 #include "textwidget.h"
 
 extern "C"

@@ -43,9 +43,10 @@
 #include "tabwidget.h"
 #include "fe-kde.h"
 #include "app.h"
-#include "extraview.h"
+#include "containerview.h"
 #include "serverlist.h"
 #include "configure.h"
+#include "extraview.h"
 
 MainWindow::MainWindow(QWidget * parent)
 :  KMainWindow(parent, "MainWindow", WType_TopLevel|WDestructiveClose)

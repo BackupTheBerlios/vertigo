@@ -8,8 +8,6 @@
 #include <knotifydialog.h>
 #include <klistview.h>
 
-#include "extraview.h"
-
 class QVBoxLayout;
 class QHBoxLayout;
 class QGridLayout;
@@ -24,6 +22,7 @@ class QLineEdit;
 class KListView;
 class KListViewItem;
 
+class EditListView;
 class ColorButton;
 
 class ConfigureDialog:public KDialogBase {

@@ -28,6 +28,7 @@
 #include <glib/gslist.h>
 
 #include "app.h"
+#include "extraview.h"
 
 #include "../common/xchat.h"
 #include "../common/xchatc.h"
