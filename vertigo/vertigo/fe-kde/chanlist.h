@@ -7,9 +7,9 @@
 #include "chanlistbase.h"
 
 #include <qregexp.h>
+#include <qptrlist.h>
 
 class ChanlistItem;
-
 
 
 class ChanlistView : public ChanlistViewBase
@@ -37,7 +37,7 @@ private:
         int m_minUsers;
         int m_maxUsers;
         QRegExp m_regExp;
-	
+	QPtrList <ChanlistItem> m_chanList;	
 };
 
 class ChanlistItem:public KListViewItem {

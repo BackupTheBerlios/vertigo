@@ -6,6 +6,7 @@
 #include <knuminput.h>
 #include <kconfig.h>
 #include <qregexp.h>
+#include <qptrlist.h>
 #include <qcheckbox.h>
 
 #include "../common/xchatc.h"
@@ -17,10 +18,6 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
 {
 	setServer(s);
 	enableItems(true);
-  /*  connect( m_applyButton, SIGNAL( clicked() ), this, SLOT( slotApplyButtonClicked() ) );
-    connect( m_joinButton, SIGNAL( clicked() ), this, SLOT( slotJoinButtonClicked() ) );
-    connect( m_refreshButton, SIGNAL( clicked() ), this, SLOT( slotRefreshButtonClicked() ) );*/
-   // m_chanlistView->setAllColumnsShowFocus(true);
 
 	KConfig *c=new KConfig("vertigorc");
 	m_minSpin->setValue(c->readNumEntry("minUsers",0));
@@ -29,7 +26,8 @@ ChanlistView::ChanlistView(QWidget * parent, server * s)
 	c->sync();
 	delete c;
 	setMatchSettings();
-	
+
+	m_chanList.setAutoDelete(false);
 }
 
 
@@ -42,13 +40,11 @@ void ChanlistView::enableItems(bool yes){
 	{
 		m_stopButton->setEnabled(false);
 		m_refreshButton->setEnabled(true);
-		//setEnabled(true);
-		//m_chanlistView->scrollBy(0,1);
+		m_chanlistView->update();
 	}
 	else{
 		m_stopButton->setEnabled(true);
 		m_refreshButton->setEnabled(false);
-	//setEnabled(false);
 	}
 
 }
@@ -68,11 +64,11 @@ void ChanlistView::slotApplyButtonClicked()
 {
         setMatchSettings();
         m_chanlistView->setUpdatesEnabled(false);
-        QListViewItemIterator it( m_chanlistView );
-        QListViewItem *item;
+        QPtrListIterator<ChanlistItem> it( m_chanList );
+	ChanlistItem *item;
         while ( it.current() ) {
             item = it.current();
-            if (!isMatch((ChanlistItem *)item)){
+            if (!isMatch(item)){
                 takeItem(item);
 	    }
 	    else{
@@ -81,7 +77,7 @@ void ChanlistView::slotApplyButtonClicked()
             ++it;
         }
         m_chanlistView->setUpdatesEnabled(true);
-
+	m_chanlistView->update();
 }
 
 
@@ -101,6 +97,7 @@ if (getServer()->connected && m_chanlistView->currentItem ()->text(0) != "*")
  void ChanlistView::slotRefreshButtonClicked(){
 	if (getServer()->connected)
         {
+		m_chanList.clear();
 		m_chanlistView->clear();
 		handle_command (getServer()->server_session, "list", FALSE);
 		enableItems(false);
@@ -115,7 +112,7 @@ void ChanlistView::appendChannel(QString chan,QString users,QString topic)
 {
 	m_chanlistView->setUpdatesEnabled(false);
 	ChanlistItem *i=new ChanlistItem(m_chanlistView, chan, users, topic);
-	
+	m_chanList.append(i);
 	if (isMatch(i))
 	{
 		m_chanlistView->setUpdatesEnabled(true);
