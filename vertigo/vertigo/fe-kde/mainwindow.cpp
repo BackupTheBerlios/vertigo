@@ -48,15 +48,21 @@
 #include "configure.h"
 #include "extraview.h"
 
+#include "backport/kmdimainfrm.h"
+
+
+
 MainWindow::MainWindow(QWidget * parent)
-:  KMainWindow(parent, "MainWindow", WType_TopLevel|WDestructiveClose)
+:  KMdiMainFrm(parent, "MainWindow")
 {
 
 //m_statusBarWidget= new StatusBarWidget(statusBar(), "Progress Bar");
 //statusBar()->addWidget(m_statusBarWidget);
+m_MDIMode=0;
 	m_progressBar=new KProgress(statusBar(),"progressBar");
 m_progressBar->setFormat("Connecting...");
 m_progressBar->setTotalSteps(5);
+m_progressBar->setMaximumHeight(m_progressBar->fontMetrics().lineSpacing());
 //m_progressBar->setAlignment( AlignHCenter | AlignVCenter );
 	statusBar()->addWidget(m_progressBar, 0, false);
 m_progressBar->hide();
@@ -170,8 +176,8 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     KStdAction::preferences(this, SLOT(slotPreferences()), actionCollection());
     KStdAction::configureToolbars(this, SLOT(slotConfigureToolbars()), actionCollection());
     KStdAction::configureNotifications(this, SLOT(slotConfigureNotifications()), actionCollection());
-
-    createGUI("vertigo.rc");
+  setXMLFile("vertigo.rc");
+    createGUI(0);
 
     KConfig *config = KGlobal::config();
 
@@ -197,19 +203,17 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
 	statusBar()->hide();
     }
 
-    /*config->setGroup("Geometry");
-       QSize invalid(-1, -1);
-       QSize winSize = config->readSizeEntry("WindowSize", &invalid);
 
-       if (winSize.isValid())
-       resize(winSize);
-       else
-       resize(300, 200); */
 
     resize(prefs.mainwindow_width, prefs.mainwindow_height);
     move(prefs.mainwindow_left, prefs.mainwindow_top);
 
-    MainWindowLayout = new QVBoxLayout(this, 12, 6, "MainWindowLayout");
+
+
+    if (m_MDIMode==0)
+	{
+switchToTabPageMode();
+    //MainWindowLayout = new QVBoxLayout(this, 12, 6, "MainWindowLayout");
 
     m_tabWidget = new TabWidget(this, "m_tabWidget");
     m_tabWidget->setTabPosition(QTabWidget::Top);
@@ -236,40 +240,32 @@ new KAction(i18n("Previous Tab"), 0, CTRL + Key_PageDown, this, SLOT(slotPreviou
     tabNew->hide();
     connect(m_tabWidget, SIGNAL(currentChanged(QWidget *)), this, SLOT(slotTabChanged(QWidget *)));
 
-/*    MainView *view = new MainView(this);
+addWindow(createWrapper(m_tabWidget,"(none)","(none)"));
+   //MainWindowLayout->addWidget(m_tabWidget);
+  // setCentralWidget(m_tabWidget);
 
-    m_tabWidget->insertTab(view, "<none>");
-*/
-    MainWindowLayout->addWidget(m_tabWidget);
-    setCentralWidget(m_tabWidget);
+    }
 
     m_mainViewList = new QPtrList < MainView > ();
 
-//new KDCOPActionProxy ( actionCollection(), this ); 
-	
+
     
 }
 MainView *MainWindow::getMainView(session * sess)
 {
     MainView *v;
 
-    /*  QWidget *t = m_tabWidget->currentPage();
 
-       if (t->isA("MainView")) {
-       v = (MainView *) t;
-       if (!v->isUsed()) {
-       v->setUsed(true);
-       return v;
-       }
-       }
-       for (v = m_mainViewList->first(); v; v = m_mainViewList->next()) {
-       if (!v->isUsed()) {
-       v->setUsed(true);
-       return v;
-       }
-       } */
+ v = new MainView(this, sess);
+    m_mainViewList->append(v);
+
+       if (m_MDIMode==0)
+{
+
+
     int lastTab = -1;
     session *s;
+MainView *ov=v;
 
     for(v = m_mainViewList->first(); v; v = m_mainViewList->next()) {
 	s = v->getSession();
@@ -278,11 +274,18 @@ MainView *MainWindow::getMainView(session * sess)
 	}
     }
 
-    v = new MainView(this, sess);
-    m_mainViewList->append(v);
+v=ov;
     m_tabWidget->insertTab(v, "(none)", lastTab);
-    kdDebug() << "added view" << endl;
-    return v;
+
+
+    }
+else{
+	addWindow(createWrapper(v,"(none)","(none)"));
+
+	}
+	kdDebug() << "added view" << endl;
+   	 return v;
+
 }
 
 MainWindow::~MainWindow()
@@ -444,17 +447,8 @@ void MainWindow::slotNewChannelTab()
 
 void MainWindow::slotDetachTab()
 {
-    /*if (m_detached) {
-       // xxx: widget may not be xchatmainview
-       MainView *v = (MainView *) m_tabWidget->currentPage();
-       QString label = m_tabWidget->tabLabel(v);
 
-       v->reparent(v->getSession()->gui->win, QPoint(0, 0), false);
-       v->getSession()->gui->win->tabWidget()->insertTab(v, label);
-       close();
-       }
-       else { */
-
+if(m_MDIMode==0){
     QWidget *t = m_tabWidget->currentPage();
 
     if(viewCount() != 1) {
@@ -469,32 +463,24 @@ else{
     ContainerView *v=(ContainerView *)t;
     v->setWindow(w);
 }
-/*
-	if(t->isA("MainView")) {
-	    MainView *v = (MainView *) t;
-
-	    v->getSession()->gui->win = w;
-	} else if(t->isA("RawlogView")) {
-
-	    RawlogView *v = (RawlogView *) t;
-
-	    v->setWindow(w);
-	}*/
 
 	QString label = m_tabWidget->tabLabel(t);
 
 	t->reparent(w, QPoint(0, 0), false);
-	w->tabWidget()->insertTab(t, label, -1);
+	w->addView((ContainerView*)t, label, -1);
     }
-    //}
+}
 }
 
 
 void MainWindow::closeView(ContainerView *v)
 {
 	v->closeView();
+
+	if (m_MDIMode==0){
 	if(!m_tabWidget->count()) {
 	    close();
+	}
 	}
 
 	 if(v->isA("MainView")) {
@@ -504,8 +490,11 @@ void MainWindow::closeView(ContainerView *v)
 
 void MainWindow::slotCloseTab()
 {
-    QWidget *t = m_tabWidget->currentPage();
-    closeView((ContainerView *)t);
+   if (m_MDIMode==0)
+   {
+    	QWidget *t = m_tabWidget->currentPage();
+    	closeView((ContainerView *)t);
+}
 }
 
 void MainWindow::slotQuit()
@@ -516,6 +505,8 @@ void MainWindow::slotQuit()
 
 int MainWindow::lastSameServerTabIndex()
 {
+   if (m_MDIMode==0)
+   {
 int lastTab = -1;
 session *s;
 MainView *v;
@@ -526,7 +517,44 @@ lastTab = QMAX(m_tabWidget->indexOf(v) + 1, lastTab);
    }
         }
 return lastTab;
+}
+return 0;
+}
 
+void MainWindow::setViewLabel(ContainerView *l, QString label)
+{
+	if (m_MDIMode==0)
+	{
+		m_tabWidget->setTabLabel(l, label);
+	}
+}
+
+
+void MainWindow::setViewToolTip(ContainerView *l, QString label)
+{
+	if (m_MDIMode==0)
+	{
+		m_tabWidget->setTabToolTip(l, label);
+	}
+}
+
+void MainWindow::setViewColor(ContainerView *l, QColor c)
+{
+	if (m_MDIMode==0)
+	{
+		m_tabWidget->setTabColor(l, c);
+	}
+}
+
+
+void MainWindow::addView(ContainerView *l, QString name, int index)
+{
+	if (m_MDIMode==0)
+	{
+		m_tabWidget->insertTab(l, name, index);
+	}
+	else
+	addWindow(createWrapper(l,name,name));
 }
 
 
@@ -537,7 +565,7 @@ if(!current_sess->server->gui->chanlist) {
         ChanlistView *l = new ChanlistView(this, this, current_sess->server);
 
         current_sess->server->gui->chanlist = l;
-        m_tabWidget->insertTab(l, "channels", lastSameServerTabIndex());
+        addView(l, "channels", lastSameServerTabIndex());
     } else {
         current_sess->server->gui->chanlist->showView();
     }
@@ -548,7 +576,7 @@ void MainWindow::slotURLGrabber()
 if(!xchatapp->urlGrabber()) {
         URLGrabberView *l = new URLGrabberView(this, this);
         xchatapp->setUrlGrabber(l);
-        m_tabWidget->insertTab(l, "urls", -1);
+        addView(l, "urls", -1);
     } else {
         xchatapp->urlGrabber()->showView();
     }
@@ -559,7 +587,7 @@ void MainWindow::slotChatList()
 if(!xchatapp->chatList()) {
         ChatListView *l = new ChatListView(this, this);
         xchatapp->setChatList(l);
-        m_tabWidget->insertTab(l, "chats", -1);
+        addView(l, "chats", -1);
     } else {
         xchatapp->chatList()->showView();
     }
@@ -570,7 +598,7 @@ void MainWindow::slotTransfers()
 if(!xchatapp->transfers()) {
         XferView *l = new XferView(this, this);
         xchatapp->setTransfers(l);
-        m_tabWidget->insertTab(l, "transfers", -1);
+        addView(l, "transfers", -1);
     } else {
         xchatapp->transfers()->showView();
     }
@@ -581,7 +609,7 @@ void MainWindow::slotNotifyList()
 if(!xchatapp->notifyList()) {
         NotifyListView *l = new NotifyListView(this, this);
         xchatapp->setNotifyList(l);
-        m_tabWidget->insertTab(l, "notify", -1);
+       addView(l, "notify", -1);
     } else {
         xchatapp->notifyList()->showView();
     }
@@ -604,7 +632,7 @@ void MainWindow::slotBanlist()
 if(!xchatapp->banList()) {
         BanListView *l = new BanListView(this, this);
         xchatapp->setBanList(l);
-        m_tabWidget->insertTab(l, "bans", -1);
+        addView(l, "bans", -1);
     } else {
         xchatapp->banList()->showView();
     }
@@ -629,9 +657,9 @@ void MainWindow::slotRawlog()
 	RawlogView *l = new RawlogView(this, this, current_sess->server);
 
 	current_sess->server->gui->rawlog = l;
-	m_tabWidget->insertTab(l, "rawlog", lastSameServerTabIndex());
+	addView(l, "rawlog", lastSameServerTabIndex());
     } else {
-	current_sess->server->gui->rawlog->window()->tabWidget()->showPage(current_sess->server->gui->rawlog);
+	current_sess->server->gui->rawlog->window()->showView(current_sess->server->gui->rawlog);
     }
 
 }
@@ -754,52 +782,66 @@ void MainWindow::slotTab9()
 
 void MainWindow::slotNextTab()
 {
+	if (m_MDIMode==0){
 	int i=m_tabWidget->currentPageIndex()+1;
 	if (i== m_tabWidget->count())
 		i=0;
 	m_tabWidget->setCurrentPage(i);
+	}
 }
 
 
 void MainWindow::slotPreviousTab()
 {
+if (m_MDIMode==0){
 	int i=m_tabWidget->currentPageIndex()-1;
 	if (i==-1)
 		i=m_tabWidget->count()-1;
 	m_tabWidget->setCurrentPage(i);
+	}
 }
 
 
 
 void MainWindow::showView(ContainerView *v)
 {
+	if (m_MDIMode==0){
 	m_tabWidget->showPage(v);
+	}
 }
 
 int MainWindow::viewCount()
 {
+if (m_MDIMode==0){
     return m_tabWidget->count();
+}
+return 99;
 }
 
 void MainWindow::focusInEvent(QFocusEvent *)
 {
     kdDebug() << "focusinwindow" << endl;
+    if (m_MDIMode==0){
     slotTabChanged(m_tabWidget->currentPage());
+	}
 }
 
 void MainWindow::windowActivationChange(bool oldActive)
 {
     kdDebug() << caption() << "::windowActivationChange :: " << oldActive << endl;
+if (m_MDIMode==0){
     if(!oldActive) {
 	slotTabChanged(m_tabWidget->currentPage());
+    }
     }
 }
 
 bool MainWindow::isCurrent(session *sess)
 {
+if (m_MDIMode==0){
 	    QWidget *t = m_tabWidget->currentPage();
 
-		    if(t->isA("MainView")) {
+		    if(t&&t->isA("MainView")) {
 			    MainView *m = (MainView *) t;
 				if (m->getSession()==sess)
 				{
@@ -807,6 +849,8 @@ bool MainWindow::isCurrent(session *sess)
 				}
 				}
 				return false;
+	}
+	return false;
 }
 
 void MainWindow::closeEvent(QCloseEvent * e)

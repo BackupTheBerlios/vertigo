@@ -4,7 +4,7 @@
 #include <kmainwindow.h>
 #include "mainview.h"
 
-
+#include "kmdimainfrm.h"
 #include "../common/xchat.h"
 
 class KProgress;
@@ -13,13 +13,13 @@ class TabWidget;
 class ContainerView;
 class StatusBarWidget;
 
-class MainWindow:public KMainWindow {
+class MainWindow:public KMdiMainFrm {
   Q_OBJECT public:
      MainWindow(QWidget * parent = 0);
     ~MainWindow();
 
 MainView *getMainView(session * sess);
-    TabWidget *m_tabWidget;
+
 
 void closeView(ContainerView *v);
 
@@ -28,6 +28,7 @@ void closeView(ContainerView *v);
 
 bool isCurrent(session *sess);
 
+void addView(ContainerView *l, QString name, int index);
 
     void focusInEvent(QFocusEvent *);
     void resizeEvent(QResizeEvent * r);
@@ -41,11 +42,14 @@ int lastSameServerTabIndex();
     void setNumbers(int ops, int total);
 
 	void showView(ContainerView *v);
+void setViewColor(ContainerView *l, QColor c);
+	void setViewLabel(ContainerView *l, QString label);
+void setViewToolTip(ContainerView *l, QString label);
 
-	
-    TabWidget *tabWidget() {
+
+   /* TabWidget *tabWidget() {
 	return m_tabWidget;
-    }
+    }*/
     public slots:void slotTabChanged(QWidget *);
     void slotNewServerWindow();
     void slotNewChannelWindow();
@@ -89,6 +93,7 @@ void slotTab9();
     //TODO move these to the tabwidget directly
 void slotNextTab();
 void slotPreviousTab();
+
 void forwardLoop();
     
   protected:
@@ -102,6 +107,10 @@ void forwardLoop();
     QLabel *numbersLabel;
     QLabel *nameLabel;
     QTimer *m_timer;
+
+    private:
+       TabWidget *m_tabWidget;
+       int m_MDIMode;
 };
 
 /*
