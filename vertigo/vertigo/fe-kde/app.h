@@ -85,6 +85,10 @@ void loadPalette();
    
 XChatPalette palette();
 
+
+int getUserLevel(QPixmap *p);
+
+
     int addTimeoutFunction(int interval, void *fn, void *args);
     void removeTimeoutFunction(int timerId);
     void addIdleFunction(void *fn, void *args);

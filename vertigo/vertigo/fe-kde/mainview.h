@@ -69,7 +69,8 @@ XChatMainWindow *window();
     void hideUserlist();
     void insertUser(server * s, User * u, int index, int sep);
     bool removeUser(User * u);
-
+	void rehashUser(User *u);
+	
 
     void setTopic(QString t);
 
@@ -164,10 +165,16 @@ class XChatUserlistItem:public KListViewItem {
     ~XChatUserlistItem();
 
  //   bool isAlternate();
+QPixmap *getPixmap();
 
     User *getUser() {
 	return m_user;
     }
+
+	void setUser(User *user);
+
+int compare ( QListViewItem * i, int col, bool ascending ) const;
+
    // void paint(QPainter * painter);
     //int height(const QListBox * lb) const;
     //int width(const QListBox * lb) const;
@@ -178,7 +185,7 @@ class XChatUserlistItem:public KListViewItem {
 
   private:
     User * m_user;
-    QPixmap *m_pixmap;
+	QPixmap *m_pixmap;
 };
 
 

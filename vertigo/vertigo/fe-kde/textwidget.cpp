@@ -705,7 +705,7 @@ void TextView::paintTextChunk(QString text, int x, int y, QPainter * p,
 	    }
 	    else if ((c == ATTR_BEEP) || (c == '\n'));
 
-	    else if (c == ' ') {
+	   /* else if (c == ' ') {
 		if (isUrl(text.mid(lastSpace, i - lastSpace))) {
 		    QString b = curText.left(curText.findRev(' ') + 1);
 
@@ -736,7 +736,7 @@ void TextView::paintTextChunk(QString text, int x, int y, QPainter * p,
 		curLen = curLen + charWidth(c);
 		curText = curText.append(c);
 		//i++;
-	    }
+	    }*/
 	    else {
 		curLen = curLen + charWidth(c);
 		curText = curText.append(c);
@@ -750,7 +750,7 @@ void TextView::paintTextChunk(QString text, int x, int y, QPainter * p,
 
 //kdDebug() << "test= "<<dourls << " text="<<text.mid(lastSpace, i - lastSpace)<<endl; 
 
-    if (dourls && (isUrl(text.mid(lastSpace, i - lastSpace)))) {
+   /* if (dourls && (isUrl(text.mid(lastSpace, i - lastSpace)))) {
 	QString b = curText.left(curText.findRev(' ') + 1);
 
 	//kdDebug() << "b= "<<b<<endl; 
@@ -767,10 +767,10 @@ void TextView::paintTextChunk(QString text, int x, int y, QPainter * p,
 	    m_buffer->renderState->fg = 2;
 	paintText(x, y, xx, m_buffer->lineHeight, b, p);
     }
-    else {
+    else {*/
 	if (curLen)
 	    paintText(x, y, curLen, m_buffer->lineHeight, curText, p);
-    }
+    //}
 
     if (clearState)
 	clearRenderState(true);

@@ -631,11 +631,12 @@ fe_ctrl_gui (session *sess, int action)
 	}
 }
 
+// typically called when a hostname has been found
 void
 fe_userlist_rehash (session *sess, struct User *user)
 {
  kdDebug() << "fe:userlist_rehash" << endl;
- 
+sess->gui->view->rehashUser(user); 
 }
 
     void

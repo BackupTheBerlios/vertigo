@@ -469,26 +469,41 @@ void XChatMainView::hideUserlist()
 void XChatMainView::insertUser(server * s, User * u, int index, int sel)
 {
 showUserlist();
-    new XChatUserlistItem(m_userList, xchatapp->getUserIcon(s, u), u);
+    XChatUserlistItem *i=new XChatUserlistItem(m_userList, xchatapp->getUserIcon(s, u), u);
+	i->setUser(u);
 }
 
 bool XChatMainView::removeUser(User * u)
 {
     bool wasSelected = false;
-   /* XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstItem();
+	XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstChild();
 
-    for(; i; i = (XChatUserlistItem *) i->next()) {
+	while( i ) {
 	if(i->getUser() == u) {
-	    if(i->isCurrent())
+	    if(i->isSelected ())
 		wasSelected = true;
 	    delete i;
-
 	    break;
 	}
-    }*/
+	i = (XChatUserlistItem *)i->nextSibling();
+    }
     return wasSelected;
 
 }
+
+void XChatMainView::rehashUser(User *u)
+{
+XChatUserlistItem *i = (XChatUserlistItem *) m_userList->firstChild();
+while( i ) {
+if (i->getUser() == u)
+{
+i->setUser(u);
+	return;
+}
+i = (XChatUserlistItem *)i->nextSibling();
+}
+}
+
 
 /*
 XChatWidgetStack::XChatWidgetStack(QWidget * parent):QWidgetStack(parent)
@@ -568,7 +583,7 @@ bool XChatInputLineEdit::eventFilter(QObject * o, QEvent * e)
 
 XChatUserlistView::XChatUserlistView(QWidget * parent):KListView(parent)
 {
-addColumn ( "Op");
+addColumn ( " ");
 addColumn ( "User");
 addColumn ( "Host");
 setFullWidth(true);
@@ -600,19 +615,55 @@ void XChatUserlistView::resizeEvent(QResizeEvent * r)
 }*/
 
 
-XChatUserlistItem::XChatUserlistItem(XChatUserlistView * list, QPixmap * pix, User * user):
-KListViewItem(list)
+XChatUserlistItem::XChatUserlistItem(XChatUserlistView * list, QPixmap *pix, User *user)
+: KListViewItem(list)
 {
-    m_user = user;
-    setText(1, user->nick);
-	setText(2, user->hostname);
+	m_pixmap=pix;
 	if (pix)
 	setPixmap(0, *pix);
-    m_pixmap = pix;
+	setUser(user);
 }
 
 XChatUserlistItem::~XChatUserlistItem()
 {
+}
+
+
+void XChatUserlistItem::setUser(User *user)
+{	
+	m_user=user;
+	kdDebug() << "--> New User Item: nick="<<user->nick<<" host="<<user->hostname<<endl;
+    setText(1, user->nick);
+	    setText(2, user->hostname);
+
+}
+
+QPixmap *XChatUserlistItem::getPixmap()
+{
+	return m_pixmap;
+}
+
+int XChatUserlistItem::compare ( QListViewItem * i, int col, bool ascending ) const
+{
+	if (col==0)
+	{
+		XChatUserlistItem *xi=(XChatUserlistItem *)i;
+		int l=xchatapp->getUserLevel(xi->getPixmap());
+		int my=xchatapp->getUserLevel(m_pixmap);
+		if (my == l)
+		{
+			return KListViewItem::compare(i,1, ascending);
+		}
+		else if (my>1){
+			return -1;
+		}
+		else{
+			return 1;
+		}
+	}
+	else{
+		return KListViewItem::compare(i,col, ascending);
+	}
 }
 
 /*void XChatUserlistItem::paint(QPainter * painter)

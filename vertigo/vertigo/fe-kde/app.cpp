@@ -292,6 +292,26 @@ QPixmap *XChatApp::getUserIcon(server * serv, User * user)
     return 0;
 }
 
+int XChatApp::getUserLevel(QPixmap *p)
+{
+	if (p==NULL)
+		return 1;
+	else if (p==m_voicePix)
+		return 2;
+	else if (p==m_hopPix)
+		return 3;
+	else if (p==m_opPix)
+		return 4;
+	else if (p==m_redPix)
+		return 5;
+	else if (p==m_purplePix)
+		return 6;
+	else
+		return 1;
+}
+
+
+
 int XChatApp::addTimeoutFunction(int interval, void *fn, void *args)
 {
     bool idle = false;
